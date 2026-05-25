@@ -1,23 +1,19 @@
 'use client';
-import { useState } from 'react';
-import {
-  Menu,
-  Bell,
-  ChevronDown,
-  Filter,
-  Calendar,
-  Store,
-  Camera,
-  RefreshCw,
-} from 'lucide-react';
+import { Bell, ChevronDown, Filter, Calendar, Store, Camera, RefreshCw, Sun, Moon } from 'lucide-react';
+import { useTheme } from '@/components/ThemeProvider';
 
 export function TopBar() {
-  const [isNew, setIsNew] = useState(false);
+  const { theme, toggle } = useTheme();
+  const isDark = theme === 'dark';
 
   return (
     <header
-      className="flex-shrink-0 bg-white border-b"
-      style={{ borderColor: '#E5E7EB' }}
+      className="flex-shrink-0"
+      style={{
+        background: 'var(--color-surface)',
+        borderBottom: '1px solid var(--color-border)',
+        transition: 'background 200ms ease, border-color 200ms ease',
+      }}
     >
       {/* Main top row */}
       <div
@@ -26,13 +22,6 @@ export function TopBar() {
       >
         {/* Left */}
         <div className="flex items-center gap-4">
-          <button
-            className="p-1.5 rounded-md transition-colors hover:bg-neutral-100"
-            aria-label="Toggle sidebar"
-          >
-            <Menu size={20} strokeWidth={1.5} style={{ color: 'var(--color-neutral-500)' }} />
-          </button>
-
           <div className="flex items-center gap-2">
             <div
               className="w-7 h-7 rounded-md flex items-center justify-center font-bold text-white text-xs"
@@ -45,12 +34,9 @@ export function TopBar() {
             </span>
           </div>
 
-          <div
-            className="h-5 w-px"
-            style={{ background: '#E5E7EB' }}
-          />
+          <div className="h-5 w-px" style={{ background: 'var(--color-border)' }} />
 
-          <span className="text-sm font-medium" style={{ color: 'var(--color-neutral-500)' }}>
+          <span className="text-sm font-medium" style={{ color: 'var(--color-text-3)' }}>
             Landmark Asia
           </span>
         </div>
@@ -60,7 +46,7 @@ export function TopBar() {
           {/* Qualified shoppers live badge */}
           <div
             className="flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium"
-            style={{ background: 'var(--color-secondary-light)', color: '#065F46' }}
+            style={{ background: 'var(--color-secondary-light)', color: isDark ? '#34D399' : '#065F46' }}
           >
             <span
               className="w-2 h-2 rounded-full animate-pulse"
@@ -71,30 +57,31 @@ export function TopBar() {
             <ChevronDown size={12} strokeWidth={2} />
           </div>
 
-          {/* Current / New toggle */}
-          <div
-            className="flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium border"
-            style={{ borderColor: '#E5E7EB', background: 'white' }}
+          {/* Light / Dark toggle */}
+          <button
+            onClick={toggle}
+            className="flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium border transition-all"
+            style={{
+              borderColor: 'var(--color-border)',
+              background: 'var(--color-surface)',
+              color: 'var(--color-text-2)',
+            }}
+            aria-label="Toggle dark mode"
           >
-            <span style={{ color: !isNew ? 'var(--color-neutral-900)' : 'var(--color-neutral-400)' }} className="text-xs font-medium">
-              Current
-            </span>
-
-            {/* Toggle switch */}
-            <button
-              onClick={() => setIsNew((v) => !v)}
+            {isDark
+              ? <Sun size={14} strokeWidth={1.5} style={{ color: '#F59E0B' }} />
+              : <Moon size={14} strokeWidth={1.5} style={{ color: '#655BD3' }} />
+            }
+            {/* Toggle pill */}
+            <span
               className="relative inline-flex items-center"
               style={{
                 width: 36,
                 height: 20,
                 borderRadius: 10,
-                background: isNew ? 'var(--color-secondary)' : '#D1D5DB',
+                background: isDark ? '#655BD3' : '#D1D5DB',
                 transition: 'background 200ms ease',
-                border: 'none',
-                cursor: 'pointer',
-                padding: 0,
               }}
-              aria-label="Toggle new view"
             >
               <span
                 style={{
@@ -103,24 +90,26 @@ export function TopBar() {
                   height: 14,
                   borderRadius: '50%',
                   background: 'white',
-                  left: isNew ? 19 : 3,
+                  left: isDark ? 19 : 3,
                   transition: 'left 200ms ease',
                   boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
                 }}
               />
-            </button>
-
-            <span style={{ color: isNew ? 'var(--color-neutral-900)' : 'var(--color-neutral-400)' }} className="text-xs font-medium">
-              New
             </span>
-          </div>
+            <span className="text-xs font-medium" style={{ color: 'var(--color-text-2)' }}>
+              {isDark ? 'Dark' : 'Light'}
+            </span>
+          </button>
 
           {/* Bell */}
           <button
-            className="relative p-2 rounded-md transition-colors hover:bg-neutral-100"
+            className="relative p-2 rounded-md transition-colors"
+            style={{ color: 'var(--color-text-3)' }}
             aria-label="Notifications"
+            onMouseEnter={(e) => (e.currentTarget as HTMLElement).style.background = 'var(--color-surface-2)'}
+            onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.background = 'transparent'}
           >
-            <Bell size={18} strokeWidth={1.5} style={{ color: 'var(--color-neutral-500)' }} />
+            <Bell size={18} strokeWidth={1.5} />
             <span
               className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full"
               style={{ background: 'var(--color-error)' }}
@@ -128,14 +117,18 @@ export function TopBar() {
           </button>
 
           {/* Avatar */}
-          <button className="flex items-center gap-2 rounded-md px-2 py-1.5 transition-colors hover:bg-neutral-100">
+          <button
+            className="flex items-center gap-2 rounded-md px-2 py-1.5 transition-colors"
+            onMouseEnter={(e) => (e.currentTarget as HTMLElement).style.background = 'var(--color-surface-2)'}
+            onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.background = 'transparent'}
+          >
             <div
               className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-semibold"
               style={{ background: 'var(--color-primary)' }}
             >
               AM
             </div>
-            <ChevronDown size={14} strokeWidth={1.5} style={{ color: 'var(--color-neutral-500)' }} />
+            <ChevronDown size={14} strokeWidth={1.5} style={{ color: 'var(--color-text-3)' }} />
           </button>
         </div>
       </div>
@@ -143,63 +136,69 @@ export function TopBar() {
       {/* Filter bar */}
       <div
         className="flex items-center gap-3 px-6 py-2.5 border-t"
-        style={{ borderColor: '#F3F4F6', background: '#FAFAFA' }}
+        style={{
+          borderColor: 'var(--color-border)',
+          background: 'var(--color-surface-2)',
+          transition: 'background 200ms ease',
+        }}
       >
         <button
-          className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium border transition-colors hover:bg-neutral-50"
-          style={{ borderColor: '#E5E7EB', color: 'var(--color-neutral-700)', background: 'white' }}
+          className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium border transition-colors"
+          style={{
+            borderColor: 'var(--color-border)',
+            color: 'var(--color-text-2)',
+            background: 'var(--color-surface)',
+          }}
         >
           <Filter size={14} strokeWidth={1.5} />
           Filters
         </button>
 
         <button
-          className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium border transition-colors hover:bg-neutral-50"
-          style={{ borderColor: '#E5E7EB', color: 'var(--color-neutral-700)', background: 'white' }}
+          className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium border transition-colors"
+          style={{
+            borderColor: 'var(--color-border)',
+            color: 'var(--color-text-2)',
+            background: 'var(--color-surface)',
+          }}
         >
           <Calendar size={14} strokeWidth={1.5} />
           Filter By Date
         </button>
 
-        <div
-          className="h-4 w-px mx-1"
-          style={{ background: '#E5E7EB' }}
-        />
+        <div className="h-4 w-px mx-1" style={{ background: 'var(--color-border)' }} />
 
-        {/* Store count */}
         <div
           className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium border"
-          style={{ borderColor: '#E5E7EB', color: 'var(--color-neutral-700)', background: 'white' }}
+          style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-2)', background: 'var(--color-surface)' }}
         >
           <Store size={14} strokeWidth={1.5} style={{ color: 'var(--color-primary)' }} />
-          <span className="font-semibold" style={{ color: 'var(--color-neutral-900)' }}>8</span>
-          <span className="text-xs" style={{ color: 'var(--color-neutral-500)' }}>Stores</span>
+          <span className="font-semibold" style={{ color: 'var(--color-text-1)' }}>8</span>
+          <span className="text-xs" style={{ color: 'var(--color-text-3)' }}>Stores</span>
         </div>
 
-        {/* Camera count */}
         <div
           className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium border"
-          style={{ borderColor: '#E5E7EB', color: 'var(--color-neutral-700)', background: 'white' }}
+          style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-2)', background: 'var(--color-surface)' }}
         >
           <Camera size={14} strokeWidth={1.5} style={{ color: 'var(--color-secondary)' }} />
           <span className="text-xs">
             <span className="font-semibold" style={{ color: 'var(--color-success)' }}>24</span>
-            <span style={{ color: 'var(--color-neutral-500)' }}> online · </span>
+            <span style={{ color: 'var(--color-text-3)' }}> online · </span>
             <span className="font-semibold" style={{ color: 'var(--color-error)' }}>2</span>
-            <span style={{ color: 'var(--color-neutral-500)' }}> offline</span>
+            <span style={{ color: 'var(--color-text-3)' }}> offline</span>
           </span>
         </div>
 
         <div className="flex-1" />
 
-        {/* Refresh */}
         <div className="flex items-center gap-2">
-          <span className="text-xs" style={{ color: 'var(--color-neutral-500)' }}>
-            Last Refresh: <span className="font-medium" style={{ color: 'var(--color-neutral-700)' }}>3s ago</span>
+          <span className="text-xs" style={{ color: 'var(--color-text-3)' }}>
+            Last Refresh: <span className="font-medium" style={{ color: 'var(--color-text-2)' }}>3s ago</span>
           </span>
           <button
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium border transition-colors hover:bg-neutral-50"
-            style={{ borderColor: '#E5E7EB', color: 'var(--color-primary)', background: 'white' }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium border transition-colors"
+            style={{ borderColor: 'var(--color-border)', color: 'var(--color-primary)', background: 'var(--color-surface)' }}
           >
             <RefreshCw size={13} strokeWidth={1.5} />
             Refresh

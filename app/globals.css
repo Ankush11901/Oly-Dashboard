@@ -137,27 +137,63 @@
   --duration-slow: 300ms;
 }
 
+/* ── Dark mode token overrides ──────────────────────────────────────────── */
+[data-theme="dark"] {
+  --color-page-bg:      #0F172A;
+  --color-surface:      #1E293B;
+  --color-surface-2:    #243146;
+  --color-border:       #334155;
+  --color-text-1:       #F1F5F9;
+  --color-text-2:       #CBD5E1;
+  --color-text-3:       #94A3B8;
+  --color-text-4:       #64748B;
+  --color-neutral-50:   #0F172A;
+  --color-neutral-100:  #1E293B;
+  --color-neutral-300:  #475569;
+  --color-neutral-500:  #94A3B8;
+  --color-neutral-700:  #CBD5E1;
+  --color-neutral-900:  #F1F5F9;
+  --color-white:        #1E293B;
+  --color-primary-light: rgba(101,91,211,0.18);
+  --color-secondary-light: rgba(0,206,156,0.15);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.4), 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* Light mode explicit tokens (mirrors :root for clarity) */
+[data-theme="light"], :root {
+  --color-page-bg:      #F9FAFB;
+  --color-surface:      #FFFFFF;
+  --color-surface-2:    #F9FAFB;
+  --color-border:       #E5E7EB;
+  --color-text-1:       #111827;
+  --color-text-2:       #374151;
+  --color-text-3:       #6B7280;
+  --color-text-4:       #9CA3AF;
+}
+
 /* ── Base ───────────────────────────────────────────────────────────────── */
 html, body { height: 100%; }
 
 body {
   font-family: var(--font-base);
-  background-color: var(--color-neutral-50);
-  color: var(--color-neutral-900);
+  background-color: var(--color-page-bg);
+  color: var(--color-text-1);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 200ms ease, color 200ms ease;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
 
 /* ── Card ───────────────────────────────────────────────────────────────── */
 .card {
-  background: var(--color-white);
-  border: 1px solid #E5E7EB;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   padding: var(--space-6);
   box-shadow: var(--shadow-sm);
-  transition: box-shadow var(--duration-base) var(--ease-out);
+  transition: box-shadow var(--duration-base) var(--ease-out), background 200ms ease, border-color 200ms ease;
 }
 .card:hover {
   box-shadow: var(--shadow-md);
@@ -169,11 +205,11 @@ body {
   font-size: 12px;
   font-weight: 500;
   border-radius: var(--radius-sm);
-  border: 1px solid #E5E7EB;
+  border: 1px solid var(--color-border);
   cursor: pointer;
   transition: all var(--duration-fast) var(--ease-out);
   background: transparent;
-  color: var(--color-neutral-700);
+  color: var(--color-text-2);
 }
 .period-btn:hover { background: var(--color-neutral-100); }
 .period-btn.active {
