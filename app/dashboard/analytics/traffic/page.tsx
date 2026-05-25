@@ -5,6 +5,7 @@ import { PasserbyTrendsChart } from '@/components/charts/PasserbyTrendsChart';
 import { ConversionRateSection } from '@/components/charts/ConversionRateSection';
 import { OverallConversionChart } from '@/components/charts/OverallConversionChart';
 import { StorePerformanceSection } from '@/components/charts/StorePerformanceSection';
+import { VisitorSnapshots } from '@/components/VisitorSnapshots';
 
 export default function TrafficPage() {
   return (
@@ -36,6 +37,9 @@ export default function TrafficPage() {
 
       {/* Section 6 — Store Performance */}
       <StorePerformanceSection />
+
+      {/* Section 7 — Visitor Snapshots */}
+      <VisitorSnapshots />
     </div>
   );
 }

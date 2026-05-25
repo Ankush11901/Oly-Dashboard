@@ -165,18 +165,133 @@ export default function DashboardPage() {
   return (
     <div className="p-8 space-y-10">
 
-      {/* ── Greeting ── */}
-      <div>
-        <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--color-text-1)', lineHeight: 1.3 }}>
-          Good morning, Admin 👋
-        </h1>
-        <p style={{ fontSize: 13, color: 'var(--color-text-3)', marginTop: 3 }}>
-          Here&apos;s what&apos;s happening across your stores today.
-        </p>
-      </div>
+      {/* ═══════════════════════════════════════════════════════════════════
+          SECTION 1 — Checklist & Tasks
+      ═══════════════════════════════════════════════════════════════════ */}
+      <section id="checklist">
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center gap-2">
+            <CheckSquare size={16} strokeWidth={1.5} style={{ color: 'var(--color-primary)' }} />
+            <h2 style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-text-1)' }}>Checklist &amp; Tasks</h2>
+          </div>
+          <button
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
+            style={{ background: 'var(--color-primary)', color: 'white' }}
+          >
+            <Plus size={14} strokeWidth={2} />
+            Add Task
+          </button>
+        </div>
+
+        {/* Status summary */}
+        <div className="grid grid-cols-3 gap-4 mb-5">
+          {[
+            { key: 'done',    count: doneCount,    label: 'Completed', icon: <CheckCircle2 size={18} strokeWidth={1.5} />, color: '#16A34A', bg: 'rgba(22,163,74,0.1)' },
+            { key: 'pending', count: pendingCount, label: 'Pending',   icon: <Clock size={18} strokeWidth={1.5} />,        color: '#D97706', bg: 'rgba(217,119,6,0.1)' },
+            { key: 'overdue', count: overdueCount, label: 'Overdue',   icon: <AlertCircle size={18} strokeWidth={1.5} />,  color: '#DC2626', bg: 'rgba(220,38,38,0.1)' },
+          ].map((s) => (
+            <button
+              key={s.key}
+              onClick={() => setTaskFilter(taskFilter === s.key ? 'all' : s.key as TaskStatus)}
+              className="card flex items-center gap-4 text-left transition-all"
+              style={{
+                padding: '14px 18px',
+                outline: taskFilter === s.key ? `2px solid ${s.color}` : 'none',
+                outlineOffset: 2,
+              }}
+            >
+              <div
+                className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                style={{ background: s.bg, color: s.color }}
+              >
+                {s.icon}
+              </div>
+              <div>
+                <p className="font-bold text-2xl tabular-nums" style={{ color: 'var(--color-text-1)', lineHeight: 1 }}>{s.count}</p>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-3)' }}>{s.label}</p>
+              </div>
+            </button>
+          ))}
+        </div>
+
+        {/* Task list */}
+        <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+          {/* Filter tabs */}
+          <div className="flex items-center gap-1 px-5 pt-4 pb-3" style={{ borderBottom: '1px solid var(--color-border)' }}>
+            {(['all', 'pending', 'overdue', 'done'] as const).map((f) => (
+              <button
+                key={f}
+                onClick={() => setTaskFilter(f)}
+                className="px-3 py-1.5 rounded-md text-xs font-medium capitalize transition-colors"
+                style={{
+                  background: taskFilter === f ? 'var(--color-primary-light)' : 'transparent',
+                  color: taskFilter === f ? 'var(--color-primary)' : 'var(--color-text-3)',
+                }}
+              >{f === 'all' ? 'All tasks' : f}</button>
+            ))}
+          </div>
+
+          {/* Rows */}
+          <div className="divide-y" style={{ borderColor: 'var(--color-border)' }}>
+            {filteredTasks.map((task) => {
+              const s = STATUS_CONFIG[task.status];
+              return (
+                <div
+                  key={task.id}
+                  className="flex items-center gap-4 px-5 py-3.5 transition-colors"
+                  style={{ cursor: 'pointer' }}
+                  onMouseEnter={(e) => (e.currentTarget as HTMLElement).style.background = 'var(--color-surface-2)'}
+                  onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.background = 'transparent'}
+                >
+                  {/* Status icon */}
+                  <span style={{ color: s.color, flexShrink: 0 }}>{s.icon}</span>
+
+                  {/* Title + store */}
+                  <div className="flex-1 min-w-0">
+                    <p
+                      className="text-sm font-medium truncate"
+                      style={{
+                        color: task.status === 'done' ? 'var(--color-text-3)' : 'var(--color-text-1)',
+                        textDecoration: task.status === 'done' ? 'line-through' : 'none',
+                      }}
+                    >
+                      {task.title}
+                    </p>
+                    <p className="text-xs mt-0.5 truncate" style={{ color: 'var(--color-text-3)' }}>
+                      {task.store}
+                    </p>
+                  </div>
+
+                  {/* Meta */}
+                  <div className="flex items-center gap-3 flex-shrink-0">
+                    {task.automated && (
+                      <span
+                        className="text-[10px] font-semibold px-1.5 py-0.5 rounded"
+                        style={{ background: 'rgba(101,91,211,0.12)', color: '#655BD3' }}
+                      >AUTO</span>
+                    )}
+                    {task.requiresPhoto && (
+                      <div className="flex items-center gap-1" style={{ color: 'var(--color-text-3)' }}>
+                        <Upload size={12} strokeWidth={1.5} />
+                        <span className="text-xs">Photo</span>
+                      </div>
+                    )}
+                    <span
+                      className="text-xs font-medium px-2 py-0.5 rounded-full"
+                      style={{ background: s.bg, color: s.color }}
+                    >
+                      {task.due}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
 
       {/* ═══════════════════════════════════════════════════════════════════
-          SECTION 1 — Insights Dashboard
+          SECTION 2 — Insights Dashboard
       ═══════════════════════════════════════════════════════════════════ */}
       <section id="insights">
         <div className="flex items-center gap-2 mb-5">
@@ -312,131 +427,6 @@ export default function DashboardPage() {
                 </div>
               ))}
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════════════════════════════════
-          SECTION 2 — Checklist & Tasks
-      ═══════════════════════════════════════════════════════════════════ */}
-      <section id="checklist">
-        <div className="flex items-center justify-between mb-5">
-          <div className="flex items-center gap-2">
-            <CheckSquare size={16} strokeWidth={1.5} style={{ color: 'var(--color-primary)' }} />
-            <h2 style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-text-1)' }}>Checklist &amp; Tasks</h2>
-          </div>
-          <button
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
-            style={{ background: 'var(--color-primary)', color: 'white' }}
-          >
-            <Plus size={14} strokeWidth={2} />
-            Add Task
-          </button>
-        </div>
-
-        {/* Status summary */}
-        <div className="grid grid-cols-3 gap-4 mb-5">
-          {[
-            { key: 'done',    count: doneCount,    label: 'Completed', icon: <CheckCircle2 size={18} strokeWidth={1.5} />, color: '#16A34A', bg: 'rgba(22,163,74,0.1)' },
-            { key: 'pending', count: pendingCount, label: 'Pending',   icon: <Clock size={18} strokeWidth={1.5} />,        color: '#D97706', bg: 'rgba(217,119,6,0.1)' },
-            { key: 'overdue', count: overdueCount, label: 'Overdue',   icon: <AlertCircle size={18} strokeWidth={1.5} />,  color: '#DC2626', bg: 'rgba(220,38,38,0.1)' },
-          ].map((s) => (
-            <button
-              key={s.key}
-              onClick={() => setTaskFilter(taskFilter === s.key ? 'all' : s.key as TaskStatus)}
-              className="card flex items-center gap-4 text-left transition-all"
-              style={{
-                padding: '14px 18px',
-                outline: taskFilter === s.key ? `2px solid ${s.color}` : 'none',
-                outlineOffset: 2,
-              }}
-            >
-              <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                style={{ background: s.bg, color: s.color }}
-              >
-                {s.icon}
-              </div>
-              <div>
-                <p className="font-bold text-2xl tabular-nums" style={{ color: 'var(--color-text-1)', lineHeight: 1 }}>{s.count}</p>
-                <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-3)' }}>{s.label}</p>
-              </div>
-            </button>
-          ))}
-        </div>
-
-        {/* Task list */}
-        <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-          {/* Filter tabs */}
-          <div className="flex items-center gap-1 px-5 pt-4 pb-3" style={{ borderBottom: '1px solid var(--color-border)' }}>
-            {(['all', 'pending', 'overdue', 'done'] as const).map((f) => (
-              <button
-                key={f}
-                onClick={() => setTaskFilter(f)}
-                className="px-3 py-1.5 rounded-md text-xs font-medium capitalize transition-colors"
-                style={{
-                  background: taskFilter === f ? 'var(--color-primary-light)' : 'transparent',
-                  color: taskFilter === f ? 'var(--color-primary)' : 'var(--color-text-3)',
-                }}
-              >{f === 'all' ? 'All tasks' : f}</button>
-            ))}
-          </div>
-
-          {/* Rows */}
-          <div className="divide-y" style={{ borderColor: 'var(--color-border)' }}>
-            {filteredTasks.map((task) => {
-              const s = STATUS_CONFIG[task.status];
-              return (
-                <div
-                  key={task.id}
-                  className="flex items-center gap-4 px-5 py-3.5 transition-colors"
-                  style={{ cursor: 'pointer' }}
-                  onMouseEnter={(e) => (e.currentTarget as HTMLElement).style.background = 'var(--color-surface-2)'}
-                  onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.background = 'transparent'}
-                >
-                  {/* Status icon */}
-                  <span style={{ color: s.color, flexShrink: 0 }}>{s.icon}</span>
-
-                  {/* Title + store */}
-                  <div className="flex-1 min-w-0">
-                    <p
-                      className="text-sm font-medium truncate"
-                      style={{
-                        color: task.status === 'done' ? 'var(--color-text-3)' : 'var(--color-text-1)',
-                        textDecoration: task.status === 'done' ? 'line-through' : 'none',
-                      }}
-                    >
-                      {task.title}
-                    </p>
-                    <p className="text-xs mt-0.5 truncate" style={{ color: 'var(--color-text-3)' }}>
-                      {task.store}
-                    </p>
-                  </div>
-
-                  {/* Meta */}
-                  <div className="flex items-center gap-3 flex-shrink-0">
-                    {task.automated && (
-                      <span
-                        className="text-[10px] font-semibold px-1.5 py-0.5 rounded"
-                        style={{ background: 'rgba(101,91,211,0.12)', color: '#655BD3' }}
-                      >AUTO</span>
-                    )}
-                    {task.requiresPhoto && (
-                      <div className="flex items-center gap-1" style={{ color: 'var(--color-text-3)' }}>
-                        <Upload size={12} strokeWidth={1.5} />
-                        <span className="text-xs">Photo</span>
-                      </div>
-                    )}
-                    <span
-                      className="text-xs font-medium px-2 py-0.5 rounded-full"
-                      style={{ background: s.bg, color: s.color }}
-                    >
-                      {task.due}
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
           </div>
         </div>
       </section>

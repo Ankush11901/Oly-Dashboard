@@ -1,10 +1,7 @@
 'use client';
-import { Bell, ChevronDown, Filter, Calendar, Store, Camera, RefreshCw, Sun, Moon } from 'lucide-react';
-import { useTheme } from '@/components/ThemeProvider';
+import { Bell, ChevronDown, Filter, Calendar, Store, Camera, RefreshCw } from 'lucide-react';
 
 export function TopBar() {
-  const { theme, toggle } = useTheme();
-  const isDark = theme === 'dark';
 
   return (
     <header
@@ -46,7 +43,7 @@ export function TopBar() {
           {/* Qualified shoppers live badge */}
           <div
             className="flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium"
-            style={{ background: 'var(--color-secondary-light)', color: isDark ? '#34D399' : '#065F46' }}
+            style={{ background: 'var(--color-secondary-light)', color: '#065F46' }}
           >
             <span
               className="w-2 h-2 rounded-full animate-pulse"
@@ -56,50 +53,6 @@ export function TopBar() {
             <span className="font-bold">1,247</span>
             <ChevronDown size={12} strokeWidth={2} />
           </div>
-
-          {/* Light / Dark toggle */}
-          <button
-            onClick={toggle}
-            className="flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium border transition-all"
-            style={{
-              borderColor: 'var(--color-border)',
-              background: 'var(--color-surface)',
-              color: 'var(--color-text-2)',
-            }}
-            aria-label="Toggle dark mode"
-          >
-            {isDark
-              ? <Sun size={14} strokeWidth={1.5} style={{ color: '#F59E0B' }} />
-              : <Moon size={14} strokeWidth={1.5} style={{ color: '#655BD3' }} />
-            }
-            {/* Toggle pill */}
-            <span
-              className="relative inline-flex items-center"
-              style={{
-                width: 36,
-                height: 20,
-                borderRadius: 10,
-                background: isDark ? '#655BD3' : '#D1D5DB',
-                transition: 'background 200ms ease',
-              }}
-            >
-              <span
-                style={{
-                  position: 'absolute',
-                  width: 14,
-                  height: 14,
-                  borderRadius: '50%',
-                  background: 'white',
-                  left: isDark ? 19 : 3,
-                  transition: 'left 200ms ease',
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
-                }}
-              />
-            </span>
-            <span className="text-xs font-medium" style={{ color: 'var(--color-text-2)' }}>
-              {isDark ? 'Dark' : 'Light'}
-            </span>
-          </button>
 
           {/* Bell */}
           <button

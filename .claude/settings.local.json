@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx create-next-app@latest . --typescript --tailwind --app --no-eslint --no-src-dir --import-alias \"@/*\" --yes)",
+      "Bash(npx create-next-app@latest . --typescript --tailwind --app --no-eslint --no-src-dir --import-alias \"@/*\" --yes --skip-install)",
+      "Bash(npm install *)",
+      "Bash(npx create-next-app@latest . --typescript --tailwind --app --no-eslint --no-src-dir --import-alias \"@/*\" --yes --name oly-dashboard)",
+      "Read(//private/tmp/**)",
+      "Bash(npx create-next-app@latest oly-dashboard --typescript --tailwind --app --no-eslint --no-src-dir --import-alias \"@/*\" --yes)",
+      "Bash(npx tsc *)",
+      "Bash(printf '#!/usr/bin/env node\\\\nrequire\\(\"../typescript/lib/tsc.js\"\\);\\\\n')",
+      "Bash(chmod +x \"/Users/ankush/Documents/Oly Dashboard/node_modules/.bin/tsc\")",
+      "Bash(node node_modules/.bin/tsc --noEmit)",
+      "Bash(npm run *)",
+      "Read(//tmp/**)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/dashboard)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(pkill -f \"next dev\")",
+      "Bash(curl -s http://localhost:3000/dashboard)",
+      "mcp__Claude_in_Chrome__tabs_context_mcp",
+      "Bash(open http://localhost:3000/dashboard)",
+      "Bash(screencapture -x /tmp/dashboard_screenshot.png)",
+      "Bash(screencapture /tmp/dashboard_screenshot.png)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/dashboard/analytics/traffic)",
+      "Bash(curl -s http://localhost:3000/dashboard/analytics/traffic)"
+    ]
+  }
+}
