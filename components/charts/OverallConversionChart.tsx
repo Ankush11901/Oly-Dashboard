@@ -78,6 +78,16 @@ export function OverallConversionChart() {
       <div style={{ height: 350 }}>
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={HOURLY_CONVERSION_DATA} margin={{ top: 8, right: 48, bottom: 0, left: 0 }}>
+            <defs>
+              <linearGradient id="passerbyBarGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%"   stopColor="#655BD3" stopOpacity={1} />
+                <stop offset="100%" stopColor="#655BD3" stopOpacity={0.3} />
+              </linearGradient>
+              <linearGradient id="entryBarGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%"   stopColor="#00CE9C" stopOpacity={1} />
+                <stop offset="100%" stopColor="#00CE9C" stopOpacity={0.3} />
+              </linearGradient>
+            </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
             <XAxis
               dataKey="hour"
@@ -129,19 +139,17 @@ export function OverallConversionChart() {
               yAxisId="left"
               dataKey="passerby"
               name="Passerby"
-              fill="#655BD3"
+              fill="url(#passerbyBarGrad)"
               maxBarSize={20}
               radius={[2, 2, 0, 0]}
-              fillOpacity={0.85}
             />
             <Bar
               yAxisId="left"
               dataKey="entryExit"
               name="Entry / Exit"
-              fill="#00CE9C"
+              fill="url(#entryBarGrad)"
               maxBarSize={20}
               radius={[2, 2, 0, 0]}
-              fillOpacity={0.85}
             />
             <Line
               yAxisId="right"

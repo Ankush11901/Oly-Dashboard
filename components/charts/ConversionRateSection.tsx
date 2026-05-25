@@ -81,7 +81,7 @@ function StoreRow({ name, rate, max }: { name: string; rate: number; max: number
           style={{
             width: `${barWidth}%`,
             height: '100%',
-            background: 'var(--color-primary)',
+            background: 'linear-gradient(90deg, #655BD3 0%, #8B6FE8 50%, #00CE9C 100%)',
             transition: 'width 600ms ease',
           }}
         />

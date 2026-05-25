@@ -90,11 +90,13 @@ export function PasserbyTrendsChart() {
           <AreaChart data={PASSERBY_TREND_DATA} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
             <defs>
               <linearGradient id="passerbyGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#655BD3" stopOpacity={0.18} />
+                <stop offset="0%"   stopColor="#655BD3" stopOpacity={0.5} />
+                <stop offset="55%"  stopColor="#655BD3" stopOpacity={0.15} />
                 <stop offset="100%" stopColor="#655BD3" stopOpacity={0} />
               </linearGradient>
               <linearGradient id="entryGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#00CE9C" stopOpacity={0.16} />
+                <stop offset="0%"   stopColor="#00CE9C" stopOpacity={0.45} />
+                <stop offset="55%"  stopColor="#00CE9C" stopOpacity={0.12} />
                 <stop offset="100%" stopColor="#00CE9C" stopOpacity={0} />
               </linearGradient>
             </defs>

@@ -8,6 +8,7 @@ import {
   Radio, UserCircle, Bell, Lock, Monitor, LayoutGrid,
 } from 'lucide-react';
 import { ChartSelector, ALL_WIDGETS } from '@/components/ChartSelector';
+import { useDashboardContext } from '@/components/DashboardProvider';
 
 interface NavItem { label: string; href: string; icon: React.ReactNode }
 interface NavSection { label: string; icon: React.ReactNode; items: NavItem[] }
@@ -58,23 +59,12 @@ const NAV_SECTIONS: NavSection[] = [
   },
 ];
 
-const DEFAULT_ENABLED = new Set(ALL_WIDGETS.slice(0, 5).map((w) => w.id));
-
 export function SideNav() {
   const pathname = usePathname();
-  const [selectorOpen, setSelectorOpen] = useState(false);
-  const [enabledWidgets, setEnabledWidgets] = useState<Set<string>>(DEFAULT_ENABLED);
+  const { enabledWidgets, setChartSelectorOpen } = useDashboardContext();
 
   const isActive = (href: string) =>
     href.includes('#') ? pathname === href.split('#')[0] : pathname === href;
-
-  const toggleWidget = (id: string) => {
-    setEnabledWidgets((prev) => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
-  };
 
   return (
     <>
@@ -100,10 +90,10 @@ export function SideNav() {
             <div key={section.label}>
               {/* Section label */}
               <div className="flex items-center gap-2 px-2 mb-2">
-                <span style={{ color: '#9CA3AF' }}>{section.icon}</span>
+                <span style={{ color: '#4B5563' }}>{section.icon}</span>
                 <span
                   className="text-xs font-bold uppercase"
-                  style={{ color: '#9CA3AF', letterSpacing: '0.06em' }}
+                  style={{ color: '#4B5563', letterSpacing: '0.06em' }}
                 >
                   {section.label}
                 </span>
@@ -124,7 +114,7 @@ export function SideNav() {
                         paddingRight: 10,
                         fontSize: 13.5,
                         fontWeight: active ? 600 : 500,
-                        color: active ? '#655BD3' : '#374151',
+                        color: active ? '#655BD3' : '#111827',
                         background: active ? '#EEE9FF' : 'transparent',
                         borderLeft: active ? '2px solid #655BD3' : '2px solid transparent',
                         textDecoration: 'none',
@@ -137,7 +127,7 @@ export function SideNav() {
                         if (!active) (e.currentTarget as HTMLElement).style.background = 'transparent';
                       }}
                     >
-                      <span style={{ flexShrink: 0, color: active ? '#655BD3' : '#6B7280' }}>
+                      <span style={{ flexShrink: 0, color: active ? '#655BD3' : '#4B5563' }}>
                         {item.icon}
                       </span>
                       <span className="truncate">{item.label}</span>
@@ -152,7 +142,7 @@ export function SideNav() {
         {/* Customise Home Charts button */}
         <div className="px-3 pb-3 flex-shrink-0">
           <button
-            onClick={() => setSelectorOpen(true)}
+            onClick={() => setChartSelectorOpen(true)}
             className="w-full flex items-center gap-2.5 rounded-lg px-3 py-2.5 transition-colors"
             style={{
               background: '#F5F3FF',
@@ -191,13 +181,6 @@ export function SideNav() {
           </div>
         </div>
       </aside>
-
-      <ChartSelector
-        open={selectorOpen}
-        onClose={() => setSelectorOpen(false)}
-        enabled={enabledWidgets}
-        onToggle={toggleWidget}
-      />
     </>
   );
 }

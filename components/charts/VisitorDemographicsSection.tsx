@@ -1,8 +1,8 @@
 'use client';
 import { useState } from 'react';
 import {
-  LineChart,
-  Line,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -182,7 +182,19 @@ export function VisitorDemographicsSection() {
 
           <div className="flex-1" style={{ minHeight: 320 }}>
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={MONTHLY_TREND_DATA} margin={{ top: 8, right: 16, bottom: 0, left: 0 }}>
+              <AreaChart data={MONTHLY_TREND_DATA} margin={{ top: 8, right: 16, bottom: 0, left: 0 }}>
+                <defs>
+                  <linearGradient id="maleGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%"   stopColor="#0DA2FF" stopOpacity={0.45} />
+                    <stop offset="55%"  stopColor="#0DA2FF" stopOpacity={0.12} />
+                    <stop offset="100%" stopColor="#0DA2FF" stopOpacity={0} />
+                  </linearGradient>
+                  <linearGradient id="femaleGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%"   stopColor="#EE0F6B" stopOpacity={0.4} />
+                    <stop offset="55%"  stopColor="#EE0F6B" stopOpacity={0.1} />
+                    <stop offset="100%" stopColor="#EE0F6B" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
                 <XAxis
                   dataKey="month"
@@ -203,25 +215,27 @@ export function VisitorDemographicsSection() {
                   iconSize={8}
                   wrapperStyle={{ fontSize: 12, paddingTop: 12 }}
                 />
-                <Line
+                <Area
                   type="monotone"
                   dataKey="male"
                   name="Male"
                   stroke="#0DA2FF"
                   strokeWidth={2}
+                  fill="url(#maleGrad)"
                   dot={{ r: 4, fill: '#0DA2FF', strokeWidth: 2, stroke: 'white' }}
                   activeDot={{ r: 6 }}
                 />
-                <Line
+                <Area
                   type="monotone"
                   dataKey="female"
                   name="Female"
                   stroke="#EE0F6B"
                   strokeWidth={2}
+                  fill="url(#femaleGrad)"
                   dot={{ r: 4, fill: '#EE0F6B', strokeWidth: 2, stroke: 'white' }}
                   activeDot={{ r: 6 }}
                 />
-              </LineChart>
+              </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>

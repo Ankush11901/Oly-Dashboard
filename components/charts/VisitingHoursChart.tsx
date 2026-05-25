@@ -102,6 +102,14 @@ export function VisitingHoursChart() {
             barCategoryGap="20%"
             barGap={1}
           >
+            <defs>
+              {AGE_GENDER_COLORS.map((color, i) => (
+                <linearGradient key={i} id={`barGrad_${i}`} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%"   stopColor={color} stopOpacity={1} />
+                  <stop offset="100%" stopColor={color} stopOpacity={0.35} />
+                </linearGradient>
+              ))}
+            </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
             <XAxis
               dataKey="hour"
@@ -131,7 +139,7 @@ export function VisitingHoursChart() {
                 key={key}
                 dataKey={key as keyof VisitingHoursDataPoint}
                 name={AGE_GENDER_LABELS[i]}
-                fill={AGE_GENDER_COLORS[i]}
+                fill={`url(#barGrad_${i})`}
                 maxBarSize={5}
                 radius={[1, 1, 0, 0]}
               />

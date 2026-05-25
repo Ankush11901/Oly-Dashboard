@@ -1,5 +1,5 @@
 'use client';
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect } from 'react';
 
 type Theme = 'light' | 'dark';
 
@@ -15,23 +15,15 @@ export function useTheme() {
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>('light');
-
   useEffect(() => {
-    const stored = localStorage.getItem('oly-theme') as Theme | null;
-    const initial = stored ?? 'light';
-    setTheme(initial);
-    document.documentElement.setAttribute('data-theme', initial);
+    // Force light mode
+    document.documentElement.setAttribute('data-theme', 'light');
+    localStorage.setItem('oly-theme', 'light');
   }, []);
 
   const toggle = () => {
-    setTheme((prev) => {
-      const next = prev === 'light' ? 'dark' : 'light';
-      localStorage.setItem('oly-theme', next);
-      document.documentElement.setAttribute('data-theme', next);
-      return next;
-    });
+    // Disabled theme toggling
   };
 
-  return <Ctx.Provider value={{ theme, toggle }}>{children}</Ctx.Provider>;
+  return <Ctx.Provider value={{ theme: 'light', toggle }}>{children}</Ctx.Provider>;
 }
