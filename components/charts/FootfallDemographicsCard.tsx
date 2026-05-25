@@ -93,7 +93,7 @@ function GenderCountRow({ maleCount, femaleCount }: GenderCountRowProps) {
 export function FootfallDemographicsCard() {
   return (
     <div className="card h-full">
-      <p className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: 'var(--color-neutral-500)' }}>
+      <p className="text-sm font-semibold mb-3" style={{ color: '#111827' }}>
         Overall Footfall and Demographics
       </p>
 

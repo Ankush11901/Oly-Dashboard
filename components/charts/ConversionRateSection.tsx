@@ -81,7 +81,7 @@ function StoreRow({ name, rate, max }: { name: string; rate: number; max: number
           style={{
             width: `${barWidth}%`,
             height: '100%',
-            background: 'rgb(117,76,127)',
+            background: 'var(--color-primary)',
             transition: 'width 600ms ease',
           }}
         />
@@ -97,7 +97,7 @@ export function ConversionRateSection() {
     <div className="grid gap-6" style={{ gridTemplateColumns: '4fr 8fr' }}>
       {/* Left: Donut */}
       <div className="card flex flex-col">
-        <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: 'var(--color-neutral-500)' }}>
+        <p className="text-sm font-semibold mb-2" style={{ color: '#111827' }}>
           Average Conversion Rate
         </p>
         <ConversionDonut />
@@ -114,8 +114,8 @@ export function ConversionRateSection() {
 
       {/* Right: Store list */}
       <div className="card flex flex-col">
-        <p className="text-xs font-semibold uppercase tracking-wide mb-4" style={{ color: 'var(--color-neutral-500)' }}>
-          Top Stores by Conversion Rate (High to Low)
+        <p className="text-sm font-semibold mb-4" style={{ color: '#111827' }}>
+          Top Stores by Conversion Rate
         </p>
         <div className="overflow-y-auto flex-1" style={{ maxHeight: 320 }}>
           {STORE_CONVERSION_DATA.map((store) => (

@@ -119,8 +119,8 @@ export function StorePerformanceSection() {
 
       {/* Right: Top stores by visitors */}
       <div className="card flex flex-col">
-        <p className="text-xs font-semibold uppercase tracking-wide mb-4" style={{ color: 'var(--color-neutral-500)' }}>
-          Top Stores by Visitors (High to Low)
+        <p className="text-sm font-semibold mb-4" style={{ color: '#111827' }}>
+          Top Stores by Visitors
         </p>
         <div className="overflow-y-auto flex-1" style={{ maxHeight: 360 }}>
           {STORE_VISITOR_DATA.map((store, i) => (

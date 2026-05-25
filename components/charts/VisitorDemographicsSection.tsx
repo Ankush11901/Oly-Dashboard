@@ -121,7 +121,7 @@ export function VisitorDemographicsSection() {
       <div className="flex gap-6" style={{ minHeight: 400 }}>
         {/* Left: donut */}
         <div style={{ width: 300, flexShrink: 0 }}>
-          <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: 'var(--color-neutral-500)' }}>
+          <p className="text-sm font-semibold mb-2" style={{ color: '#111827' }}>
             Visitor Demographics
           </p>
           <DonutChart />
@@ -142,7 +142,7 @@ export function VisitorDemographicsSection() {
         {/* Right: trend line chart */}
         <div className="flex-1 flex flex-col min-w-0">
           <div className="flex items-center justify-between mb-4">
-            <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--color-neutral-500)' }}>
+            <p className="text-sm font-semibold" style={{ color: '#111827' }}>
               Gender / Age Trend Over Time
             </p>
             {/* Period + segment toggles */}

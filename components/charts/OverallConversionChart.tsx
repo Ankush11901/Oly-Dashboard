@@ -54,9 +54,10 @@ export function OverallConversionChart() {
   return (
     <div className="card">
       <div className="flex items-center justify-between mb-4">
-        <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--color-neutral-500)' }}>
-          Overall Conversion Rate
-        </p>
+        <div>
+          <p className="text-sm font-semibold" style={{ color: '#111827' }}>Overall Conversion Rate</p>
+          <p className="text-xs mt-0.5" style={{ color: '#6B7280' }}>Passerby vs. entry/exit with conversion % overlay</p>
+        </div>
         <div className="flex rounded-md overflow-hidden" style={{ border: '1px solid #E5E7EB' }}>
           {PERIODS.map((p) => (
             <button
@@ -128,26 +129,28 @@ export function OverallConversionChart() {
               yAxisId="left"
               dataKey="passerby"
               name="Passerby"
-              fill="#ffc546"
+              fill="#655BD3"
               maxBarSize={20}
               radius={[2, 2, 0, 0]}
+              fillOpacity={0.85}
             />
             <Bar
               yAxisId="left"
               dataKey="entryExit"
               name="Entry / Exit"
-              fill="#0085a8"
+              fill="#00CE9C"
               maxBarSize={20}
               radius={[2, 2, 0, 0]}
+              fillOpacity={0.85}
             />
             <Line
               yAxisId="right"
               type="monotone"
               dataKey="conversionRate"
               name="Conversion Rate"
-              stroke="#754C7F"
+              stroke="#F59E0B"
               strokeWidth={2.5}
-              dot={{ r: 4, fill: '#754C7F', strokeWidth: 2, stroke: 'white' }}
+              dot={{ r: 4, fill: '#F59E0B', strokeWidth: 2, stroke: 'white' }}
               activeDot={{ r: 6 }}
             />
           </ComposedChart>
