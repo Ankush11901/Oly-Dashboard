@@ -83,7 +83,7 @@ export function TopBar() {
               <ChevronDown size={14} strokeWidth={2.5} style={{ color: 'var(--color-text-3)' }} />
             </button>
             {activeDropdown === 'shoppers' && (
-              <div className="absolute top-full right-0 mt-2 w-64 rounded-xl shadow-xl border z-50 bg-white overflow-hidden" style={{ borderColor: 'var(--color-border)' }}>
+              <div className="absolute top-full right-0 mt-2 w-64 rounded-xl shadow-xl border z-50 bg-white" style={{ borderColor: 'var(--color-border)' }}>
                 {/* Search */}
                 <div className="px-3 py-2 border-b relative">
                   <input

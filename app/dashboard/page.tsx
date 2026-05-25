@@ -22,8 +22,25 @@ import {
   ArrowUpRight, ArrowDownRight,
   CheckSquare, Clock, AlertCircle,
   CheckCircle2, Circle, Upload, Plus, X, Camera,
-  BarChart2, ShoppingBag, Activity,
+  BarChart2, ShoppingBag, Activity, GripVertical
 } from 'lucide-react';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  rectSortingStrategy,
+  useSortable
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { AnimatedNumber } from '@/components/AnimatedNumber';
 import { PASSERBY_TREND_DATA, STORE_VISITOR_DATA, AGE_GENDER_COLORS } from '@/types/dashboard';
 import { useDashboardContext } from '@/components/DashboardProvider';
@@ -204,6 +221,38 @@ const ChartInfo = ({ title, description, improve, calculation, example }: { titl
   </div>
 );
 
+const SortableChartCard = ({ id, title, filters, info, colSpan = 1, children }: any) => {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 50 : 1,
+    opacity: isDragging ? 0.9 : 1,
+    position: 'relative' as any,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} className={`card flex flex-col h-[340px] ${colSpan === 2 ? 'col-span-2' : ''}`}>
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 p-1 -ml-1 rounded hover:bg-gray-100">
+            <GripVertical size={16} />
+          </div>
+          <p className="text-sm font-semibold" style={{ color: 'var(--color-text-1)' }}>{title}</p>
+        </div>
+        <div className="flex items-center">
+          {filters}
+          {info}
+        </div>
+      </div>
+      <div className="flex-1">
+        {children}
+      </div>
+    </div>
+  );
+};
+
 // ── Mock Chart Data for Filters ───────────────────────────────────────────────
 const DEMOGRAPHICS_DATA: Record<string, any[]> = {
   'D': [{name: 'Male 22-35', value: 15}, {name: 'Female 22-35', value: 12}, {name: 'Male 13-21', value: 5}, {name: 'Other', value: 3}],
@@ -261,6 +310,36 @@ const FOOTFALL_TREND_DATA: Record<string, any[]> = {
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function DashboardPage() {
+  const [chartOrder, setChartOrder] = useState<string[]>([
+    'demographics_donut',
+    'conversion_donut',
+    'gender_trend',
+    'overall_conversion',
+    'visiting_hours'
+  ]);
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      setChartOrder((items) => {
+        const oldIndex = items.indexOf(active.id as string);
+        const newIndex = items.indexOf(over.id as string);
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
+  };
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
   const [trendPeriod, setTrendPeriod] = useState<'Monthly' | 'Yearly'>('Monthly');
   const [taskFilter, setTaskFilter] = useState<'all' | TaskStatus>('all');
   const [tasks, setTasks] = useState<Task[]>(TASKS);
@@ -584,194 +663,208 @@ export default function DashboardPage() {
       {/* Dynamic Charts Section */}
       {hasAdditionalInsights && (
         <section id="additional_insights">
-          <div className="grid grid-cols-2 gap-5 mb-5">
-            {enabledWidgets.has('demographics_donut') && (
-              <div className="card flex flex-col h-[340px]">
-                <div className="flex items-center justify-between mb-4">
-                  <p className="text-sm font-semibold" style={{ color: 'var(--color-text-1)' }}>Visitor Demographics</p>
-                  <div className="flex items-center">
-                    <TimeFilter active={filterDemographics} onChange={setFilterDemographics} />
-                    <ChartInfo 
-                      title="Visitor Demographics"
-                      description="Displays the breakdown of visitors by age groups and gender."
-                      improve="Product Merchandising, Targeted Marketing Campaigns, and Customer Profiling."
-                      calculation="Uses AI facial recognition to estimate age and gender of unique visitors."
-                    />
-                  </div>
-                </div>
-              <div className="flex-1">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <defs>
-                      <linearGradient id="gradMale" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#655BD3" />
-                        <stop offset="100%" stopColor="#4F46E5" />
-                      </linearGradient>
-                      <linearGradient id="gradFemale" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#EC4899" />
-                        <stop offset="100%" stopColor="#DB2777" />
-                      </linearGradient>
-                      <linearGradient id="gradTeen" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#00CE9C" />
-                        <stop offset="100%" stopColor="#059669" />
-                      </linearGradient>
-                    </defs>
-                    <Pie data={DEMOGRAPHICS_DATA[filterDemographics]} cx="50%" cy="50%" innerRadius={70} outerRadius={100} paddingAngle={5} dataKey="value">
-                      {[{color: 'url(#gradMale)'}, {color: 'url(#gradFemale)'}, {color: 'url(#gradTeen)'}, {color: '#D1D5DB'}].map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />)}
-                    </Pie>
-                    <Tooltip contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }} />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          )}
-          
-          {enabledWidgets.has('conversion_donut') && (
-              <div className="card flex flex-col h-[340px]">
-                <div className="flex items-center justify-between mb-4">
-                  <p className="text-sm font-semibold" style={{ color: 'var(--color-text-1)' }}>Conversion Rate</p>
-                  <div className="flex items-center">
-                    <TimeFilter active={filterConversion} onChange={setFilterConversion} />
-                    <ChartInfo 
-                      title="Conversion Rate by Stores"
-                      description="It shows the data of overall conversion rate, which is used to measure the effectiveness of a store in turning visitors into customers."
-                      improve="Performance Evaluation, Optimising Store Layout & Merchandising, Staff Performance, Comparative Analysis and Decision Making."
-                      calculation="Conversion Rate = { Footfall Counts / (Footfall+Passerby) }*100."
-                      example={`Let's say you want to calculate the conversion rate in a retail shop.\n1. Footfall Counts (Entry/exit) = 200\n2. Passerby Counts (no. of people who passed by the store without entering) = 500\nConversion Rate = 200 / (200+500)\nand which is (200 / 700)*100 = 28.5%\nSo, the conversion rate of the retail store is 28.5%.`}
-                    />
-                  </div>
-                </div>
-              <div className="flex-1">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <defs>
-                      <linearGradient id="gradConv" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#F59E0B" />
-                        <stop offset="100%" stopColor="#D97706" />
-                      </linearGradient>
-                    </defs>
-                    <Pie data={CONVERSION_DATA[filterConversion]} cx="50%" cy="50%" innerRadius={70} outerRadius={100} paddingAngle={2} dataKey="value">
-                      <Cell fill="url(#gradConv)" stroke="none" />
-                      <Cell fill="#F3F4F6" stroke="none" />
-                    </Pie>
-                    <Tooltip contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }} />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          )}
-          
-          {enabledWidgets.has('gender_trend') && (
-              <div className="card flex flex-col h-[340px] col-span-2">
-                <div className="flex items-center justify-between mb-4">
-                  <p className="text-sm font-semibold" style={{ color: 'var(--color-text-1)' }}>Gender Trend Over Time</p>
-                  <div className="flex items-center">
-                    <TimeFilter active={filterGender} onChange={setFilterGender} type="my" />
-                    <ChartInfo 
-                      title="Gender Trend Over Time"
-                      description="Tracks the ratio of male vs female visitors over the selected historical period."
-                      improve="Inventory Forecasting, Store Layout Zoning, and Seasonal Promotion Planning."
-                      calculation="Aggregate daily visitor data separated by AI-detected gender."
-                    />
-                  </div>
-                </div>
-              <div className="flex-1">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={GENDER_TREND_DATA[filterGender]} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="lineGradMale" x1="0" y1="0" x2="1" y2="0">
-                        <stop offset="0%" stopColor="#655BD3" />
-                        <stop offset="100%" stopColor="#4F46E5" />
-                      </linearGradient>
-                      <linearGradient id="lineGradFemale" x1="0" y1="0" x2="1" y2="0">
-                        <stop offset="0%" stopColor="#EC4899" />
-                        <stop offset="100%" stopColor="#DB2777" />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-border)" />
-                    <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#6B7280'}} />
-                    <YAxis axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#6B7280'}} />
-                    <Tooltip contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }} />
-                    <Legend />
-                    <Line type="monotone" dataKey="male" name="Male" stroke="url(#lineGradMale)" strokeWidth={4} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
-                    <Line type="monotone" dataKey="female" name="Female" stroke="url(#lineGradFemale)" strokeWidth={4} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          )}
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <SortableContext items={chartOrder} strategy={rectSortingStrategy}>
+              <div className="grid grid-cols-2 gap-5 mb-5">
+                {chartOrder.map((id) => {
+                  if (!enabledWidgets.has(id)) return null;
 
-          {enabledWidgets.has('overall_conversion') && (
-              <div className="card flex flex-col h-[340px]">
-                <div className="flex items-center justify-between mb-4">
-                  <p className="text-sm font-semibold" style={{ color: 'var(--color-text-1)' }}>Overall Conversion Hourly</p>
-                  <div className="flex items-center">
-                    <TimeFilter active={filterOverall} onChange={setFilterOverall} />
-                    <ChartInfo 
-                      title="Overall Conversion Hourly"
-                      description="Displays the conversion rate fluctuating throughout the hours of the day."
-                      improve="Staff Shift Scheduling, Peak Hour Optimization, and Real-time Store Management."
-                      calculation="Total Hourly Sales / Total Hourly Visitors."
-                    />
-                  </div>
-                </div>
-              <div className="flex-1">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={OVERALL_CONVERSION_DATA[filterOverall]} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#F59E0B" />
-                        <stop offset="100%" stopColor="#B45309" />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-border)" />
-                    <XAxis dataKey="hour" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#6B7280'}} />
-                    <YAxis axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#6B7280'}} />
-                    <Tooltip contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }} cursor={{fill: 'var(--color-surface-2)'}} />
-                    <Bar dataKey="cv" name="Conversion %" fill="url(#barGrad)" radius={[6, 6, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          )}
+                  switch (id) {
+                    case 'demographics_donut':
+                      return (
+                        <SortableChartCard
+                          key={id}
+                          id={id}
+                          title="Visitor Demographics"
+                          filters={<TimeFilter active={filterDemographics} onChange={setFilterDemographics} />}
+                          info={
+                            <ChartInfo 
+                              title="Visitor Demographics"
+                              description="Displays the breakdown of visitors by age groups and gender."
+                              improve="Product Merchandising, Targeted Marketing Campaigns, and Customer Profiling."
+                              calculation="Uses AI facial recognition to estimate age and gender of unique visitors."
+                            />
+                          }
+                        >
+                          <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                              <defs>
+                                <linearGradient id="gradMale" x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="0%" stopColor="#655BD3" />
+                                  <stop offset="100%" stopColor="#4F46E5" />
+                                </linearGradient>
+                                <linearGradient id="gradFemale" x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="0%" stopColor="#EC4899" />
+                                  <stop offset="100%" stopColor="#DB2777" />
+                                </linearGradient>
+                                <linearGradient id="gradTeen" x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="0%" stopColor="#00CE9C" />
+                                  <stop offset="100%" stopColor="#059669" />
+                                </linearGradient>
+                              </defs>
+                              <Pie data={DEMOGRAPHICS_DATA[filterDemographics]} cx="50%" cy="50%" innerRadius={70} outerRadius={100} paddingAngle={5} dataKey="value">
+                                {[{color: 'url(#gradMale)'}, {color: 'url(#gradFemale)'}, {color: 'url(#gradTeen)'}, {color: '#D1D5DB'}].map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />)}
+                              </Pie>
+                              <Tooltip contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }} />
+                              <Legend />
+                            </PieChart>
+                          </ResponsiveContainer>
+                        </SortableChartCard>
+                      );
+                    
+                    case 'conversion_donut':
+                      return (
+                        <SortableChartCard
+                          key={id}
+                          id={id}
+                          title="Conversion Rate"
+                          filters={<TimeFilter active={filterConversion} onChange={setFilterConversion} />}
+                          info={
+                            <ChartInfo 
+                              title="Conversion Rate by Stores"
+                              description="It shows the data of overall conversion rate, which is used to measure the effectiveness of a store in turning visitors into customers."
+                              improve="Performance Evaluation, Optimising Store Layout & Merchandising, Staff Performance, Comparative Analysis and Decision Making."
+                              calculation="Conversion Rate = { Footfall Counts / (Footfall+Passerby) }*100."
+                              example={`Let's say you want to calculate the conversion rate in a retail shop.\n1. Footfall Counts (Entry/exit) = 200\n2. Passerby Counts (no. of people who passed by the store without entering) = 500\nConversion Rate = 200 / (200+500)\nand which is (200 / 700)*100 = 28.5%\nSo, the conversion rate of the retail store is 28.5%.`}
+                            />
+                          }
+                        >
+                          <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                              <defs>
+                                <linearGradient id="gradConv" x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="0%" stopColor="#F59E0B" />
+                                  <stop offset="100%" stopColor="#D97706" />
+                                </linearGradient>
+                              </defs>
+                              <Pie data={CONVERSION_DATA[filterConversion]} cx="50%" cy="50%" innerRadius={70} outerRadius={100} paddingAngle={2} dataKey="value">
+                                <Cell fill="url(#gradConv)" stroke="none" />
+                                <Cell fill="#F3F4F6" stroke="none" />
+                              </Pie>
+                              <Tooltip contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }} />
+                              <Legend />
+                            </PieChart>
+                          </ResponsiveContainer>
+                        </SortableChartCard>
+                      );
 
-          {enabledWidgets.has('visiting_hours') && (
-            <div className="card flex flex-col h-[340px]">
-              <div className="flex items-center justify-between mb-4">
-                <p className="text-sm font-semibold" style={{ color: 'var(--color-text-1)' }}>Store Visiting Peak Hours</p>
-                <div className="flex items-center">
-                    <TimeFilter active={filterVisiting} onChange={setFilterVisiting} />
-                    <ChartInfo 
-                      title="Store Visiting Peak Hours"
-                      description="A heatmap-style area chart showing when the store experiences the highest traffic."
-                      improve="Managing Queue Wait Times, Security Staffing, and Identifying Store Saturation."
-                      calculation="Sum of unique visitors recorded during each hour block."
-                    />
-                  </div>
+                    case 'gender_trend':
+                      return (
+                        <SortableChartCard
+                          key={id}
+                          id={id}
+                          colSpan={2}
+                          title="Gender Trend Over Time"
+                          filters={<TimeFilter active={filterGender} onChange={setFilterGender} type="my" />}
+                          info={
+                            <ChartInfo 
+                              title="Gender Trend Over Time"
+                              description="Tracks the ratio of male vs female visitors over the selected historical period."
+                              improve="Inventory Forecasting, Store Layout Zoning, and Seasonal Promotion Planning."
+                              calculation="Aggregate daily visitor data separated by AI-detected gender."
+                            />
+                          }
+                        >
+                          <ResponsiveContainer width="100%" height="100%">
+                            <LineChart data={GENDER_TREND_DATA[filterGender]} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                              <defs>
+                                <linearGradient id="lineGradMale" x1="0" y1="0" x2="1" y2="0">
+                                  <stop offset="0%" stopColor="#655BD3" />
+                                  <stop offset="100%" stopColor="#4F46E5" />
+                                </linearGradient>
+                                <linearGradient id="lineGradFemale" x1="0" y1="0" x2="1" y2="0">
+                                  <stop offset="0%" stopColor="#EC4899" />
+                                  <stop offset="100%" stopColor="#DB2777" />
+                                </linearGradient>
+                              </defs>
+                              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-border)" />
+                              <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#6B7280'}} />
+                              <YAxis axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#6B7280'}} />
+                              <Tooltip contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }} />
+                              <Legend />
+                              <Line type="monotone" dataKey="male" name="Male" stroke="url(#lineGradMale)" strokeWidth={4} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
+                              <Line type="monotone" dataKey="female" name="Female" stroke="url(#lineGradFemale)" strokeWidth={4} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
+                            </LineChart>
+                          </ResponsiveContainer>
+                        </SortableChartCard>
+                      );
+
+                    case 'overall_conversion':
+                      return (
+                        <SortableChartCard
+                          key={id}
+                          id={id}
+                          title="Overall Conversion Hourly"
+                          filters={<TimeFilter active={filterOverall} onChange={setFilterOverall} />}
+                          info={
+                            <ChartInfo 
+                              title="Overall Conversion Hourly"
+                              description="Displays the conversion rate fluctuating throughout the hours of the day."
+                              improve="Staff Shift Scheduling, Peak Hour Optimization, and Real-time Store Management."
+                              calculation="Total Hourly Sales / Total Hourly Visitors."
+                            />
+                          }
+                        >
+                          <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={OVERALL_CONVERSION_DATA[filterOverall]} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                              <defs>
+                                <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="0%" stopColor="#F59E0B" />
+                                  <stop offset="100%" stopColor="#B45309" />
+                                </linearGradient>
+                              </defs>
+                              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-border)" />
+                              <XAxis dataKey="hour" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#6B7280'}} />
+                              <YAxis axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#6B7280'}} />
+                              <Tooltip contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }} cursor={{fill: 'var(--color-surface-2)'}} />
+                              <Bar dataKey="cv" name="Conversion %" fill="url(#barGrad)" radius={[6, 6, 0, 0]} />
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </SortableChartCard>
+                      );
+
+                    case 'visiting_hours':
+                      return (
+                        <SortableChartCard
+                          key={id}
+                          id={id}
+                          title="Store Visiting Peak Hours"
+                          filters={<TimeFilter active={filterVisiting} onChange={setFilterVisiting} />}
+                          info={
+                            <ChartInfo 
+                              title="Store Visiting Peak Hours"
+                              description="A heatmap-style area chart showing when the store experiences the highest traffic."
+                              improve="Managing Queue Wait Times, Security Staffing, and Identifying Store Saturation."
+                              calculation="Sum of unique visitors recorded during each hour block."
+                            />
+                          }
+                        >
+                          <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart data={VISITING_HOURS_DATA[filterVisiting]} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                              <defs>
+                                <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="0%" stopColor="#00CE9C" stopOpacity={0.6}/>
+                                  <stop offset="100%" stopColor="#00CE9C" stopOpacity={0}/>
+                                </linearGradient>
+                              </defs>
+                              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-border)" />
+                              <XAxis dataKey="hour" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#6B7280'}} />
+                              <YAxis axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#6B7280'}} />
+                              <Tooltip contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }} />
+                              <Area type="monotone" dataKey="peak" name="Visitors" stroke="#00CE9C" strokeWidth={3} fill="url(#areaGrad)" />
+                            </AreaChart>
+                          </ResponsiveContainer>
+                        </SortableChartCard>
+                      );
+
+                    default:
+                      return null;
+                  }
+                })}
               </div>
-              <div className="flex-1">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={VISITING_HOURS_DATA[filterVisiting]} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#00CE9C" stopOpacity={0.6}/>
-                        <stop offset="100%" stopColor="#00CE9C" stopOpacity={0}/>
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-border)" />
-                    <XAxis dataKey="hour" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#6B7280'}} />
-                    <YAxis axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#6B7280'}} />
-                    <Tooltip contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }} />
-                    <Area type="monotone" dataKey="peak" name="Visitors" stroke="#00CE9C" strokeWidth={3} fill="url(#areaGrad)" />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          )}
-        </div>
-      </section>
+            </SortableContext>
+          </DndContext>
+        </section>
       )}
 
       {/* ═══════════════════════════════════════════════════════════════════
