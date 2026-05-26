@@ -1,18 +1,512 @@
-import { PlaceholderPage } from '@/components/PlaceholderPage';
-import { ShieldCheck } from 'lucide-react';
+'use client';
+import { useState } from 'react';
+import {
+  ShieldCheck, Plus, Users, Edit2, Trash2, Check, Eye, Minus,
+  LayoutDashboard, BarChart2, Video, UserCog, Settings2, FileText, Lock,
+} from 'lucide-react';
 
-export default function PermissionsPage() {
+// ── Types ─────────────────────────────────────────────────────────────────────
+type PermLevel = 'full' | 'view' | 'none';
+
+interface RoleDef {
+  id: string;
+  name: string;
+  description: string;
+  color: string;
+  userCount: number;
+  isSystem: boolean;
+}
+
+interface ActionPerm {
+  label: string;
+  level: PermLevel;
+}
+
+interface ModulePerm {
+  module: string;
+  icon: React.ReactNode;
+  actions: ActionPerm[];
+}
+
+// ── Data ──────────────────────────────────────────────────────────────────────
+const ROLES: RoleDef[] = [
+  { id: 'super_admin',       name: 'Super Admin',       description: 'Full unrestricted access to all modules',         color: '#655BD3', userCount: 2,  isSystem: true  },
+  { id: 'regional_director', name: 'Regional Director', description: 'Cross-store analytics, team oversight',           color: '#3B82F6', userCount: 3,  isSystem: false },
+  { id: 'store_manager',     name: 'Store Manager',     description: 'Full access to assigned store data & team',       color: '#00CE9C', userCount: 8,  isSystem: false },
+  { id: 'security_ops',      name: 'Security Ops',      description: 'Live feed monitoring and incident reporting',      color: '#F59E0B', userCount: 5,  isSystem: false },
+  { id: 'staff',             name: 'Staff Associate',   description: 'Read-only access to dashboards and reports',      color: '#EC4899', userCount: 12, isSystem: false },
+];
+
+function makeModules(perms: [string, React.ReactNode, [string, PermLevel][]][]): ModulePerm[] {
+  return perms.map(([module, icon, actions]) => ({
+    module,
+    icon,
+    actions: actions.map(([label, level]) => ({ label, level })),
+  }));
+}
+
+const I = {
+  dash:     <LayoutDashboard size={15} strokeWidth={1.5} />,
+  analytics:<BarChart2 size={15} strokeWidth={1.5} />,
+  feed:     <Video size={15} strokeWidth={1.5} />,
+  team:     <UserCog size={15} strokeWidth={1.5} />,
+  prefs:    <Settings2 size={15} strokeWidth={1.5} />,
+  reports:  <FileText size={15} strokeWidth={1.5} />,
+};
+
+const PERM_MATRIX: Record<string, ModulePerm[]> = {
+  super_admin: makeModules([
+    ['Dashboard',       I.dash,     [['View',            'full'], ['Edit Layout',       'full']]],
+    ['Analytics',       I.analytics,[['View Reports',    'full'], ['Export Data',       'full'], ['Custom Widgets', 'full']]],
+    ['Live Feed',       I.feed,     [['View Cameras',    'full'], ['Control PTZ',       'full'], ['Download Footage','full']]],
+    ['Team Management', I.team,     [['View Team',       'full'], ['Add / Remove Members','full'],['Manage Roles',  'full']]],
+    ['Preferences',     I.prefs,    [['View Settings',   'full'], ['Edit Settings',     'full']]],
+    ['Reports',         I.reports,  [['View Reports',    'full'], ['Export Reports',    'full'], ['Schedule Reports','full']]],
+  ]),
+  regional_director: makeModules([
+    ['Dashboard',       I.dash,     [['View',            'full'], ['Edit Layout',       'view']]],
+    ['Analytics',       I.analytics,[['View Reports',    'full'], ['Export Data',       'full'], ['Custom Widgets', 'view']]],
+    ['Live Feed',       I.feed,     [['View Cameras',    'full'], ['Control PTZ',       'none'], ['Download Footage','view']]],
+    ['Team Management', I.team,     [['View Team',       'full'], ['Add / Remove Members','view'],['Manage Roles',  'none']]],
+    ['Preferences',     I.prefs,    [['View Settings',   'full'], ['Edit Settings',     'none']]],
+    ['Reports',         I.reports,  [['View Reports',    'full'], ['Export Reports',    'full'], ['Schedule Reports','view']]],
+  ]),
+  store_manager: makeModules([
+    ['Dashboard',       I.dash,     [['View',            'full'], ['Edit Layout',       'full']]],
+    ['Analytics',       I.analytics,[['View Reports',    'full'], ['Export Data',       'view'], ['Custom Widgets', 'none']]],
+    ['Live Feed',       I.feed,     [['View Cameras',    'full'], ['Control PTZ',       'none'], ['Download Footage','none']]],
+    ['Team Management', I.team,     [['View Team',       'full'], ['Add / Remove Members','view'],['Manage Roles',  'none']]],
+    ['Preferences',     I.prefs,    [['View Settings',   'full'], ['Edit Settings',     'view']]],
+    ['Reports',         I.reports,  [['View Reports',    'full'], ['Export Reports',    'view'], ['Schedule Reports','none']]],
+  ]),
+  security_ops: makeModules([
+    ['Dashboard',       I.dash,     [['View',            'view'], ['Edit Layout',       'none']]],
+    ['Analytics',       I.analytics,[['View Reports',    'none'], ['Export Data',       'none'], ['Custom Widgets', 'none']]],
+    ['Live Feed',       I.feed,     [['View Cameras',    'full'], ['Control PTZ',       'full'], ['Download Footage','view']]],
+    ['Team Management', I.team,     [['View Team',       'view'], ['Add / Remove Members','none'],['Manage Roles',  'none']]],
+    ['Preferences',     I.prefs,    [['View Settings',   'none'], ['Edit Settings',     'none']]],
+    ['Reports',         I.reports,  [['View Reports',    'view'], ['Export Reports',    'none'], ['Schedule Reports','none']]],
+  ]),
+  staff: makeModules([
+    ['Dashboard',       I.dash,     [['View',            'view'], ['Edit Layout',       'none']]],
+    ['Analytics',       I.analytics,[['View Reports',    'view'], ['Export Data',       'none'], ['Custom Widgets', 'none']]],
+    ['Live Feed',       I.feed,     [['View Cameras',    'view'], ['Control PTZ',       'none'], ['Download Footage','none']]],
+    ['Team Management', I.team,     [['View Team',       'view'], ['Add / Remove Members','none'],['Manage Roles',  'none']]],
+    ['Preferences',     I.prefs,    [['View Settings',   'view'], ['Edit Settings',     'none']]],
+    ['Reports',         I.reports,  [['View Reports',    'view'], ['Export Reports',    'none'], ['Schedule Reports','none']]],
+  ]),
+};
+
+// ── Config ────────────────────────────────────────────────────────────────────
+const LEVEL_CFG: Record<PermLevel, { label: string; bg: string; text: string; icon: React.ReactNode }> = {
+  full: { label: 'Full',  bg: '#EEE9FF', text: '#655BD3', icon: <Check size={10} strokeWidth={2.5} /> },
+  view: { label: 'View',  bg: '#DBEAFE', text: '#2563EB', icon: <Eye   size={10} strokeWidth={2}   /> },
+  none: { label: 'None',  bg: '#F3F4F6', text: '#9CA3AF', icon: <Minus size={10} strokeWidth={2.5} /> },
+};
+
+function moduleAccessLevel(mod: ModulePerm): PermLevel {
+  const levels = mod.actions.map(a => a.level);
+  if (levels.every(l => l === 'full')) return 'full';
+  if (levels.every(l => l === 'none')) return 'none';
+  return 'view';
+}
+
+// ── Shared components ─────────────────────────────────────────────────────────
+function PermBadge({ level }: { level: PermLevel }) {
+  const c = LEVEL_CFG[level];
   return (
-    <PlaceholderPage
-      title="Permissions"
-      description="Control role-based access across admin, store managers, and staff."
-      icon={<ShieldCheck size={20} strokeWidth={1.5} />}
-      features={[
-        'Create and manage permission roles',
-        'Grant or restrict access per module',
-        'Audit permission changes',
-        'Invite users with scoped access',
-      ]}
-    />
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', gap: 4,
+      padding: '3px 8px', borderRadius: 6,
+      fontSize: 11, fontWeight: 600,
+      background: c.bg, color: c.text,
+    }}>
+      {c.icon}{c.label}
+    </span>
+  );
+}
+
+// iOS-style segmented control
+function PermToggle({ level, onChange, disabled }: { level: PermLevel; onChange: (l: PermLevel) => void; disabled: boolean }) {
+  return (
+    <div style={{
+      display: 'inline-flex',
+      background: '#F3F4F6',
+      borderRadius: 9, padding: 2, gap: 1, flexShrink: 0,
+    }}>
+      {(['full', 'view', 'none'] as PermLevel[]).map(l => {
+        const c = LEVEL_CFG[l];
+        const active = level === l;
+        return (
+          <button
+            key={l}
+            onClick={() => !disabled && onChange(l)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 4,
+              padding: '4px 11px', borderRadius: 7, border: 'none',
+              fontSize: 11, fontWeight: active ? 700 : 400,
+              background: active ? 'white' : 'transparent',
+              color: active ? c.text : '#9CA3AF',
+              cursor: disabled ? 'default' : 'pointer',
+              transition: 'all 120ms ease',
+              boxShadow: active ? '0 1px 3px rgba(0,0,0,0.1), 0 1px 1px rgba(0,0,0,0.06)' : 'none',
+            }}
+          >
+            {c.icon}{c.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── Page ──────────────────────────────────────────────────────────────────────
+export default function PermissionsPage() {
+  const [selectedRole, setSelectedRole] = useState('super_admin');
+  const [perms, setPerms] = useState<Record<string, ModulePerm[]>>(PERM_MATRIX);
+
+  const role = ROLES.find(r => r.id === selectedRole)!;
+  const modules = perms[selectedRole] ?? [];
+  const totalUsers = ROLES.reduce((s, r) => s + r.userCount, 0);
+
+  const updatePerm = (moduleIdx: number, actionIdx: number, level: PermLevel) => {
+    setPerms(prev => ({
+      ...prev,
+      [selectedRole]: prev[selectedRole].map((m, mi) =>
+        mi !== moduleIdx ? m : {
+          ...m,
+          actions: m.actions.map((a, ai) => ai !== actionIdx ? a : { ...a, level }),
+        }
+      ),
+    }));
+  };
+
+  return (
+    <div className="p-8" style={{ maxWidth: 1200 }}>
+
+      {/* ── Page header ─────────────────────────────────────────────────────── */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <div style={{
+            width: 40, height: 40, borderRadius: 11,
+            background: '#EEE9FF',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <ShieldCheck size={20} strokeWidth={1.5} style={{ color: '#655BD3' }} />
+          </div>
+          <div>
+            <h1 style={{ fontSize: 20, fontWeight: 800, color: 'var(--color-text-1)', lineHeight: 1.2 }}>Permissions</h1>
+            <p style={{ fontSize: 12, color: 'var(--color-text-3)', marginTop: 1 }}>
+              Manage role-based access control across all modules
+            </p>
+          </div>
+        </div>
+        <button
+          className="flex items-center gap-2 text-sm font-semibold text-white"
+          style={{ padding: '8px 16px', borderRadius: 9, background: '#655BD3', border: 'none', cursor: 'pointer' }}
+        >
+          <Plus size={14} strokeWidth={2.5} />
+          Create Role
+        </button>
+      </div>
+
+      {/* ── Stats row ───────────────────────────────────────────────────────── */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
+        {[
+          { label: 'Total Roles',   value: ROLES.length,                          color: '#655BD3', bg: '#EEE9FF', icon: <ShieldCheck size={16} strokeWidth={1.5} /> },
+          { label: 'System Roles',  value: ROLES.filter(r => r.isSystem).length,  color: '#6B7280', bg: '#F3F4F6', icon: <Lock size={16} strokeWidth={1.5} /> },
+          { label: 'Custom Roles',  value: ROLES.filter(r => !r.isSystem).length, color: '#3B82F6', bg: '#DBEAFE', icon: <ShieldCheck size={16} strokeWidth={1.5} /> },
+          { label: 'Total Members', value: totalUsers,                             color: '#00CE9C', bg: '#CCFBF1', icon: <Users size={16} strokeWidth={1.5} /> },
+        ].map(s => (
+          <div key={s.label} className="card" style={{ padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 14 }}>
+            <div style={{
+              width: 40, height: 40, borderRadius: 10, background: s.bg,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+              color: s.color,
+            }}>
+              {s.icon}
+            </div>
+            <div>
+              <p style={{ fontSize: 22, fontWeight: 800, color: s.color, lineHeight: 1.1 }}>{s.value}</p>
+              <p style={{ fontSize: 11.5, color: 'var(--color-text-3)', marginTop: 1 }}>{s.label}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* ── Horizontal role selector ─────────────────────────────────────────── */}
+      <div className="card" style={{ padding: 0, overflow: 'hidden', marginBottom: 20 }}>
+        <div style={{ padding: '11px 18px', borderBottom: '1px solid var(--color-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <p style={{ fontSize: 10.5, fontWeight: 700, color: 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+            Select Role
+          </p>
+          <p style={{ fontSize: 11, color: 'var(--color-text-3)' }}>{ROLES.length} roles</p>
+        </div>
+        <div style={{ display: 'flex', overflowX: 'auto' }}>
+          {ROLES.map((r, idx) => {
+            const active = selectedRole === r.id;
+            return (
+              <button
+                key={r.id}
+                onClick={() => setSelectedRole(r.id)}
+                style={{
+                  display: 'flex', flexDirection: 'column', alignItems: 'flex-start',
+                  padding: '16px 22px', border: 'none',
+                  borderRight: idx < ROLES.length - 1 ? '1px solid var(--color-border)' : 'none',
+                  borderBottom: `3px solid ${active ? '#655BD3' : 'transparent'}`,
+                  cursor: 'pointer', textAlign: 'left',
+                  minWidth: 175, flexShrink: 0,
+                  background: active ? '#F5F3FF' : 'transparent',
+                  transition: 'all 150ms ease',
+                }}
+                onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.background = '#F9FAFB'; }}
+                onMouseLeave={e => { if (!active) (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
+              >
+                {/* Role avatar */}
+                <div style={{
+                  width: 38, height: 38, borderRadius: 11,
+                  background: active ? r.color : r.color + '22',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  marginBottom: 10, transition: 'all 150ms',
+                  flexShrink: 0,
+                }}>
+                  <span style={{ fontSize: 15, fontWeight: 800, color: active ? 'white' : r.color }}>
+                    {r.name.charAt(0)}
+                  </span>
+                </div>
+                {/* Role name */}
+                <p style={{
+                  fontSize: 12.5, fontWeight: 700, lineHeight: 1.2, marginBottom: 3,
+                  color: active ? '#655BD3' : 'var(--color-text-1)',
+                }}>
+                  {r.name}
+                </p>
+                {/* Meta row */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <span style={{ fontSize: 11, color: 'var(--color-text-3)' }}>
+                    {r.userCount} member{r.userCount !== 1 ? 's' : ''}
+                  </span>
+                  {r.isSystem && (
+                    <span style={{
+                      display: 'inline-flex', alignItems: 'center', gap: 2,
+                      fontSize: 8.5, fontWeight: 700, padding: '1px 5px', borderRadius: 3,
+                      background: '#F3F4F6', color: '#9CA3AF',
+                    }}>
+                      <Lock size={7} strokeWidth={2.5} />SYS
+                    </span>
+                  )}
+                </div>
+              </button>
+            );
+          })}
+
+          {/* Add role placeholder */}
+          <button style={{
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+            padding: '16px 28px', border: 'none', cursor: 'pointer', background: 'transparent',
+            minWidth: 100, gap: 8,
+          }}>
+            <div style={{
+              width: 38, height: 38, borderRadius: 11,
+              border: '1.5px dashed #D1D5DB',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <Plus size={15} strokeWidth={2} style={{ color: '#D1D5DB' }} />
+            </div>
+            <span style={{ fontSize: 11, fontWeight: 500, color: '#9CA3AF' }}>New Role</span>
+          </button>
+        </div>
+      </div>
+
+      {/* ── Permission editor ────────────────────────────────────────────────── */}
+      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+
+        {/* Role context header */}
+        <div style={{
+          padding: '18px 24px',
+          borderBottom: '1px solid var(--color-border)',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          background: role.color + '08',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            {/* Large role avatar */}
+            <div style={{
+              width: 48, height: 48, borderRadius: 14,
+              background: role.color,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+            }}>
+              <span style={{ fontSize: 20, fontWeight: 900, color: 'white' }}>{role.name.charAt(0)}</span>
+            </div>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
+                <p style={{ fontSize: 16, fontWeight: 800, color: 'var(--color-text-1)' }}>{role.name}</p>
+                {role.isSystem && (
+                  <span style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 3,
+                    fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 4,
+                    background: '#F3F4F6', color: '#6B7280',
+                  }}>
+                    <Lock size={8} strokeWidth={2.5} />SYSTEM ROLE
+                  </span>
+                )}
+              </div>
+              <p style={{ fontSize: 12, color: 'var(--color-text-3)' }}>{role.description}</p>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 5,
+              padding: '5px 10px', borderRadius: 8, background: '#F3F4F6',
+            }}>
+              <Users size={12} strokeWidth={1.5} style={{ color: '#6B7280' }} />
+              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-2)' }}>
+                {role.userCount} member{role.userCount !== 1 ? 's' : ''}
+              </span>
+            </div>
+            {!role.isSystem && (
+              <>
+                <button style={{
+                  display: 'flex', alignItems: 'center', gap: 5,
+                  padding: '6px 12px', borderRadius: 8,
+                  border: '1px solid #E5E7EB', fontSize: 12, fontWeight: 500,
+                  color: '#374151', background: '#fff', cursor: 'pointer',
+                }}>
+                  <Edit2 size={12} strokeWidth={1.5} />Edit Role
+                </button>
+                <button style={{
+                  display: 'flex', alignItems: 'center', gap: 5,
+                  padding: '6px 12px', borderRadius: 8,
+                  border: '1px solid #FEE2E2', fontSize: 12, fontWeight: 500,
+                  color: '#DC2626', background: '#FFF5F5', cursor: 'pointer',
+                }}>
+                  <Trash2 size={12} strokeWidth={1.5} />Delete
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Legend */}
+        <div style={{
+          padding: '9px 24px', borderBottom: '1px solid var(--color-border)',
+          display: 'flex', alignItems: 'center', gap: 16, background: '#FCFCFC', flexWrap: 'wrap',
+        }}>
+          <span style={{ fontSize: 10, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.07em', flexShrink: 0 }}>
+            Access levels:
+          </span>
+          {(['full', 'view', 'none'] as PermLevel[]).map(l => (
+            <div key={l} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+              <PermBadge level={l} />
+              <span style={{ fontSize: 11, color: '#9CA3AF' }}>
+                {l === 'full' ? '— unrestricted' : l === 'view' ? '— read-only' : '— no access'}
+              </span>
+            </div>
+          ))}
+          {role.isSystem && (
+            <span style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: '#9CA3AF' }}>
+              <Lock size={10} strokeWidth={2} />System roles cannot be modified
+            </span>
+          )}
+        </div>
+
+        {/* Module sections */}
+        {modules.map((mod, moduleIdx) => {
+          const summary    = moduleAccessLevel(mod);
+          const summaryBg  = summary === 'full' ? '#EEE9FF' : summary === 'view' ? '#DBEAFE' : '#F3F4F6';
+          const summaryClr = summary === 'full' ? '#655BD3' : summary === 'view' ? '#2563EB' : '#9CA3AF';
+
+          return (
+            <div
+              key={mod.module}
+              style={{
+                borderBottom: moduleIdx < modules.length - 1 ? '1px solid #F3F4F6' : 'none',
+              }}
+            >
+              {/* Module header */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 24px 0' }}>
+                <div style={{
+                  width: 32, height: 32, borderRadius: 9,
+                  background: summaryBg, color: summaryClr,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  flexShrink: 0, transition: 'all 200ms',
+                }}>
+                  {mod.icon}
+                </div>
+                <p style={{
+                  flex: 1, fontSize: 13.5, fontWeight: 700,
+                  color: summary === 'none' ? '#9CA3AF' : 'var(--color-text-1)',
+                }}>
+                  {mod.module}
+                </p>
+                <PermBadge level={summary} />
+              </div>
+
+              {/* Action rows — 2-column flex grid */}
+              <div style={{
+                display: 'flex', flexWrap: 'wrap', gap: 8,
+                paddingLeft: 66, paddingRight: 24, paddingTop: 10, paddingBottom: 14,
+              }}>
+                {mod.actions.map((action, actionIdx) => (
+                  <div
+                    key={action.label}
+                    style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+                      padding: '9px 14px', borderRadius: 9,
+                      background: action.level === 'none' ? 'transparent' : '#FAFAFA',
+                      border: '1px solid',
+                      borderColor: action.level === 'none' ? '#F3F4F6' : '#EBEBEB',
+                      flex: '1 1 calc(50% - 4px)', minWidth: 260,
+                      transition: 'all 150ms',
+                    }}
+                  >
+                    <span style={{
+                      fontSize: 12.5, fontWeight: 500,
+                      color: action.level === 'none' ? '#9CA3AF' : 'var(--color-text-2)',
+                    }}>
+                      {action.label}
+                    </span>
+                    <PermToggle
+                      level={action.level}
+                      disabled={role.isSystem}
+                      onChange={level => updatePerm(moduleIdx, actionIdx, level)}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+
+        {/* Footer */}
+        {!role.isSystem && (
+          <div style={{
+            padding: '14px 24px', borderTop: '1px solid var(--color-border)',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            background: '#FAFAFA',
+          }}>
+            <p style={{ fontSize: 11.5, color: 'var(--color-text-3)' }}>
+              Changes apply immediately when saved.
+            </p>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button style={{
+                padding: '8px 18px', borderRadius: 8,
+                border: '1px solid #E5E7EB', fontSize: 13, fontWeight: 500,
+                color: '#374151', background: '#fff', cursor: 'pointer',
+              }}>
+                Reset to Default
+              </button>
+              <button style={{
+                padding: '8px 20px', borderRadius: 8,
+                border: 'none', fontSize: 13, fontWeight: 700,
+                color: '#fff', background: '#655BD3', cursor: 'pointer',
+              }}>
+                Save Changes
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

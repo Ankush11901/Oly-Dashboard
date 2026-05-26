@@ -43,9 +43,9 @@ export default function TeamPage() {
                 <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--color-text-3)' }}></th>
               </tr>
             </thead>
-            <tbody className="divide-y" style={{ borderColor: 'var(--color-border)' }}>
-              {TEAM_MEMBERS.map((member) => (
-                <tr key={member.id} className="transition-colors hover:bg-gray-50/50">
+            <tbody>
+              {TEAM_MEMBERS.map((member, idx) => (
+                <tr key={member.id} className="transition-colors hover:bg-gray-50/50" style={{ borderTop: idx === 0 ? 'none' : '1px solid rgba(0,0,0,0.05)' }}>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white" style={{ background: 'var(--color-primary)' }}>

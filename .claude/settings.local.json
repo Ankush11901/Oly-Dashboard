@@ -26,7 +26,19 @@
       "Bash(git commit -m ' *)",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/dashboard/analytics/traffic)",
       "Bash(curl -s http://localhost:3000/dashboard/analytics/traffic)",
-      "Bash(npx next *)"
+      "Bash(npx next *)",
+      "Bash(python3 -c \"import sys,json; d=sys.stdin.read\\(\\); print\\(d[:2000]\\)\")",
+      "Bash(curl -s -o /dev/null -w \"Dashboard: %{http_code}\\\\nQueue: \" http://localhost:3000/dashboard)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\nShoppers: \" http://localhost:3000/dashboard/analytics/queue)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3000/dashboard/analytics/shoppers)",
+      "Bash(find \"/Users/ankush/Documents/Oly Dashboard/public\" -type f 2>/dev/null && echo \"---\" && find \"/Users/ankush\" -maxdepth 5 -name \"*NeueHaas*\" -o -name \"*NHG*\" -o -name \"*neue*haas*\" 2>/dev/null | grep -v \"node_modules\")",
+      "Bash(mkdir -p \"/Users/ankush/Documents/Oly Dashboard/public/fonts\" && cp \\\\ *)",
+      "Bash(lsof -ti:3000)",
+      "Bash(node -e \"const l = require\\('lucide-react'\\); const keys = Object.keys\\(l\\).filter\\(k => k.toLowerCase\\(\\).includes\\('layout'\\)\\); console.log\\(keys\\)\")",
+      "Bash(pandoc --version)",
+      "Bash(python3 -c \"import docx\")",
+      "Bash(node -e \"require\\('docx'\\)\")",
+      "Bash(python3 *)"
     ]
   }
 }
