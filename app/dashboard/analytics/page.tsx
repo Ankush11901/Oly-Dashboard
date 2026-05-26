@@ -516,12 +516,16 @@ function GlobalLegend() {
       position: 'sticky',
       top: 0,
       zIndex: 10,
-      background: '#fff',
-      border: '1px solid #E5E7EB',
-      borderRadius: 12,
-      padding: '14px 20px',
+      /* margin-top creates the initial gap; it scrolls away so the element sticks flush */
+      marginTop: 24,
+      /* bleed into container's horizontal padding so it spans full width when stuck */
+      marginLeft: -24,
+      marginRight: -24,
       marginBottom: 16,
-      boxShadow: '0 2px 8px rgba(0,0,0,0.07)',
+      background: '#fff',
+      borderTop: '1px solid #E5E7EB',
+      borderBottom: '1px solid #E5E7EB',
+      padding: '12px 24px',
       display: 'flex',
       alignItems: 'flex-start',
       gap: 28,
@@ -901,8 +905,8 @@ function PlacedWidget({
             {STORE_PERF.map((s, i) => (
               <div key={s.store} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', borderBottom: i < STORE_PERF.length - 1 ? '1px solid #F3F4F6' : 'none' }}>
                 <span style={{ fontSize: 12, color: '#9CA3AF', width: 16, flexShrink: 0 }}>{i + 1}</span>
-                <span style={{ fontSize: 13, color: '#374151', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.store}</span>
-                <div style={{ width: 128, height: 6, background: '#F3F4F6', borderRadius: 99, flexShrink: 0 }}>
+                <span style={{ fontSize: 13, color: '#374151', width: 148, flexShrink: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.store}</span>
+                <div style={{ flex: 1, minWidth: 0, height: 6, background: '#F3F4F6', borderRadius: 99 }}>
                   <div style={{ height: '100%', borderRadius: 99, width: `${(s.v / 15234) * 100}%`, backgroundColor: '#655BD3' }} />
                 </div>
                 <span style={{ fontSize: 13, fontWeight: 600, color: '#111827', width: 48, textAlign: 'right', flexShrink: 0 }}>
@@ -918,8 +922,8 @@ function PlacedWidget({
           <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
             {STORE_PERF.map((s, i) => (
               <div key={s.store} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', borderBottom: i < STORE_PERF.length - 1 ? '1px solid #F3F4F6' : 'none' }}>
-                <span style={{ fontSize: 13, color: '#374151', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.store}</span>
-                <div style={{ width: 128, height: 6, background: '#F3F4F6', borderRadius: 99, flexShrink: 0 }}>
+                <span style={{ fontSize: 13, color: '#374151', width: 148, flexShrink: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.store}</span>
+                <div style={{ flex: 1, minWidth: 0, height: 6, background: '#F3F4F6', borderRadius: 99 }}>
                   <div style={{ height: '100%', borderRadius: 99, width: `${(s.conv / 20) * 100}%`, backgroundColor: '#754C7F' }} />
                 </div>
                 <span style={{ fontSize: 13, fontWeight: 600, color: '#111827', width: 48, textAlign: 'right', flexShrink: 0 }}>{s.conv}%</span>
@@ -1829,7 +1833,7 @@ export default function AnalyticsPage() {
       )}
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-6" style={{ background: '#F9FAFB' }}>
+      <div className="flex-1 overflow-y-auto px-6 pb-6" style={{ background: '#F9FAFB' }}>
         {tabs.length === 0 ? (
           /* ── Empty state: no pages ── */
           <div className="flex flex-col items-center justify-center h-full" style={{ minHeight: 400 }}>

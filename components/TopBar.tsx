@@ -144,30 +144,9 @@ export function TopBar() {
               >
                 {/* Header */}
                 <div className="px-4 pt-4 pb-3 border-b" style={{ borderColor: 'var(--color-border)' }}>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-semibold text-gray-900">Qualified Shopper</p>
-                      <p className="text-xs text-gray-400 mt-0.5">Set age &amp; gender filters</p>
-                    </div>
-                    {/* ON/OFF toggle */}
-                    <button
-                      onClick={() => setQsEnabled(v => !v)}
-                      style={{
-                        width: 40, height: 22, borderRadius: 11,
-                        background: qsEnabled ? '#655BD3' : '#D1D5DB',
-                        border: 'none', cursor: 'pointer', position: 'relative',
-                        transition: 'background 200ms ease', flexShrink: 0,
-                      }}
-                    >
-                      <span style={{
-                        position: 'absolute', top: 3,
-                        left: qsEnabled ? 21 : 3,
-                        width: 16, height: 16, borderRadius: '50%',
-                        background: 'white',
-                        boxShadow: '0 1px 3px rgba(0,0,0,0.20)',
-                        transition: 'left 200ms ease',
-                      }} />
-                    </button>
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900">Qualified Shopper</p>
+                    <p className="text-xs text-gray-400 mt-0.5">Set age &amp; gender filters</p>
                   </div>
 
                   {/* Saved summary pill — only shown when enabled */}
