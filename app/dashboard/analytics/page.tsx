@@ -58,9 +58,9 @@ const MINI_STORE_PERF = [
   { store: 'VVC', v: 11800, conv: 15.3 }, { store: 'BJ', v: 10200, conv: 14.1 },
 ];
 const MINI_DONUT_DATA = [
-  { name: 'M 22–35', value: 28, color: '#655BD3' }, { name: 'F 22–35', value: 20, color: '#00CE9C' },
-  { name: 'M 13–21', value: 15, color: '#F59E0B' }, { name: 'F 13–21', value: 12, color: '#3B82F6' },
-  { name: 'M 35+',   value: 15, color: '#EC4899'  }, { name: 'Other',   value: 10, color: '#8B5CF6' },
+  { name: 'M 22–35', value: 28, color: '#3B82F6' }, { name: 'F 22–35', value: 20, color: '#EC4899' },
+  { name: 'M 13–21', value: 15, color: '#60A5FA' }, { name: 'F 13–21', value: 12, color: '#F472B6' },
+  { name: 'M 35+',   value: 15, color: '#1D4ED8' }, { name: 'Other',   value: 10, color: '#8B5CF6' },
 ];
 const MINI_AGE = [
   { group: '0–12', pct: 11 }, { group: '13–21', pct: 19 },
@@ -162,7 +162,7 @@ function MiniWidgetPreview({ id }: { id: string }) {
             <div key={d.group} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <span style={{ fontSize: 9, color: '#6B7280', width: 28, flexShrink: 0 }}>{d.group}</span>
               <div style={{ flex: 1, height: 7, background: '#F3F4F6', borderRadius: 99 }}>
-                <div style={{ height: '100%', borderRadius: 99, width: `${d.pct * 2.6}%`, background: MINI_COLORS[i] }} />
+                <div style={{ height: '100%', borderRadius: 99, width: `${d.pct * 2.6}%`, background: AGE_GROUP_COLORS[i % AGE_GROUP_COLORS.length] }} />
               </div>
               <span style={{ fontSize: 9, fontWeight: 600, color: '#374151', width: 22, textAlign: 'right', flexShrink: 0 }}>{d.pct}%</span>
             </div>
@@ -332,11 +332,11 @@ const STORE_PERF = [
   { store: 'Causeway Point',   v:  6900, conv:  9.1 },
 ];
 const DONUT_DATA = [
-  { name: 'M 22–35', value: 28, color: '#655BD3' },
-  { name: 'F 22–35', value: 20, color: '#00CE9C' },
-  { name: 'M 13–21', value: 15, color: '#F59E0B' },
-  { name: 'F 13–21', value: 12, color: '#3B82F6' },
-  { name: 'M 35+',   value: 15, color: '#EC4899' },
+  { name: 'M 22–35', value: 28, color: '#3B82F6' },
+  { name: 'F 22–35', value: 20, color: '#EC4899' },
+  { name: 'M 13–21', value: 15, color: '#60A5FA' },
+  { name: 'F 13–21', value: 12, color: '#F472B6' },
+  { name: 'M 35+',   value: 15, color: '#1D4ED8' },
   { name: 'Other',   value: 10, color: '#8B5CF6' },
 ];
 
@@ -348,6 +348,23 @@ const CHART_COLORS = {
   highlight: '#655BD3',
   muted:     'rgba(101, 91, 211, 0.25)',
 };
+
+// ── Consistent semantic colors for demographic segments ───────────────────────
+// Males → blue family, Females → pink/rose family, Other → purple
+const SEGMENT_COLORS: Record<string, string> = {
+  'M 22–35': '#3B82F6',   // blue-500  — largest male group
+  'M 13–21': '#60A5FA',   // blue-400  — younger males (lighter)
+  'M 35+':   '#1D4ED8',   // blue-700  — older males (darker)
+  'M 0–12':  '#93C5FD',   // blue-300  — children males (lightest)
+  'F 22–35': '#EC4899',   // pink-500  — largest female group
+  'F 13–21': '#F472B6',   // pink-400  — younger females (lighter)
+  'F 35+':   '#BE185D',   // pink-700  — older females (darker)
+  'F 0–12':  '#F9A8D4',   // pink-300  — children females (lightest)
+  'Other':   '#8B5CF6',   // purple
+};
+
+// Age-group only colors (gender-neutral, purple scale) for age_bar widget
+const AGE_GROUP_COLORS = ['#C4B5FD', '#A78BFA', '#7C3AED', '#655BD3', '#4C1D95'];
 
 const WIDGET_INFO: Record<string, { title: string; description: string; calculation: string }> = {
   footfall_trend: {
@@ -450,6 +467,76 @@ const ChartLegend = ({ items }: { items: { color: string; label: string; dash?: 
     ))}
   </div>
 );
+
+// ── Global Legend Table ───────────────────────────────────────────────────────
+function GlobalLegend() {
+  const trafficItems = [
+    { color: '#655BD3', label: 'Footfall' },
+    { color: '#00CE9C', label: 'Passerby' },
+    { color: '#F59E0B', label: 'Conversion %' },
+  ];
+  const genderItems = [
+    { color: CHART_COLORS.male,   label: 'Male'   },
+    { color: CHART_COLORS.female, label: 'Female' },
+  ];
+  const segmentItems = [
+    { color: SEGMENT_COLORS['M 22–35'], label: 'M 22–35' },
+    { color: SEGMENT_COLORS['F 22–35'], label: 'F 22–35' },
+    { color: SEGMENT_COLORS['M 13–21'], label: 'M 13–21' },
+    { color: SEGMENT_COLORS['F 13–21'], label: 'F 13–21' },
+    { color: SEGMENT_COLORS['M 35+'],   label: 'M 35+'   },
+    { color: SEGMENT_COLORS['Other'],   label: 'Other'   },
+  ];
+  const ageItems = [
+    { color: AGE_GROUP_COLORS[0], label: '0–12'  },
+    { color: AGE_GROUP_COLORS[1], label: '13–21' },
+    { color: AGE_GROUP_COLORS[2], label: '22–35' },
+    { color: AGE_GROUP_COLORS[3], label: '35–50' },
+    { color: AGE_GROUP_COLORS[4], label: '50+'   },
+  ];
+
+  const Section = ({ title, items }: { title: string; items: { color: string; label: string }[] }) => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minWidth: 0 }}>
+      <span style={{ fontSize: 10, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+        {title}
+      </span>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px 14px' }}>
+        {items.map(item => (
+          <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+            <span style={{ width: 9, height: 9, borderRadius: '50%', background: item.color, flexShrink: 0, boxShadow: `0 0 0 2px ${item.color}22` }} />
+            <span style={{ fontSize: 11.5, color: '#374151', whiteSpace: 'nowrap' }}>{item.label}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  return (
+    <div style={{
+      position: 'sticky',
+      top: 0,
+      zIndex: 10,
+      background: '#fff',
+      border: '1px solid #E5E7EB',
+      borderRadius: 12,
+      padding: '14px 20px',
+      marginBottom: 16,
+      boxShadow: '0 2px 8px rgba(0,0,0,0.07)',
+      display: 'flex',
+      alignItems: 'flex-start',
+      gap: 28,
+      flexWrap: 'wrap',
+    }}>
+      <Section title="Traffic" items={trafficItems} />
+      <div style={{ width: 1, alignSelf: 'stretch', background: '#F3F4F6', flexShrink: 0 }} />
+      <Section title="Gender" items={genderItems} />
+      <div style={{ width: 1, alignSelf: 'stretch', background: '#F3F4F6', flexShrink: 0 }} />
+      <Section title="Demographics (Age × Gender)" items={segmentItems} />
+      <div style={{ width: 1, alignSelf: 'stretch', background: '#F3F4F6', flexShrink: 0 }} />
+      <Section title="Age Groups" items={ageItems} />
+    </div>
+  );
+}
 
 function InfoTooltip({ widgetId }: { widgetId: string }) {
   const [show, setShow] = useState(false);
@@ -608,10 +695,6 @@ function PlacedWidget({
                 </BarChart>
               </ResponsiveContainer>
             </div>
-            <ChartLegend items={[
-              { color: '#655BD3', label: 'Footfall' },
-              { color: '#00CE9C', label: 'Passerby' },
-            ]} />
           </div>
         );
 
@@ -641,10 +724,6 @@ function PlacedWidget({
                 </AreaChart>
               </ResponsiveContainer>
             </div>
-            <ChartLegend items={[
-              { color: '#00CE9C', label: 'This month' },
-              { color: '#655BD3', label: 'Prev month', dash: true },
-            ]} />
           </div>
         );
       }
@@ -671,10 +750,6 @@ function PlacedWidget({
                 </ComposedChart>
               </ResponsiveContainer>
             </div>
-            <ChartLegend items={[
-              { color: '#F59E0B', label: 'Conversion %' },
-              { color: '#655BD3', label: 'Target (15%)', dash: true },
-            ]} />
           </div>
         );
       }
@@ -773,7 +848,6 @@ function PlacedWidget({
                 </LineChart>
               </ResponsiveContainer>
             </div>
-            <ChartLegend items={[{ color: CHART_COLORS.male, label: 'Male' }, { color: CHART_COLORS.female, label: 'Female' }]} />
           </div>
         );
 
@@ -789,7 +863,7 @@ function PlacedWidget({
               <YAxis dataKey="group" type="category" axisLine={false} tickLine={false} tick={{ fill: '#374151', fontSize: 12, fontWeight: 500 }} width={50} />
               <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(101,91,211,0.06)' }} />
               <Bar dataKey="value" radius={[0,6,6,0]} label={<CustomLabel />}>
-                {ageBarData.map((_, i) => <Cell key={i} fill={CHART_COLORS.series[i % CHART_COLORS.series.length]} />)}
+                {ageBarData.map((_, i) => <Cell key={i} fill={AGE_GROUP_COLORS[i % AGE_GROUP_COLORS.length]} />)}
               </Bar>
             </BarChart>
           </ResponsiveContainer>
@@ -1799,6 +1873,8 @@ export default function AnalyticsPage() {
               </button>
             </div>
           ) : (
+            <>
+            <GlobalLegend />
             <div className="grid grid-cols-2 gap-4">
               {(isEditMode ? draftWidgets : currentTab.widgets).map((widgetId, index) => (
                 <PlacedWidget
@@ -1819,6 +1895,7 @@ export default function AnalyticsPage() {
                 />
               ))}
             </div>
+            </>
           )
         ) : null}
       </div>

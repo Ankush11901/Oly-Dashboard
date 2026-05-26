@@ -10,11 +10,27 @@ export function TopBar() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<DropdownType>(null);
 
-  // Qualified Shopper state
-  const [minAge, setMinAge] = useState(13);
-  const [maxAge, setMaxAge] = useState(60);
-  const [genders, setGenders] = useState<Set<string>>(new Set(['Male', 'Female']));
-  const [excludeChildren, setExcludeChildren] = useState(true);
+  // Qualified Shopper — saved (applied) values
+  const [qsEnabled, setQsEnabled] = useState(false);
+  const [savedMin, setSavedMin] = useState(13);
+  const [savedMax, setSavedMax] = useState(60);
+  const [savedGenders, setSavedGenders] = useState<Set<string>>(new Set(['Male', 'Female']));
+  const [savedExclude, setSavedExclude] = useState(true);
+
+  // Draft values (what's in the open dropdown before saving)
+  const [draftMin, setDraftMin] = useState(13);
+  const [draftMax, setDraftMax] = useState(60);
+  const [draftGenders, setDraftGenders] = useState<Set<string>>(new Set(['Male', 'Female']));
+  const [draftExclude, setDraftExclude] = useState(true);
+
+  // Keep legacy names for backward compat with toggle fn below
+  const minAge = draftMin;
+  const maxAge = draftMax;
+  const genders = draftGenders;
+  const excludeChildren = draftExclude;
+  const setMinAge = setDraftMin;
+  const setMaxAge = setDraftMax;
+  const setExcludeChildren = setDraftExclude;
 
   const rightSectionRef = useRef<HTMLDivElement>(null);
 
@@ -40,13 +56,38 @@ export function TopBar() {
   };
 
   const toggleGender = (g: string) => {
-    setGenders(prev => {
+    setDraftGenders(prev => {
       const next = new Set(prev);
       if (next.has(g)) next.delete(g);
       else next.add(g);
       return next;
     });
   };
+
+  // When opening the dropdown, seed the draft from saved values
+  const openQsDropdown = () => {
+    setDraftMin(savedMin);
+    setDraftMax(savedMax);
+    setDraftGenders(new Set(savedGenders));
+    setDraftExclude(savedExclude);
+    toggleDropdown('shoppers');
+  };
+
+  // Save draft → saved and close
+  const saveQs = () => {
+    setSavedMin(draftMin);
+    setSavedMax(draftMax);
+    setSavedGenders(new Set(draftGenders));
+    setSavedExclude(draftExclude);
+    setQsEnabled(true);
+    setActiveDropdown(null);
+  };
+
+  // Summary label for the button
+  const genderLabel = savedGenders.size === 2 ? 'All genders'
+    : savedGenders.size === 1 ? Array.from(savedGenders)[0]
+    : 'No gender';
+  const qsSummary = `Age ${savedMin}–${savedMax} · ${genderLabel}`;
 
   return (
     <header
@@ -77,111 +118,129 @@ export function TopBar() {
           {/* ── Qualified Shopper ── */}
           <div className="relative">
             <button
-              onClick={() => toggleDropdown('shoppers')}
-              className="flex items-center gap-3 rounded-lg px-4 py-2 transition-colors text-left border"
+              onClick={openQsDropdown}
+              className="flex items-center gap-2.5 rounded-lg px-3.5 py-2 transition-colors text-left border"
               style={{
-                background: 'var(--color-surface)',
-                borderColor: 'var(--color-border)',
+                background: qsEnabled ? '#F5F3FF' : 'var(--color-surface)',
+                borderColor: qsEnabled ? '#DDD6FE' : 'var(--color-border)',
                 color: 'var(--color-text-1)',
               }}
             >
               <div>
-                <p className="text-[13px] font-semibold leading-tight">Qualified Shopper</p>
-                <p className="text-[11px] font-medium leading-tight mt-0.5" style={{ color: 'var(--color-text-3)' }}>
-                  Kids Excluded
+                <p className="text-[13px] font-semibold leading-tight" style={{ color: qsEnabled ? '#655BD3' : 'var(--color-text-1)' }}>
+                  Qualified Shopper
+                </p>
+                <p className="text-[11px] font-medium leading-tight mt-0.5" style={{ color: qsEnabled ? '#9580E8' : 'var(--color-text-3)' }}>
+                  {qsEnabled ? qsSummary : 'Not configured'}
                 </p>
               </div>
-              <Settings size={14} strokeWidth={2} style={{ color: 'var(--color-text-3)' }} />
+              <Settings size={14} strokeWidth={2} style={{ color: qsEnabled ? '#9580E8' : 'var(--color-text-3)' }} />
             </button>
 
             {activeDropdown === 'shoppers' && (
               <div
-                className="absolute top-full right-0 mt-2 w-72 rounded-xl shadow-xl border z-50 bg-white"
-                style={{ borderColor: 'var(--color-border)' }}
+                className="absolute top-full right-0 mt-2 rounded-xl shadow-xl border z-50 bg-white"
+                style={{ borderColor: 'var(--color-border)', width: 288 }}
               >
                 {/* Header */}
                 <div className="px-4 pt-4 pb-3 border-b" style={{ borderColor: 'var(--color-border)' }}>
-                  <p className="text-sm font-semibold text-gray-900">Qualified Shopper</p>
-                  <p className="text-xs text-gray-400 mt-0.5">Configure visitor segments</p>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900">Qualified Shopper</p>
+                      <p className="text-xs text-gray-400 mt-0.5">Set age &amp; gender filters</p>
+                    </div>
+                    {/* ON/OFF toggle */}
+                    <button
+                      onClick={() => setQsEnabled(v => !v)}
+                      style={{
+                        width: 40, height: 22, borderRadius: 11,
+                        background: qsEnabled ? '#655BD3' : '#D1D5DB',
+                        border: 'none', cursor: 'pointer', position: 'relative',
+                        transition: 'background 200ms ease', flexShrink: 0,
+                      }}
+                    >
+                      <span style={{
+                        position: 'absolute', top: 3,
+                        left: qsEnabled ? 21 : 3,
+                        width: 16, height: 16, borderRadius: '50%',
+                        background: 'white',
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.20)',
+                        transition: 'left 200ms ease',
+                      }} />
+                    </button>
+                  </div>
+
+                  {/* Saved summary pill — only shown when enabled */}
+                  {qsEnabled && (
+                    <div style={{
+                      marginTop: 10, padding: '6px 10px', borderRadius: 8,
+                      background: '#F5F3FF', border: '1px solid #DDD6FE',
+                      display: 'flex', alignItems: 'center', gap: 6,
+                    }}>
+                      <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#655BD3', flexShrink: 0 }} />
+                      <span style={{ fontSize: 11.5, fontWeight: 600, color: '#655BD3' }}>
+                        Active: Age {savedMin}–{savedMax} · {genderLabel}{savedExclude ? ' · Kids excl.' : ''}
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 <div className="p-4 space-y-4">
-                  {/* Preset */}
-                  <div>
-                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Preset</p>
-                    <label className="flex items-center gap-2.5 cursor-pointer group">
-                      <div
-                        className="w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0"
-                        style={{ borderColor: 'var(--color-primary)', background: 'var(--color-primary)' }}
-                      >
-                        <div className="w-1.5 h-1.5 rounded-full bg-white" />
-                      </div>
-                      <span className="text-sm font-medium text-gray-800">Kids Excluded</span>
-                      <span className="ml-auto text-xs text-gray-400">Active</span>
-                    </label>
-                  </div>
-
                   {/* Age Range */}
                   <div>
                     <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Age Range</p>
                     <div className="flex items-center gap-3">
                       <div className="flex-1">
-                        <label className="text-xs text-gray-400 mb-1 block">Min Age</label>
+                        <label className="text-xs text-gray-400 mb-1 block">Min</label>
                         <input
                           type="number"
-                          value={minAge}
+                          value={draftMin}
                           onChange={e => setMinAge(Number(e.target.value))}
-                          className="w-full border rounded-md px-2.5 py-1.5 text-sm text-gray-800 outline-none focus:ring-1"
-                          style={{
-                            borderColor: 'var(--color-border)',
-                          }}
-                          min={0}
-                          max={maxAge}
+                          className="w-full border rounded-md px-2.5 py-1.5 text-sm font-semibold text-gray-800 outline-none"
+                          style={{ borderColor: 'var(--color-border)', accentColor: '#655BD3' }}
+                          min={0} max={draftMax}
+                          onFocus={e => (e.currentTarget.style.borderColor = '#655BD3')}
+                          onBlur={e => (e.currentTarget.style.borderColor = 'var(--color-border)')}
                         />
                       </div>
+                      <span style={{ fontSize: 12, color: '#D1D5DB', flexShrink: 0 }}>—</span>
                       <div className="flex-1">
-                        <label className="text-xs text-gray-400 mb-1 block">Max Age</label>
+                        <label className="text-xs text-gray-400 mb-1 block">Max</label>
                         <input
                           type="number"
-                          value={maxAge}
+                          value={draftMax}
                           onChange={e => setMaxAge(Number(e.target.value))}
-                          className="w-full border rounded-md px-2.5 py-1.5 text-sm text-gray-800 outline-none focus:ring-1"
-                          style={{
-                            borderColor: 'var(--color-border)',
-                          }}
-                          min={minAge}
-                          max={120}
+                          className="w-full border rounded-md px-2.5 py-1.5 text-sm font-semibold text-gray-800 outline-none"
+                          style={{ borderColor: 'var(--color-border)' }}
+                          min={draftMin} max={120}
+                          onFocus={e => (e.currentTarget.style.borderColor = '#655BD3')}
+                          onBlur={e => (e.currentTarget.style.borderColor = 'var(--color-border)')}
                         />
                       </div>
                     </div>
                   </div>
 
-                  {/* Gender */}
+                  {/* Gender — Male / Female only */}
                   <div>
                     <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Gender</p>
                     <div className="flex items-center gap-2">
-                      {['Male', 'Female', 'Unknown'].map(g => (
-                        <button
-                          key={g}
-                          onClick={() => toggleGender(g)}
-                          className="px-3 py-1 rounded-full text-xs font-medium border transition-colors"
-                          style={
-                            genders.has(g)
-                              ? {
-                                  background: 'var(--color-primary)',
-                                  borderColor: 'var(--color-primary)',
-                                  color: '#fff',
-                                }
-                              : {
-                                  background: 'transparent',
-                                  borderColor: 'var(--color-border)',
-                                  color: 'var(--color-text-2)',
-                                }
-                          }
-                        >
-                          {g}
-                        </button>
-                      ))}
+                      {['Male', 'Female'].map(g => {
+                        const on = draftGenders.has(g);
+                        return (
+                          <button
+                            key={g}
+                            onClick={() => toggleGender(g)}
+                            className="flex-1 py-1.5 rounded-lg text-xs font-semibold border transition-all"
+                            style={{
+                              background: on ? '#655BD3' : 'transparent',
+                              borderColor: on ? '#655BD3' : 'var(--color-border)',
+                              color: on ? '#fff' : 'var(--color-text-2)',
+                            }}
+                          >
+                            {g}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
 
@@ -189,23 +248,29 @@ export function TopBar() {
                   <label className="flex items-center gap-2.5 cursor-pointer">
                     <input
                       type="checkbox"
-                      checked={excludeChildren}
+                      checked={draftExclude}
                       onChange={e => setExcludeChildren(e.target.checked)}
                       className="w-4 h-4 rounded"
-                      style={{ accentColor: 'var(--color-primary)' }}
+                      style={{ accentColor: '#655BD3' }}
                     />
                     <span className="text-sm text-gray-700">Exclude children (under 13)</span>
                   </label>
                 </div>
 
                 {/* Save */}
-                <div className="px-4 pb-4">
+                <div className="px-4 pb-4 flex gap-2">
                   <button
                     onClick={() => setActiveDropdown(null)}
-                    className="w-full py-2 rounded-lg text-sm font-semibold text-white transition-opacity hover:opacity-90"
-                    style={{ background: 'var(--color-primary)' }}
+                    style={{ flex: 1, height: 36, borderRadius: 8, border: '1px solid #E5E7EB', background: 'white', fontSize: 13, fontWeight: 500, color: '#374151', cursor: 'pointer' }}
                   >
-                    Save
+                    Cancel
+                  </button>
+                  <button
+                    onClick={saveQs}
+                    className="transition-opacity hover:opacity-90"
+                    style={{ flex: 2, height: 36, borderRadius: 8, border: 'none', background: '#655BD3', fontSize: 13, fontWeight: 600, color: 'white', cursor: 'pointer' }}
+                  >
+                    Apply &amp; Save
                   </button>
                 </div>
               </div>
