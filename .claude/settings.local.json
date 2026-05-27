@@ -38,7 +38,8 @@
       "Bash(pandoc --version)",
       "Bash(python3 -c \"import docx\")",
       "Bash(node -e \"require\\('docx'\\)\")",
-      "Bash(python3 *)"
+      "Bash(python3 *)",
+      "WebFetch(domain:claude.ai)"
     ]
   }
 }

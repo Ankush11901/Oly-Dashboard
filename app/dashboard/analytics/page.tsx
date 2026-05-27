@@ -140,7 +140,6 @@ function MiniWidgetPreview({ id }: { id: string }) {
               <div key={d.name} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                 <span style={{ width: 6, height: 6, borderRadius: '50%', background: d.color, flexShrink: 0 }} />
                 <span style={{ fontSize: 9.5, color: '#374151', flex: 1 }}>{d.name}</span>
-                <span style={{ fontSize: 9.5, fontWeight: 700, color: '#111827' }}>{d.value}%</span>
               </div>
             ))}
           </div>
@@ -164,7 +163,6 @@ function MiniWidgetPreview({ id }: { id: string }) {
               <div style={{ flex: 1, height: 7, background: '#F3F4F6', borderRadius: 99 }}>
                 <div style={{ height: '100%', borderRadius: 99, width: `${d.pct * 2.6}%`, background: AGE_GROUP_COLORS[i % AGE_GROUP_COLORS.length] }} />
               </div>
-              <span style={{ fontSize: 9, fontWeight: 600, color: '#374151', width: 22, textAlign: 'right', flexShrink: 0 }}>{d.pct}%</span>
             </div>
           ))}
         </div>
@@ -202,12 +200,10 @@ function MiniWidgetPreview({ id }: { id: string }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6, height: H, justifyContent: 'center', padding: '2px 0' }}>
           {MINI_STORE_PERF.map((s, i) => (
             <div key={s.store} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ fontSize: 9, color: '#9CA3AF', width: 10, flexShrink: 0 }}>{i+1}</span>
               <span style={{ fontSize: 9.5, color: '#374151', width: 24, flexShrink: 0 }}>{s.store}</span>
               <div style={{ flex: 1, height: 7, background: '#F3F4F6', borderRadius: 99 }}>
                 <div style={{ height: '100%', borderRadius: 99, width: `${(s.v / 15234) * 100}%`, background: '#655BD3' }} />
               </div>
-              <span style={{ fontSize: 9, fontWeight: 600, color: '#111827', width: 28, textAlign: 'right', flexShrink: 0 }}>{(s.v/1000).toFixed(1)}K</span>
             </div>
           ))}
         </div>
@@ -221,7 +217,6 @@ function MiniWidgetPreview({ id }: { id: string }) {
               <div style={{ flex: 1, height: 7, background: '#F3F4F6', borderRadius: 99 }}>
                 <div style={{ height: '100%', borderRadius: 99, width: `${(s.conv / 20) * 100}%`, background: '#754C7F' }} />
               </div>
-              <span style={{ fontSize: 9, fontWeight: 600, color: '#111827', width: 28, textAlign: 'right', flexShrink: 0 }}>{s.conv}%</span>
             </div>
           ))}
         </div>
@@ -1139,10 +1134,7 @@ interface AnalyticsTab {
 
 // ── Add Widgets Modal ─────────────────────────────────────────────────────────
 function AddWidgetsModal({ onClose, onAdd }: { onClose: () => void; onAdd: (ids: string[]) => void }) {
-  const [activeTab, setActiveTab] = useState<'widgets' | 'templates'>('widgets');
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
-
   const groups = Array.from(new Set(ALL_WIDGETS.map(w => w.group)));
 
   const toggleWidget = (id: string) => {
@@ -1151,14 +1143,6 @@ function AddWidgetsModal({ onClose, onAdd }: { onClose: () => void; onAdd: (ids:
       next.has(id) ? next.delete(id) : next.add(id);
       return next;
     });
-    setSelectedTemplate(null);
-  };
-
-  const selectTemplate = (tplId: string) => {
-    const tpl = TEMPLATES.find(t => t.id === tplId);
-    if (!tpl) return;
-    setSelectedTemplate(tplId);
-    setSelected(new Set(tpl.widgets));
   };
 
   const handleAdd = () => {
@@ -1181,102 +1165,52 @@ function AddWidgetsModal({ onClose, onAdd }: { onClose: () => void; onAdd: (ids:
         <div className="flex items-center justify-between px-6 pt-6 pb-4" style={{ borderBottom: '1px solid #F3F4F6' }}>
           <div>
             <h3 className="text-base font-bold" style={{ color: '#111827' }}>Add Widgets</h3>
-            <p className="text-xs mt-0.5" style={{ color: '#6B7280' }}>Choose widgets or start from a template</p>
+            <p className="text-xs mt-0.5" style={{ color: '#6B7280' }}>Select one or more charts to add to this page</p>
           </div>
           <button onClick={onClose} className="p-1.5 rounded-md" style={{ color: '#9CA3AF' }}>
             <X size={18} strokeWidth={2} />
           </button>
         </div>
 
-        {/* Tabs */}
-        <div className="flex px-6 pt-3 gap-1" style={{ borderBottom: '1px solid #F3F4F6' }}>
-          {(['widgets', 'templates'] as const).map(tab => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className="px-4 py-2 text-sm font-medium capitalize transition-colors rounded-t-md"
-              style={{
-                color: activeTab === tab ? '#655BD3' : '#6B7280',
-                borderBottom: activeTab === tab ? '2px solid #655BD3' : '2px solid transparent',
-              }}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
-
         {/* Body */}
         <div className="flex-1 overflow-y-auto px-6 py-4">
-          {activeTab === 'widgets' ? (
-            <div className="space-y-5">
-              {groups.map(group => (
-                <div key={group}>
-                  <p className="text-xs font-bold uppercase mb-2.5" style={{ color: '#9CA3AF', letterSpacing: '0.07em' }}>{group}</p>
-                  <div className="grid grid-cols-2 gap-3">
-                    {ALL_WIDGETS.filter(w => w.group === group).map(widget => {
-                      const isSelected = selected.has(widget.id);
-                      return (
-                        <button
-                          key={widget.id}
-                          onClick={() => toggleWidget(widget.id)}
-                          className="text-left rounded-xl overflow-hidden transition-all"
-                          style={{
-                            border: `1.5px solid ${isSelected ? '#655BD3' : '#E5E7EB'}`,
-                            background: 'white',
-                            boxShadow: isSelected ? '0 0 0 3px #EEE9FF' : 'none',
-                          }}
-                        >
-                          {/* Chart preview area */}
-                          <div style={{
-                            background: '#F8F7FF',
-                            borderBottom: `1px solid ${isSelected ? '#DDD6FE' : '#F3F4F6'}`,
-                            padding: '12px 12px 8px',
-                            pointerEvents: 'none',
-                          }}>
-                            {widget.preview}
-                          </div>
-                          {/* Label */}
-                          <div style={{ padding: '8px 10px 9px' }}>
-                            <p style={{ fontSize: 11.5, fontWeight: 600, color: isSelected ? '#655BD3' : '#111827' }}>{widget.label}</p>
-                            <p style={{ fontSize: 10.5, color: '#9CA3AF', marginTop: 2 }}>{widget.description}</p>
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
+          <div className="space-y-5">
+            {groups.map(group => (
+              <div key={group}>
+                <p className="text-xs font-bold uppercase mb-2.5" style={{ color: '#9CA3AF', letterSpacing: '0.07em' }}>{group}</p>
+                <div className="grid grid-cols-2 gap-3">
+                  {ALL_WIDGETS.filter(w => w.group === group).map(widget => {
+                    const isSelected = selected.has(widget.id);
+                    return (
+                      <button
+                        key={widget.id}
+                        onClick={() => toggleWidget(widget.id)}
+                        className="text-left rounded-xl overflow-hidden transition-all"
+                        style={{
+                          border: `1.5px solid ${isSelected ? '#655BD3' : '#E5E7EB'}`,
+                          background: 'white',
+                          boxShadow: isSelected ? '0 0 0 3px #EEE9FF' : 'none',
+                        }}
+                      >
+                        <div style={{
+                          background: '#F8F7FF',
+                          borderBottom: `1px solid ${isSelected ? '#DDD6FE' : '#F3F4F6'}`,
+                          padding: '12px 12px 8px',
+                          pointerEvents: 'none',
+                        }}>
+                          {widget.preview}
+                        </div>
+                        <div style={{ padding: '8px 10px 9px' }}>
+                          <p style={{ fontSize: 11.5, fontWeight: 600, color: isSelected ? '#655BD3' : '#111827' }}>{widget.label}</p>
+                          <p style={{ fontSize: 10.5, color: '#9CA3AF', marginTop: 2 }}>{widget.description}</p>
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
-              ))}
-            </div>
-          ) : (
-            /* Templates — same grid + visual preview style as CreatePageModal */
-            <div className="grid grid-cols-3 gap-4">
-              {TEMPLATES.map(tpl => {
-                const isSelected = selectedTemplate === tpl.id;
-                return (
-                  <button
-                    key={tpl.id}
-                    onClick={() => selectTemplate(tpl.id)}
-                    className="text-left rounded-xl overflow-hidden transition-all"
-                    style={{
-                      border: `2px solid ${isSelected ? '#655BD3' : '#E5E7EB'}`,
-                      background: 'white',
-                      boxShadow: isSelected ? '0 0 0 3px #EEE9FF' : 'none',
-                    }}
-                  >
-                    <div style={{ background: '#F8F7FF', borderBottom: `1px solid ${isSelected ? '#DDD6FE' : '#F3F4F6'}`, padding: '14px 14px 10px' }}>
-                      {tpl.id === 'tpl_traffic' && <TrafficPreview color={tpl.iconColor} />}
-                      {tpl.id === 'tpl_demo'    && <DemoPreview    color={tpl.iconColor} />}
-                      {tpl.id === 'tpl_queue'   && <QueuePreview   color={tpl.iconColor} />}
-                    </div>
-                    <div style={{ padding: '10px 12px 12px' }}>
-                      <p style={{ fontSize: 12, fontWeight: 700, color: isSelected ? '#655BD3' : '#111827' }}>{tpl.label}</p>
-                      <p style={{ fontSize: 10.5, marginTop: 3, color: '#9CA3AF', lineHeight: 1.4 }}>{tpl.description}</p>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          )}
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Footer */}
@@ -1630,9 +1564,27 @@ function CreatePageModal({ onClose, onCreate }: { onClose: () => void; onCreate:
 }
 
 // ── Main page ─────────────────────────────────────────────────────────────────
+const DEFAULT_TABS: AnalyticsTab[] = [
+  {
+    id: 'tab_overview',
+    label: 'Overview',
+    widgets: ALL_WIDGETS.map(w => w.id),
+  },
+  {
+    id: 'tab_traffic',
+    label: 'Traffic',
+    widgets: ['footfall_trend', 'passerby_trend', 'peak_hours', 'conversion_rate'],
+  },
+  {
+    id: 'tab_demographics',
+    label: 'Demographics',
+    widgets: ['demographics_donut', 'gender_trend', 'age_bar'],
+  },
+];
+
 export default function AnalyticsPage() {
-  const [tabs, setTabs] = useState<AnalyticsTab[]>([]);
-  const [activeTab, setActiveTab] = useState<string | null>(null);
+  const [tabs, setTabs] = useState<AnalyticsTab[]>(DEFAULT_TABS);
+  const [activeTab, setActiveTab] = useState<string | null>('tab_overview');
   const [showAddWidgets, setShowAddWidgets] = useState(false);
   const [showCreatePage, setShowCreatePage] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);

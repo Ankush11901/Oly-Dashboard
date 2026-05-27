@@ -1,12 +1,15 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
 import { Bell, ChevronDown, Filter, Calendar, Store, Camera, RefreshCw, Settings, LogOut, UserCircle } from 'lucide-react';
+import { usePathname } from 'next/navigation';
 import { useDashboardContext } from '@/components/DashboardProvider';
 
 type DropdownType = 'shoppers' | 'bell' | 'avatar' | 'filter' | 'date' | null;
 
 export function TopBar() {
   const { triggerRefresh } = useDashboardContext();
+  const pathname = usePathname();
+  const showQualifiedShopper = pathname?.startsWith('/dashboard/analytics') ?? false;
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<DropdownType>(null);
 
@@ -115,8 +118,8 @@ export function TopBar() {
         {/* Right */}
         <div className="flex items-center gap-2 relative" ref={rightSectionRef}>
 
-          {/* ── Qualified Shopper ── */}
-          <div className="relative">
+          {/* ── Qualified Shopper — analytics only ── */}
+          {showQualifiedShopper ? (<div className="relative">
             <button
               onClick={openQsDropdown}
               className="flex items-center gap-2.5 rounded-lg px-3.5 py-2 transition-colors text-left border"
@@ -254,7 +257,7 @@ export function TopBar() {
                 </div>
               </div>
             )}
-          </div>
+          </div>) : null}
 
           {/* ── Bell ── */}
           <div className="relative">

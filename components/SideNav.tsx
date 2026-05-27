@@ -3,8 +3,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import {
-  Home, Users, BarChart2, Video, Settings,
-  ShieldCheck, UserCircle, Bell, Lock, Monitor, ChevronDown,
+  Home, Users, BarChart2, Video, Settings, ChevronDown,
 } from 'lucide-react';
 
 interface NavItem { label: string; href: string }
@@ -30,13 +29,10 @@ const NAV_NODES: NavNode[] = [
     icon: <Home size={16} strokeWidth={1.5} />,
   },
   {
-    type: 'section',
+    type: 'flat',
     label: 'Team Management',
+    href: '/dashboard/team',
     icon: <Users size={16} strokeWidth={1.5} />,
-    items: [
-      { label: 'Staff / Team',  href: '/dashboard/team/staff' },
-      { label: 'Permissions',   href: '/dashboard/team/permissions' },
-    ],
   },
   {
     type: 'flat',

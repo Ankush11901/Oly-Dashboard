@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import {
   Monitor, Play, Pause, Grid, ChevronLeft, ChevronRight,
   Wifi, WifiOff, Settings, X, Check, AlertCircle,
-  LogIn, LogOut, PersonStanding,
+  LogIn, LogOut, PersonStanding, Pencil, Scan,
 } from 'lucide-react';
 
 // ── Camera data ───────────────────────────────────────────────────────────────
@@ -39,6 +39,22 @@ const CAMERAS: Camera[] = [
   { id: 'CAM-TAM-02', label: 'Main Hall',    store: 'Tampines Mall',    zone: 'Floor',    status: 'online',   seed: 39, entry: 167,  exit: 145,  passerby: 1430 },
   { id: 'CAM-JUR-01', label: 'Main Atrium',  store: 'Jurong Point',     zone: 'Atrium',   status: 'online',   seed: 43, entry: 289,  exit: 241,  passerby: 2341 },
   { id: 'CAM-NPC-01', label: 'Ground Floor', store: 'Northpoint City',  zone: 'Entrance', status: 'online',   seed: 47, entry: 267,  exit: 198,  passerby: 1980 },
+  { id: 'CAM-JUR-02', label: 'B2 Parking',   store: 'Jurong Point',     zone: 'Entrance', status: 'online',   seed: 51, entry: 189,  exit: 167,  passerby: 1590 },
+  { id: 'CAM-NPC-02', label: 'Level 2 Hall', store: 'Northpoint City',  zone: 'Floor',    status: 'online',   seed: 55, entry: 142,  exit: 128,  passerby: 1180 },
+  { id: 'CAM-MBS-04', label: 'Food Court',   store: 'Marina Bay Sands', zone: 'Floor',    status: 'online',   seed: 59, entry: 198,  exit: 176,  passerby: 1890 },
+  { id: 'CAM-ORC-03', label: 'Level 3 Lift', store: 'Orchard Central',  zone: 'Floor',    status: 'degraded', seed: 63, entry: 67,   exit: 59,   passerby: 590  },
+  { id: 'CAM-VIV-03', label: 'South Gate',   store: 'VivoCity',         zone: 'Entrance', status: 'online',   seed: 67, entry: 276,  exit: 254,  passerby: 2540 },
+  { id: 'CAM-BGS-02', label: 'Food Hall',    store: 'Bugis Junction',   zone: 'Floor',    status: 'online',   seed: 71, entry: 123,  exit: 108,  passerby: 1020 },
+  { id: 'CAM-TAM-03', label: 'Carpark Entry',store: 'Tampines Mall',    zone: 'Entrance', status: 'online',   seed: 75, entry: 145,  exit: 132,  passerby: 1320 },
+  { id: 'CAM-JUR-03', label: 'L1 Atrium',    store: 'Jurong Point',     zone: 'Atrium',   status: 'online',   seed: 79, entry: 201,  exit: 187,  passerby: 1890 },
+  { id: 'CAM-MBS-05', label: 'VIP Lounge',   store: 'Marina Bay Sands', zone: 'Floor',    status: 'online',   seed: 83, entry: 89,   exit: 76,   passerby: 740  },
+  { id: 'CAM-ORC-04', label: 'Basement',     store: 'Orchard Central',  zone: 'Entrance', status: 'online',   seed: 87, entry: 134,  exit: 118,  passerby: 1120 },
+  { id: 'CAM-VIV-04', label: 'Rooftop Walk', store: 'VivoCity',         zone: 'Floor',    status: 'degraded', seed: 91, entry: 56,   exit: 49,   passerby: 470  },
+  { id: 'CAM-BGS-03', label: 'East Wing',    store: 'Bugis Junction',   zone: 'Floor',    status: 'online',   seed: 95, entry: 178,  exit: 162,  passerby: 1530 },
+  { id: 'CAM-CWP-01', label: 'Main Entrance',store: 'Causeway Point',   zone: 'Entrance', status: 'online',   seed: 99, entry: 221,  exit: 198,  passerby: 1970 },
+  { id: 'CAM-CWP-02', label: 'Level 1 Hall', store: 'Causeway Point',   zone: 'Floor',    status: 'online',   seed: 103,entry: 167,  exit: 143,  passerby: 1450 },
+  { id: 'CAM-NPC-03', label: 'Atrium Sky',   store: 'Northpoint City',  zone: 'Atrium',   status: 'online',   seed: 107,entry: 312,  exit: 287,  passerby: 2780 },
+  { id: 'CAM-TAM-04', label: 'Food Court',   store: 'Tampines Mall',    zone: 'Floor',    status: 'online',   seed: 111,entry: 198,  exit: 176,  passerby: 1680 },
 ];
 
 const STATUS_STYLES = {
@@ -315,12 +331,21 @@ function SettingsPanel({ cols, setCols, interval, setInterval: setIntervalVal, o
   );
 }
 
+const CAMS_PER_PAGE = 16;
+
+// ROI lines: static decorative overlay polygons simulating detection zones
+const ROI_LINES = [
+  { points: '12%,15% 48%,12% 52%,55% 10%,58%', color: '#00CE9C' },
+  { points: '55%,10% 88%,14% 90%,62% 53%,58%', color: '#655BD3' },
+  { points: '20%,65% 78%,62% 80%,90% 18%,92%', color: '#F59E0B' },
+];
+
 // ── Main page ─────────────────────────────────────────────────────────────────
 export default function VMSPage() {
   const [selectedCams, setSelectedCams] = useState<Set<string>>(
-    new Set(CAMERAS.filter(c => c.status !== 'offline').slice(0, 4).map(c => c.id))
+    new Set(CAMERAS.filter(c => c.status !== 'offline').map(c => c.id))
   );
-  const [cols, setCols] = useState(2);
+  const [cols, setCols] = useState(4);
   const [carouselMode, setCarouselMode] = useState(false);
   const [carouselIndex, setCarouselIndex] = useState(0);
   const [interval, setIntervalVal] = useState(10);
@@ -328,6 +353,14 @@ export default function VMSPage() {
   const [storeFilter, setStoreFilter] = useState<string>('all');
   const [zoneFilter, setZoneFilter]   = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'online' | 'offline' | 'degraded'>('all');
+  const [page, setPage] = useState(0);
+  const [expandedCam, setExpandedCam] = useState<Camera | null>(null);
+  const [roiActive, setRoiActive] = useState(false);
+  const [zoneLabels, setZoneLabels] = useState<Record<string, string>>({});
+  const [editingZone, setEditingZone] = useState<string | null>(null);
+  const [zoneEditValue, setZoneEditValue] = useState('');
+
+  const getZoneLabel = (zone: string) => zoneLabels[zone] ?? zone;
 
   const STORES = ['all', ...Array.from(new Set(CAMERAS.map(c => c.store)))];
   const ZONES  = ['all', ...Array.from(new Set(CAMERAS.map(c => c.zone)))];
@@ -364,8 +397,9 @@ export default function VMSPage() {
   const prevCam = () => setCarouselIndex(i => (i - 1 + activeCams.length) % activeCams.length);
   const nextCam = () => setCarouselIndex(i => (i + 1) % activeCams.length);
 
-  const onlineCams = CAMERAS.filter(c => c.status === 'online').length;
-  const offlineCams = CAMERAS.filter(c => c.status === 'offline').length;
+  const onlineCams   = CAMERAS.filter(c => c.status === 'online').length;
+  const offlineCams  = CAMERAS.filter(c => c.status === 'offline').length;
+  const degradedCams = CAMERAS.filter(c => c.status === 'degraded').length;
 
   return (
     <div className="flex flex-col h-full" style={{ background: '#F9FAFB' }}>
@@ -376,16 +410,55 @@ export default function VMSPage() {
       >
         <div className="flex items-center gap-3">
           <Monitor size={16} strokeWidth={1.5} style={{ color: '#655BD3' }} />
-          <span className="text-sm font-bold" style={{ color: '#111827' }}>VMS Monitoring</span>
-          <div className="flex items-center gap-1.5 ml-2">
-            <span className="flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full" style={{ background: 'rgba(22,163,74,0.1)', color: '#16A34A' }}>
-              <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#16A34A' }} />
+          <div className="flex items-center gap-1.5">
+            {/* Clickable status badges — double as status filters */}
+            {statusFilter !== 'all' && (
+              <button
+                onClick={() => setStatusFilter('all')}
+                className="text-xs font-medium px-2 py-0.5 rounded-full transition-all"
+                style={{ background: '#F3F4F6', color: '#6B7280', border: 'none', cursor: 'pointer' }}
+              >
+                All
+              </button>
+            )}
+            <button
+              onClick={() => setStatusFilter(s => s === 'online' ? 'all' : 'online')}
+              className="flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full transition-all"
+              style={{
+                background: statusFilter === 'online' ? '#16A34A' : 'rgba(22,163,74,0.1)',
+                color: statusFilter === 'online' ? 'white' : '#16A34A',
+                border: 'none', cursor: 'pointer',
+              }}
+            >
+              <span className="w-1.5 h-1.5 rounded-full" style={{ background: statusFilter === 'online' ? 'white' : '#16A34A' }} />
               {onlineCams} online
-            </span>
+            </button>
+            {degradedCams > 0 && (
+              <button
+                onClick={() => setStatusFilter(s => s === 'degraded' ? 'all' : 'degraded')}
+                className="flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full transition-all"
+                style={{
+                  background: statusFilter === 'degraded' ? '#D97706' : 'rgba(217,119,6,0.1)',
+                  color: statusFilter === 'degraded' ? 'white' : '#D97706',
+                  border: 'none', cursor: 'pointer',
+                }}
+              >
+                <span className="w-1.5 h-1.5 rounded-full" style={{ background: statusFilter === 'degraded' ? 'white' : '#D97706' }} />
+                {degradedCams} degraded
+              </button>
+            )}
             {offlineCams > 0 && (
-              <span className="flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full" style={{ background: 'rgba(220,38,38,0.1)', color: '#DC2626' }}>
+              <button
+                onClick={() => setStatusFilter(s => s === 'offline' ? 'all' : 'offline')}
+                className="flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full transition-all"
+                style={{
+                  background: statusFilter === 'offline' ? '#DC2626' : 'rgba(220,38,38,0.1)',
+                  color: statusFilter === 'offline' ? 'white' : '#DC2626',
+                  border: 'none', cursor: 'pointer',
+                }}
+              >
                 {offlineCams} offline
-              </span>
+              </button>
             )}
           </div>
         </div>
@@ -485,61 +558,60 @@ export default function VMSPage() {
         {/* Filters — left side */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
 
-          {/* STATUS — labelled dot-toggle group */}
-          <div className="flex items-center gap-1" style={{ background: '#F9FAFB', borderRadius: 8, padding: '3px 4px', border: '1px solid #F3F4F6' }}>
-            {([
-              { value: 'all',      label: 'All',      dot: '#9CA3AF' },
-              { value: 'online',   label: 'Online',   dot: '#16A34A' },
-              { value: 'offline',  label: 'Offline',  dot: '#DC2626' },
-              { value: 'degraded', label: 'Degraded', dot: '#D97706' },
-            ] as const).map(({ value, label, dot }) => {
-              const active = statusFilter === value;
-              return (
-                <button
-                  key={value}
-                  onClick={() => setStatusFilter(value)}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 5,
-                    height: 26, paddingLeft: 8, paddingRight: 8,
-                    borderRadius: 6, border: 'none', cursor: 'pointer',
-                    fontSize: 11.5, fontWeight: active ? 600 : 400,
-                    background: active ? '#fff' : 'transparent',
-                    color: active ? '#111827' : '#6B7280',
-                    boxShadow: active ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
-                    transition: 'all 120ms ease',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: active ? dot : '#D1D5DB', flexShrink: 0, transition: 'background 120ms ease' }} />
-                  {label}
-                </button>
-              );
-            })}
-          </div>
-
-          <div style={{ width: 1, height: 16, background: '#E5E7EB', flexShrink: 0 }} />
-
-          {/* ZONE — underline-tab style */}
+          {/* ZONE — underline-tab style with inline rename */}
           <div className="flex items-center gap-0" style={{ borderBottom: '2px solid #F3F4F6' }}>
             {ZONES.map(z => {
               const active = zoneFilter === z;
+              const displayLabel = z === 'all' ? 'All' : getZoneLabel(z);
               return (
-                <button
-                  key={z}
-                  onClick={() => setZoneFilter(z)}
-                  style={{
-                    height: 30, paddingLeft: 10, paddingRight: 10,
-                    border: 'none', cursor: 'pointer', background: 'transparent',
-                    fontSize: 11.5, fontWeight: active ? 600 : 400,
-                    color: active ? '#655BD3' : '#6B7280',
-                    borderBottom: active ? '2px solid #655BD3' : '2px solid transparent',
-                    marginBottom: -2,
-                    transition: 'all 150ms ease',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {z === 'all' ? 'All' : z}
-                </button>
+                <div key={z} className="relative flex items-center group" style={{ marginBottom: -2 }}>
+                  {editingZone === z ? (
+                    <input
+                      autoFocus
+                      value={zoneEditValue}
+                      onChange={e => setZoneEditValue(e.target.value)}
+                      onBlur={() => {
+                        if (zoneEditValue.trim()) setZoneLabels(prev => ({ ...prev, [z]: zoneEditValue.trim() }));
+                        setEditingZone(null);
+                      }}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') {
+                          if (zoneEditValue.trim()) setZoneLabels(prev => ({ ...prev, [z]: zoneEditValue.trim() }));
+                          setEditingZone(null);
+                        }
+                        if (e.key === 'Escape') setEditingZone(null);
+                      }}
+                      style={{
+                        height: 28, width: 90, padding: '0 8px', fontSize: 11.5, fontWeight: 600,
+                        border: '1.5px solid #655BD3', borderRadius: 6, outline: 'none',
+                        color: '#655BD3', background: '#F5F3FF',
+                      }}
+                    />
+                  ) : (
+                    <button
+                      onClick={() => { setZoneFilter(z); setPage(0); }}
+                      style={{
+                        height: 30, paddingLeft: 10, paddingRight: z !== 'all' ? 24 : 10,
+                        border: 'none', cursor: 'pointer', background: 'transparent',
+                        fontSize: 11.5, fontWeight: active ? 600 : 400,
+                        color: active ? '#655BD3' : '#6B7280',
+                        borderBottom: active ? '2px solid #655BD3' : '2px solid transparent',
+                        transition: 'all 150ms ease', whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {displayLabel}
+                    </button>
+                  )}
+                  {z !== 'all' && editingZone !== z && (
+                    <button
+                      onClick={e => { e.stopPropagation(); setZoneEditValue(getZoneLabel(z)); setEditingZone(z); }}
+                      className="absolute right-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9CA3AF', padding: 0, display: 'flex' }}
+                    >
+                      <Pencil size={9} strokeWidth={2} />
+                    </button>
+                  )}
+                </div>
               );
             })}
           </div>
@@ -738,28 +810,80 @@ export default function VMSPage() {
           </div>
         ) : (
           /* Grid view */
-          <div
-            className="grid gap-3"
-            style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}
-          >
-            {activeCams.map(cam => (
-              <CameraFeed
-                key={cam.id}
-                camera={cam}
-                selected={selectedCams.has(cam.id)}
-                onToggle={() => {
-                  if (!selectMode) return;
-                  if (selectedCams.has(cam.id)) {
-                    // deselecting from tile → ask for confirmation
-                    setPendingDeselect(cam);
-                  } else {
-                    toggleCam(cam.id);
-                  }
-                }}
-                gridMode={selectMode}
-              />
-            ))}
-          </div>
+          <>
+            <div
+              className="grid gap-3"
+              style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}
+            >
+              {activeCams.slice(page * CAMS_PER_PAGE, (page + 1) * CAMS_PER_PAGE).map(cam => (
+                <CameraFeed
+                  key={cam.id}
+                  camera={cam}
+                  selected={selectedCams.has(cam.id)}
+                  onToggle={() => {
+                    if (selectMode) {
+                      if (selectedCams.has(cam.id)) {
+                        setPendingDeselect(cam);
+                      } else {
+                        toggleCam(cam.id);
+                      }
+                    } else {
+                      setExpandedCam(cam);
+                      setRoiActive(false);
+                    }
+                  }}
+                  gridMode={selectMode}
+                />
+              ))}
+            </div>
+
+            {/* Pagination */}
+            {activeCams.length > CAMS_PER_PAGE && (
+              <div className="flex items-center justify-center gap-2 pt-4">
+                <button
+                  onClick={() => setPage(p => Math.max(0, p - 1))}
+                  disabled={page === 0}
+                  style={{
+                    width: 30, height: 30, borderRadius: 8, border: '1px solid #E5E7EB',
+                    background: page === 0 ? '#F9FAFB' : 'white', cursor: page === 0 ? 'not-allowed' : 'pointer',
+                    color: page === 0 ? '#D1D5DB' : '#374151', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}
+                >
+                  <ChevronLeft size={14} strokeWidth={2} />
+                </button>
+                {Array.from({ length: Math.ceil(activeCams.length / CAMS_PER_PAGE) }).map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setPage(i)}
+                    style={{
+                      width: 30, height: 30, borderRadius: 8, fontSize: 12, fontWeight: page === i ? 700 : 400,
+                      border: `1px solid ${page === i ? '#655BD3' : '#E5E7EB'}`,
+                      background: page === i ? '#655BD3' : 'white',
+                      color: page === i ? 'white' : '#374151', cursor: 'pointer',
+                    }}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+                <button
+                  onClick={() => setPage(p => Math.min(Math.ceil(activeCams.length / CAMS_PER_PAGE) - 1, p + 1))}
+                  disabled={page >= Math.ceil(activeCams.length / CAMS_PER_PAGE) - 1}
+                  style={{
+                    width: 30, height: 30, borderRadius: 8, border: '1px solid #E5E7EB',
+                    background: page >= Math.ceil(activeCams.length / CAMS_PER_PAGE) - 1 ? '#F9FAFB' : 'white',
+                    cursor: page >= Math.ceil(activeCams.length / CAMS_PER_PAGE) - 1 ? 'not-allowed' : 'pointer',
+                    color: page >= Math.ceil(activeCams.length / CAMS_PER_PAGE) - 1 ? '#D1D5DB' : '#374151',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}
+                >
+                  <ChevronRight size={14} strokeWidth={2} />
+                </button>
+                <span style={{ fontSize: 11, color: '#9CA3AF', marginLeft: 4 }}>
+                  {activeCams.length} camera{activeCams.length !== 1 ? 's' : ''}
+                </span>
+              </div>
+            )}
+          </>
         )}
       </div>
 
@@ -771,6 +895,120 @@ export default function VMSPage() {
           setInterval={setIntervalVal}
           onClose={() => setShowSettings(false)}
         />
+      )}
+
+      {/* Expanded camera overlay with ROI option */}
+      {expandedCam && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center"
+          style={{ background: 'rgba(0,0,0,0.82)', backdropFilter: 'blur(4px)' }}
+          onClick={() => { setExpandedCam(null); setRoiActive(false); }}
+        >
+          <div
+            className="relative rounded-2xl overflow-hidden"
+            style={{ width: '80vw', maxWidth: 1000, aspectRatio: '16/9', background: '#111' }}
+            onClick={e => e.stopPropagation()}
+          >
+            {expandedCam.status !== 'offline' ? (
+              <img
+                src={`https://loremflickr.com/1200/675/shopping,mall,crowd,people?lock=${expandedCam.seed}`}
+                alt={expandedCam.label}
+                style={{
+                  width: '100%', height: '100%', objectFit: 'cover', display: 'block',
+                  filter: 'grayscale(1) contrast(1.15) brightness(0.75)',
+                }}
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center" style={{ background: '#0a0a0a' }}>
+                <WifiOff size={48} strokeWidth={1.5} style={{ color: '#374151' }} />
+              </div>
+            )}
+            {/* Scanlines */}
+            <div style={{
+              position: 'absolute', inset: 0, pointerEvents: 'none',
+              backgroundImage: 'repeating-linear-gradient(0deg, rgba(0,0,0,0.1) 0px, rgba(0,0,0,0.1) 1px, transparent 1px, transparent 3px)',
+            }} />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 pointer-events-none" />
+
+            {/* ROI overlay */}
+            {roiActive && (
+              <svg className="absolute inset-0 pointer-events-none" style={{ width: '100%', height: '100%' }}>
+                {ROI_LINES.map((roi, i) => (
+                  <g key={i}>
+                    <polygon
+                      points={roi.points.split(' ').map(p => {
+                        const [x, y] = p.split(',');
+                        return `${x} ${y}`;
+                      }).join(' ')}
+                      fill={`${roi.color}18`}
+                      stroke={roi.color}
+                      strokeWidth="1.5"
+                      strokeDasharray="6 3"
+                    />
+                    <text
+                      x={roi.points.split(' ')[0].split(',')[0]}
+                      y={roi.points.split(' ')[0].split(',')[1]}
+                      fill={roi.color}
+                      fontSize="11"
+                      fontFamily="monospace"
+                      fontWeight="700"
+                      dy="-4"
+                    >
+                      Zone {i + 1}
+                    </text>
+                  </g>
+                ))}
+              </svg>
+            )}
+
+            {/* Top bar */}
+            <div className="absolute top-3 left-3 right-3 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-[10px] px-2 py-1 rounded" style={{ background: 'rgba(0,0,0,0.6)', color: '#E5E7EB' }}>
+                  {expandedCam.id}
+                </span>
+                {expandedCam.status === 'online' && (
+                  <span className="flex items-center gap-1.5 text-[10px] font-semibold px-2 py-1 rounded" style={{ background: 'rgba(22,163,74,0.25)', color: '#4ADE80' }}>
+                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#4ADE80', display: 'inline-block' }} />
+                    REC
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                {/* X-ray / ROI toggle */}
+                <button
+                  onClick={() => setRoiActive(r => !r)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors"
+                  style={{
+                    background: roiActive ? 'rgba(101,91,211,0.9)' : 'rgba(0,0,0,0.65)',
+                    color: roiActive ? 'white' : '#E5E7EB',
+                    border: `1px solid ${roiActive ? '#655BD3' : 'rgba(255,255,255,0.2)'}`,
+                    backdropFilter: 'blur(4px)',
+                  }}
+                >
+                  <Scan size={12} strokeWidth={2} />
+                  ROI {roiActive ? 'On' : 'Off'}
+                </button>
+                <button
+                  onClick={() => { setExpandedCam(null); setRoiActive(false); }}
+                  style={{
+                    width: 30, height: 30, borderRadius: 8, border: 'none', cursor: 'pointer',
+                    background: 'rgba(0,0,0,0.65)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    backdropFilter: 'blur(4px)',
+                  }}
+                >
+                  <X size={14} strokeWidth={2} />
+                </button>
+              </div>
+            </div>
+
+            {/* Bottom info */}
+            <div className="absolute bottom-3 left-4">
+              <p className="text-base font-bold text-white">{expandedCam.label}</p>
+              <p className="text-xs text-gray-300 mt-0.5">{expandedCam.store} · {getZoneLabel(expandedCam.zone)}</p>
+            </div>
+          </div>
+        </div>
       )}
 
       {pendingDeselect && (

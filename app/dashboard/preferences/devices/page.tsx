@@ -1,4 +1,5 @@
 'use client';
+import { useState } from 'react';
 import { LayoutPanelLeft, LayoutTemplate, Monitor, Wifi, HardDrive, RefreshCw } from 'lucide-react';
 import { useDashboardContext, NavStyle } from '@/components/DashboardProvider';
 
@@ -26,6 +27,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 
 export default function DevicesPage() {
   const { navStyle, setNavStyle } = useDashboardContext();
+  const [refreshInterval, setRefreshInterval] = useState('30');
 
   const options: { value: NavStyle; label: string; desc: string; icon: React.ReactNode; preview: React.ReactNode }[] = [
     {
@@ -162,7 +164,8 @@ export default function DevicesPage() {
               </div>
             </div>
             <select
-              defaultValue="30"
+              value={refreshInterval}
+              onChange={e => setRefreshInterval(e.target.value)}
               style={{ fontSize: 13, padding: '6px 10px', borderRadius: 8, border: '1px solid #E5E7EB', background: '#fff', color: '#374151', cursor: 'pointer', outline: 'none' }}
             >
               <option value="15">Every 15s</option>

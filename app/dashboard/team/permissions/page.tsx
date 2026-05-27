@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import {
-  ShieldCheck, Plus, Users, Edit2, Trash2, Check, Eye, Minus,
+  ShieldCheck, Plus, Users, Edit2, Trash2, Check, Eye, Minus, X,
   LayoutDashboard, BarChart2, Video, UserCog, Settings2, FileText, Lock,
 } from 'lucide-react';
 
@@ -160,14 +160,26 @@ function PermToggle({ level, onChange, disabled }: { level: PermLevel; onChange:
   );
 }
 
+const ROLE_COLORS = ['#655BD3', '#3B82F6', '#00CE9C', '#F59E0B', '#EC4899', '#8B5CF6', '#DC2626'];
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function PermissionsPage() {
   const [selectedRole, setSelectedRole] = useState('super_admin');
   const [perms, setPerms] = useState<Record<string, ModulePerm[]>>(PERM_MATRIX);
+  const [roles, setRoles] = useState<RoleDef[]>(ROLES);
 
-  const role = ROLES.find(r => r.id === selectedRole)!;
-  const modules = perms[selectedRole] ?? [];
-  const totalUsers = ROLES.reduce((s, r) => s + r.userCount, 0);
+  // Modals
+  const [createOpen, setCreateOpen] = useState(false);
+  const [editRole, setEditRole] = useState<RoleDef | null>(null);
+  const [deleteRoleId, setDeleteRoleId] = useState<string | null>(null);
+  const [savedMsg, setSavedMsg] = useState(false);
+
+  // Create role form
+  const [newRole, setNewRole] = useState({ name: '', description: '', color: ROLE_COLORS[1] });
+
+  const role = roles.find(r => r.id === selectedRole) ?? roles[0];
+  const modules = perms[selectedRole] ?? perms['staff'] ?? [];
+  const totalUsers = roles.reduce((s, r) => s + r.userCount, 0);
 
   const updatePerm = (moduleIdx: number, actionIdx: number, level: PermLevel) => {
     setPerms(prev => ({
@@ -179,6 +191,45 @@ export default function PermissionsPage() {
         }
       ),
     }));
+  };
+
+  const handleCreateRole = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newRole.name.trim()) return;
+    const id = newRole.name.toLowerCase().replace(/\s+/g, '_') + '_' + Date.now();
+    const created: RoleDef = { id, name: newRole.name, description: newRole.description, color: newRole.color, userCount: 0, isSystem: false };
+    setRoles(prev => [...prev, created]);
+    // Copy staff permissions as a starting template
+    setPerms(prev => ({ ...prev, [id]: prev['staff'] ?? [] }));
+    setSelectedRole(id);
+    setNewRole({ name: '', description: '', color: ROLE_COLORS[1] });
+    setCreateOpen(false);
+  };
+
+  const handleEditSave = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editRole) return;
+    setRoles(prev => prev.map(r => r.id === editRole.id ? editRole : r));
+    setEditRole(null);
+  };
+
+  const handleDeleteRole = () => {
+    if (!deleteRoleId) return;
+    setRoles(prev => prev.filter(r => r.id !== deleteRoleId));
+    setPerms(prev => { const next = { ...prev }; delete next[deleteRoleId]; return next; });
+    if (selectedRole === deleteRoleId) setSelectedRole('super_admin');
+    setDeleteRoleId(null);
+  };
+
+  const handleSaveChanges = () => {
+    setSavedMsg(true);
+    setTimeout(() => setSavedMsg(false), 2500);
+  };
+
+  const handleResetDefault = () => {
+    if (PERM_MATRIX[selectedRole]) {
+      setPerms(prev => ({ ...prev, [selectedRole]: PERM_MATRIX[selectedRole] }));
+    }
   };
 
   return (
@@ -202,6 +253,7 @@ export default function PermissionsPage() {
           </div>
         </div>
         <button
+          onClick={() => setCreateOpen(true)}
           className="flex items-center gap-2 text-sm font-semibold text-white"
           style={{ padding: '8px 16px', borderRadius: 9, background: '#655BD3', border: 'none', cursor: 'pointer' }}
         >
@@ -213,9 +265,9 @@ export default function PermissionsPage() {
       {/* ── Stats row ───────────────────────────────────────────────────────── */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
         {[
-          { label: 'Total Roles',   value: ROLES.length,                          color: '#655BD3', bg: '#EEE9FF', icon: <ShieldCheck size={16} strokeWidth={1.5} /> },
-          { label: 'System Roles',  value: ROLES.filter(r => r.isSystem).length,  color: '#6B7280', bg: '#F3F4F6', icon: <Lock size={16} strokeWidth={1.5} /> },
-          { label: 'Custom Roles',  value: ROLES.filter(r => !r.isSystem).length, color: '#3B82F6', bg: '#DBEAFE', icon: <ShieldCheck size={16} strokeWidth={1.5} /> },
+          { label: 'Total Roles',   value: roles.length,                          color: '#655BD3', bg: '#EEE9FF', icon: <ShieldCheck size={16} strokeWidth={1.5} /> },
+          { label: 'System Roles',  value: roles.filter(r => r.isSystem).length,  color: '#6B7280', bg: '#F3F4F6', icon: <Lock size={16} strokeWidth={1.5} /> },
+          { label: 'Custom Roles',  value: roles.filter(r => !r.isSystem).length, color: '#3B82F6', bg: '#DBEAFE', icon: <ShieldCheck size={16} strokeWidth={1.5} /> },
           { label: 'Total Members', value: totalUsers,                             color: '#00CE9C', bg: '#CCFBF1', icon: <Users size={16} strokeWidth={1.5} /> },
         ].map(s => (
           <div key={s.label} className="card" style={{ padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 14 }}>
@@ -240,10 +292,10 @@ export default function PermissionsPage() {
           <p style={{ fontSize: 10.5, fontWeight: 700, color: 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
             Select Role
           </p>
-          <p style={{ fontSize: 11, color: 'var(--color-text-3)' }}>{ROLES.length} roles</p>
+          <p style={{ fontSize: 11, color: 'var(--color-text-3)' }}>{roles.length} roles</p>
         </div>
         <div style={{ display: 'flex', overflowX: 'auto' }}>
-          {ROLES.map((r, idx) => {
+          {roles.map((r, idx) => {
             const active = selectedRole === r.id;
             return (
               <button
@@ -252,7 +304,7 @@ export default function PermissionsPage() {
                 style={{
                   display: 'flex', flexDirection: 'column', alignItems: 'flex-start',
                   padding: '16px 22px', border: 'none',
-                  borderRight: idx < ROLES.length - 1 ? '1px solid var(--color-border)' : 'none',
+                  borderRight: idx < roles.length - 1 ? '1px solid var(--color-border)' : 'none',
                   borderBottom: `3px solid ${active ? '#655BD3' : 'transparent'}`,
                   cursor: 'pointer', textAlign: 'left',
                   minWidth: 175, flexShrink: 0,
@@ -301,11 +353,14 @@ export default function PermissionsPage() {
           })}
 
           {/* Add role placeholder */}
-          <button style={{
-            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-            padding: '16px 28px', border: 'none', cursor: 'pointer', background: 'transparent',
-            minWidth: 100, gap: 8,
-          }}>
+          <button
+            onClick={() => setCreateOpen(true)}
+            style={{
+              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+              padding: '16px 28px', border: 'none', cursor: 'pointer', background: 'transparent',
+              minWidth: 100, gap: 8,
+            }}
+          >
             <div style={{
               width: 38, height: 38, borderRadius: 11,
               border: '1.5px dashed #D1D5DB',
@@ -366,20 +421,26 @@ export default function PermissionsPage() {
             </div>
             {!role.isSystem && (
               <>
-                <button style={{
-                  display: 'flex', alignItems: 'center', gap: 5,
-                  padding: '6px 12px', borderRadius: 8,
-                  border: '1px solid #E5E7EB', fontSize: 12, fontWeight: 500,
-                  color: '#374151', background: '#fff', cursor: 'pointer',
-                }}>
+                <button
+                  onClick={() => setEditRole(role)}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 5,
+                    padding: '6px 12px', borderRadius: 8,
+                    border: '1px solid #E5E7EB', fontSize: 12, fontWeight: 500,
+                    color: '#374151', background: '#fff', cursor: 'pointer',
+                  }}
+                >
                   <Edit2 size={12} strokeWidth={1.5} />Edit Role
                 </button>
-                <button style={{
-                  display: 'flex', alignItems: 'center', gap: 5,
-                  padding: '6px 12px', borderRadius: 8,
-                  border: '1px solid #FEE2E2', fontSize: 12, fontWeight: 500,
-                  color: '#DC2626', background: '#FFF5F5', cursor: 'pointer',
-                }}>
+                <button
+                  onClick={() => setDeleteRoleId(role.id)}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 5,
+                    padding: '6px 12px', borderRadius: 8,
+                    border: '1px solid #FEE2E2', fontSize: 12, fontWeight: 500,
+                    color: '#DC2626', background: '#FFF5F5', cursor: 'pointer',
+                  }}
+                >
                   <Trash2 size={12} strokeWidth={1.5} />Delete
                 </button>
               </>
@@ -488,25 +549,126 @@ export default function PermissionsPage() {
             <p style={{ fontSize: 11.5, color: 'var(--color-text-3)' }}>
               Changes apply immediately when saved.
             </p>
-            <div style={{ display: 'flex', gap: 10 }}>
-              <button style={{
-                padding: '8px 18px', borderRadius: 8,
-                border: '1px solid #E5E7EB', fontSize: 13, fontWeight: 500,
-                color: '#374151', background: '#fff', cursor: 'pointer',
-              }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              {savedMsg && (
+                <span style={{ fontSize: 12, color: '#16A34A', display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <Check size={13} strokeWidth={2.5} />Saved!
+                </span>
+              )}
+              <button
+                onClick={handleResetDefault}
+                style={{
+                  padding: '8px 18px', borderRadius: 8,
+                  border: '1px solid #E5E7EB', fontSize: 13, fontWeight: 500,
+                  color: '#374151', background: '#fff', cursor: 'pointer',
+                }}
+              >
                 Reset to Default
               </button>
-              <button style={{
-                padding: '8px 20px', borderRadius: 8,
-                border: 'none', fontSize: 13, fontWeight: 700,
-                color: '#fff', background: '#655BD3', cursor: 'pointer',
-              }}>
+              <button
+                onClick={handleSaveChanges}
+                style={{
+                  padding: '8px 20px', borderRadius: 8,
+                  border: 'none', fontSize: 13, fontWeight: 700,
+                  color: '#fff', background: '#655BD3', cursor: 'pointer',
+                }}
+              >
                 Save Changes
               </button>
             </div>
           </div>
         )}
       </div>
+
+      {/* ── Create Role Modal ──────────────────────────────────────────────── */}
+      {createOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(17,24,39,0.6)' }} onClick={() => setCreateOpen(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-7" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-5">
+              <h3 style={{ fontSize: 15, fontWeight: 700, color: '#111827' }}>Create New Role</h3>
+              <button onClick={() => setCreateOpen(false)} className="p-1.5 rounded-lg hover:bg-gray-100" style={{ color: '#9CA3AF' }}><X size={16} /></button>
+            </div>
+            <form onSubmit={handleCreateRole} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold mb-1.5" style={{ color: '#374151' }}>Role Name</label>
+                <input type="text" required autoFocus placeholder="e.g. Data Analyst" value={newRole.name} onChange={e => setNewRole(r => ({ ...r, name: e.target.value }))} className="w-full text-sm rounded-lg px-3 py-2.5 outline-none" style={{ border: '1px solid #E5E7EB', color: '#111827' }} />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold mb-1.5" style={{ color: '#374151' }}>Description <span style={{ fontWeight: 400, color: '#9CA3AF' }}>(optional)</span></label>
+                <input type="text" placeholder="Brief description of this role's access" value={newRole.description} onChange={e => setNewRole(r => ({ ...r, description: e.target.value }))} className="w-full text-sm rounded-lg px-3 py-2.5 outline-none" style={{ border: '1px solid #E5E7EB', color: '#111827' }} />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold mb-2" style={{ color: '#374151' }}>Colour</label>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  {ROLE_COLORS.map(c => (
+                    <button key={c} type="button" onClick={() => setNewRole(r => ({ ...r, color: c }))} style={{ width: 26, height: 26, borderRadius: '50%', background: c, border: newRole.color === c ? '3px solid #111827' : '2px solid transparent', cursor: 'pointer', flexShrink: 0 }} />
+                  ))}
+                </div>
+              </div>
+              <p style={{ fontSize: 11, color: '#9CA3AF' }}>Permissions start as a copy of Staff Associate. You can edit them after creation.</p>
+              <div className="flex gap-3 pt-1">
+                <button type="button" onClick={() => setCreateOpen(false)} className="flex-1 py-2.5 rounded-lg text-sm font-medium" style={{ border: '1px solid #E5E7EB', color: '#374151' }}>Cancel</button>
+                <button type="submit" className="flex-1 py-2.5 rounded-lg text-sm font-semibold text-white" style={{ background: '#655BD3' }}>Create Role</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── Edit Role Modal ────────────────────────────────────────────────── */}
+      {editRole && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(17,24,39,0.6)' }} onClick={() => setEditRole(null)}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-7" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-5">
+              <h3 style={{ fontSize: 15, fontWeight: 700, color: '#111827' }}>Edit Role</h3>
+              <button onClick={() => setEditRole(null)} className="p-1.5 rounded-lg hover:bg-gray-100" style={{ color: '#9CA3AF' }}><X size={16} /></button>
+            </div>
+            <form onSubmit={handleEditSave} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold mb-1.5" style={{ color: '#374151' }}>Role Name</label>
+                <input type="text" required value={editRole.name} onChange={e => setEditRole(r => r ? { ...r, name: e.target.value } : r)} className="w-full text-sm rounded-lg px-3 py-2.5 outline-none" style={{ border: '1px solid #E5E7EB', color: '#111827' }} />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold mb-1.5" style={{ color: '#374151' }}>Description</label>
+                <input type="text" value={editRole.description} onChange={e => setEditRole(r => r ? { ...r, description: e.target.value } : r)} className="w-full text-sm rounded-lg px-3 py-2.5 outline-none" style={{ border: '1px solid #E5E7EB', color: '#111827' }} />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold mb-2" style={{ color: '#374151' }}>Colour</label>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  {ROLE_COLORS.map(c => (
+                    <button key={c} type="button" onClick={() => setEditRole(r => r ? { ...r, color: c } : r)} style={{ width: 26, height: 26, borderRadius: '50%', background: c, border: editRole.color === c ? '3px solid #111827' : '2px solid transparent', cursor: 'pointer', flexShrink: 0 }} />
+                  ))}
+                </div>
+              </div>
+              <div className="flex gap-3 pt-1">
+                <button type="button" onClick={() => setEditRole(null)} className="flex-1 py-2.5 rounded-lg text-sm font-medium" style={{ border: '1px solid #E5E7EB', color: '#374151' }}>Cancel</button>
+                <button type="submit" className="flex-1 py-2.5 rounded-lg text-sm font-semibold text-white" style={{ background: '#655BD3' }}>Save</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── Delete Role Confirmation ───────────────────────────────────────── */}
+      {deleteRoleId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(17,24,39,0.6)' }} onClick={() => setDeleteRoleId(null)}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-7" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: '#FEE2E2' }}>
+                <Trash2 size={16} style={{ color: '#DC2626' }} />
+              </div>
+              <h3 style={{ fontSize: 15, fontWeight: 700, color: '#111827' }}>Delete Role</h3>
+            </div>
+            <p className="text-sm mb-6" style={{ color: '#6B7280' }}>
+              Are you sure you want to delete <strong>{roles.find(r => r.id === deleteRoleId)?.name}</strong>? Members with this role will lose access. This cannot be undone.
+            </p>
+            <div className="flex gap-3">
+              <button onClick={() => setDeleteRoleId(null)} className="flex-1 py-2.5 rounded-lg text-sm font-medium" style={{ border: '1px solid #E5E7EB', color: '#374151' }}>Cancel</button>
+              <button onClick={handleDeleteRole} className="flex-1 py-2.5 rounded-lg text-sm font-semibold text-white" style={{ background: '#DC2626' }}>Delete Role</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
