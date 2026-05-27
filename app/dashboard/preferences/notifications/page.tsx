@@ -70,7 +70,7 @@ export default function NotificationsPage() {
   ];
 
   return (
-    <div className="p-8 max-w-3xl space-y-6">
+    <div className="p-8 space-y-6">
       <div className="flex items-center gap-3 mb-2">
         <Bell size={24} style={{ color: 'var(--color-primary)' }} strokeWidth={1.5} />
         <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--color-text-1)' }}>Notification Settings</h1>
@@ -82,7 +82,7 @@ export default function NotificationsPage() {
           <AlertCircle size={15} strokeWidth={1.5} style={{ color: '#655BD3' }} />
           <h2 style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-1)' }}>Alert Types</h2>
         </div>
-        <div className="space-y-2">
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
           {alerts.map(alert => (
             <div key={alert.id} className="flex items-center justify-between rounded-lg px-4 py-3" style={{ background: '#FAFAFA', border: '1px solid #F3F4F6' }}>
               <div className="flex items-center gap-3">
@@ -106,7 +106,7 @@ export default function NotificationsPage() {
           <MessageSquare size={15} strokeWidth={1.5} style={{ color: '#655BD3' }} />
           <h2 style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-1)' }}>Delivery Channels</h2>
         </div>
-        <div className="space-y-2">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
           {CHANNEL_CFG.map(ch => (
             <div key={ch.key} className="flex items-center justify-between rounded-lg px-4 py-3" style={{ background: '#FAFAFA', border: '1px solid #F3F4F6' }}>
               <div className="flex items-center gap-3">

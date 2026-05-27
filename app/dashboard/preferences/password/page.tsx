@@ -74,7 +74,7 @@ export default function PasswordPage() {
   };
 
   return (
-    <div className="p-8 max-w-3xl space-y-6">
+    <div className="p-8 space-y-6">
       <div className="flex items-center gap-3 mb-2">
         <Lock size={24} style={{ color: 'var(--color-primary)' }} strokeWidth={1.5} />
         <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--color-text-1)' }}>Password &amp; Access</h1>
@@ -86,7 +86,7 @@ export default function PasswordPage() {
           <Shield size={16} strokeWidth={1.5} style={{ color: '#655BD3' }} />
           <h2 style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-1)' }}>Change Password</h2>
         </div>
-        <form onSubmit={handleChangePassword} className="space-y-4 max-w-sm">
+        <form onSubmit={handleChangePassword} className="space-y-4" style={{ maxWidth: 560 }}>
           <PasswordInput label="Current Password" value={current} onChange={setCurrent} placeholder="Enter current password" />
           <div>
             <PasswordInput label="New Password" value={newPw} onChange={setNewPw} placeholder="At least 8 characters" />

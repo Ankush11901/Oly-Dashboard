@@ -39,7 +39,10 @@
       "Bash(python3 -c \"import docx\")",
       "Bash(node -e \"require\\('docx'\\)\")",
       "Bash(python3 *)",
-      "WebFetch(domain:claude.ai)"
+      "WebFetch(domain:claude.ai)",
+      "Bash(extract-text \"/Users/ankush/Downloads/All Charts.docx\")",
+      "Bash(pandoc \"/Users/ankush/Downloads/All Charts.docx\" -t markdown)",
+      "Bash(pip3 install *)"
     ]
   }
 }

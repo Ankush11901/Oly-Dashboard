@@ -1,10 +1,10 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
-import { Bell, ChevronDown, Filter, Calendar, Store, Camera, RefreshCw, Settings, LogOut, UserCircle } from 'lucide-react';
+import { Bell, ChevronDown, Calendar, Store, Camera, RefreshCw, Settings, LogOut, UserCircle, TrendingUp, Filter, SlidersHorizontal } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { useDashboardContext } from '@/components/DashboardProvider';
 
-type DropdownType = 'shoppers' | 'bell' | 'avatar' | 'filter' | 'date' | null;
+type DropdownType = 'shoppers' | 'bell' | 'avatar' | 'date' | 'consultation' | null;
 
 export function TopBar() {
   const { triggerRefresh } = useDashboardContext();
@@ -107,42 +107,53 @@ export function TopBar() {
         style={{ height: 'var(--topbar-height)', paddingLeft: 'var(--content-padding)', paddingRight: 'var(--content-padding)' }}
       >
         {/* Left — Landmark logo */}
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <img
-            src="/landmark-logo.png"
-            alt="Landmark Group"
-            style={{ height: 22, width: 'auto', objectFit: 'contain', maxWidth: 130 }}
-          />
-        </div>
+        <img
+          src="/landmark-logo.png"
+          alt="Landmark Group"
+          style={{ height: 22, width: 'auto', objectFit: 'contain', maxWidth: 130 }}
+        />
 
         {/* Right */}
-        <div className="flex items-center gap-2 relative" ref={rightSectionRef}>
+        <div className="flex items-center gap-3 relative" ref={rightSectionRef}>
+
+          {/* ── Insights of the Day ── */}
+          <button
+            className="flex items-center gap-2 border transition-colors"
+            style={{
+              height: 34, paddingLeft: 14, paddingRight: 14,
+              borderRadius: 6,
+              borderColor: '#DDD6FE', color: '#655BD3',
+              background: '#F5F3FF', fontSize: 13, fontWeight: 600,
+              whiteSpace: 'nowrap', cursor: 'pointer',
+            }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#EDE9FE'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = '#F5F3FF'; }}
+          >
+            <TrendingUp size={14} strokeWidth={1.5} />
+            Insights of the Day
+          </button>
 
           {/* ── Qualified Shopper — analytics only ── */}
           {showQualifiedShopper ? (<div className="relative">
             <button
               onClick={openQsDropdown}
-              className="flex items-center gap-2.5 rounded-lg px-3.5 py-2 transition-colors text-left border"
+              className="flex items-center gap-2 rounded-md px-3 transition-colors border"
               style={{
+                height: 34,
                 background: qsEnabled ? '#F5F3FF' : 'var(--color-surface)',
                 borderColor: qsEnabled ? '#DDD6FE' : 'var(--color-border)',
                 color: 'var(--color-text-1)',
               }}
             >
-              <div>
-                <p className="text-[13px] font-semibold leading-tight" style={{ color: qsEnabled ? '#655BD3' : 'var(--color-text-1)' }}>
-                  Qualified Shopper
-                </p>
-                <p className="text-[11px] font-medium leading-tight mt-0.5" style={{ color: qsEnabled ? '#9580E8' : 'var(--color-text-3)' }}>
-                  {qsEnabled ? qsSummary : 'Not configured'}
-                </p>
-              </div>
-              <Settings size={14} strokeWidth={2} style={{ color: qsEnabled ? '#9580E8' : 'var(--color-text-3)' }} />
+              <Settings size={14} strokeWidth={1.5} style={{ color: qsEnabled ? '#655BD3' : 'var(--color-text-3)' }} />
+              <span className="text-[13px] font-semibold" style={{ color: qsEnabled ? '#655BD3' : 'var(--color-text-2)', whiteSpace: 'nowrap' }}>
+                Qualified Shopper
+              </span>
             </button>
 
             {activeDropdown === 'shoppers' && (
               <div
-                className="absolute top-full right-0 mt-2 rounded-xl shadow-xl border z-50 bg-white"
+                className="absolute top-full right-0 mt-2 rounded-lg shadow-xl border z-50 bg-white"
                 style={{ borderColor: 'var(--color-border)', width: 288 }}
               >
                 {/* Header */}
@@ -155,7 +166,7 @@ export function TopBar() {
                   {/* Saved summary pill — only shown when enabled */}
                   {qsEnabled && (
                     <div style={{
-                      marginTop: 10, padding: '6px 10px', borderRadius: 8,
+                      marginTop: 10, padding: '6px 10px', borderRadius: 6,
                       background: '#F5F3FF', border: '1px solid #DDD6FE',
                       display: 'flex', alignItems: 'center', gap: 6,
                     }}>
@@ -212,7 +223,7 @@ export function TopBar() {
                           <button
                             key={g}
                             onClick={() => toggleGender(g)}
-                            className="flex-1 py-1.5 rounded-lg text-xs font-semibold border transition-all"
+                            className="flex-1 py-1.5 rounded text-xs font-semibold border transition-all"
                             style={{
                               background: on ? '#655BD3' : 'transparent',
                               borderColor: on ? '#655BD3' : 'var(--color-border)',
@@ -243,14 +254,14 @@ export function TopBar() {
                 <div className="px-4 pb-4 flex gap-2">
                   <button
                     onClick={() => setActiveDropdown(null)}
-                    style={{ flex: 1, height: 36, borderRadius: 8, border: '1px solid #E5E7EB', background: 'white', fontSize: 13, fontWeight: 500, color: '#374151', cursor: 'pointer' }}
+                    style={{ flex: 1, height: 36, borderRadius: 6, border: '1px solid #E5E7EB', background: 'white', fontSize: 13, fontWeight: 500, color: '#374151', cursor: 'pointer' }}
                   >
                     Cancel
                   </button>
                   <button
                     onClick={saveQs}
                     className="transition-opacity hover:opacity-90"
-                    style={{ flex: 2, height: 36, borderRadius: 8, border: 'none', background: '#655BD3', fontSize: 13, fontWeight: 600, color: 'white', cursor: 'pointer' }}
+                    style={{ flex: 2, height: 36, borderRadius: 6, border: 'none', background: '#655BD3', fontSize: 13, fontWeight: 600, color: 'white', cursor: 'pointer' }}
                   >
                     Apply &amp; Save
                   </button>
@@ -258,6 +269,9 @@ export function TopBar() {
               </div>
             )}
           </div>) : null}
+
+          {/* Divider */}
+          <div style={{ width: 1, height: 20, background: '#E5E7EB', flexShrink: 0 }} />
 
           {/* ── Bell ── */}
           <div className="relative">
@@ -278,7 +292,7 @@ export function TopBar() {
 
             {activeDropdown === 'bell' && (
               <div
-                className="absolute top-full right-0 mt-2 w-80 rounded-xl shadow-xl border z-50 bg-white"
+                className="absolute top-full right-0 mt-2 w-80 rounded-lg shadow-xl border z-50 bg-white"
                 style={{ borderColor: 'var(--color-border)' }}
               >
                 {/* Header */}
@@ -351,7 +365,7 @@ export function TopBar() {
 
             {activeDropdown === 'avatar' && (
               <div
-                className="absolute top-full right-0 mt-2 w-52 rounded-xl shadow-xl border z-50 bg-white overflow-hidden"
+                className="absolute top-full right-0 mt-2 w-52 rounded-lg shadow-xl border z-50 bg-white overflow-hidden"
                 style={{ borderColor: 'var(--color-border)' }}
               >
                 {/* Profile header */}
@@ -400,9 +414,9 @@ export function TopBar() {
 
       {/* Filter bar */}
       <div
-        className="flex items-center gap-1.5 border-t"
+        className="flex items-center border-t"
         style={{
-          height: 44,
+          height: 64,
           paddingLeft: 'var(--content-padding)',
           paddingRight: 'var(--content-padding)',
           borderColor: 'var(--color-border)',
@@ -410,94 +424,102 @@ export function TopBar() {
           transition: 'background 200ms ease',
         }}
       >
-        {/* Left group */}
-        <div className="flex items-center gap-1.5">
-          {/* Filters */}
-          <div className="relative">
-            <button
-              onClick={() => toggleDropdown('filter')}
-              className="flex items-center gap-2 px-3 rounded-md text-sm font-medium border transition-colors"
-              style={{
-                height: 32,
-                borderColor: activeDropdown === 'filter' ? 'var(--color-primary)' : 'var(--color-border)',
-                color: activeDropdown === 'filter' ? 'var(--color-primary)' : 'var(--color-text-2)',
-                background: activeDropdown === 'filter' ? 'var(--color-primary-light)' : 'var(--color-surface)',
-              }}
-            >
-              <Filter size={14} strokeWidth={1.5} />
-              Filters
-            </button>
-            {activeDropdown === 'filter' && (
-              <div className="absolute top-full left-0 mt-1 w-48 rounded-md border shadow-lg z-50 p-2" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
-                {['All Zones', 'Entrance', 'Exit'].map(f => (
-                  <button key={f} className="w-full text-left px-3 py-2 text-sm rounded-md hover:bg-gray-100" style={{ color: 'var(--color-text-1)' }}>{f}</button>
-                ))}
-              </div>
-            )}
-          </div>
+        {/* Page title */}
+        <p style={{ fontSize: 20, fontWeight: 600, color: 'var(--color-text-1)', flex: 1 }}>
+          {pathname === '/dashboard' || pathname === '/dashboard/'
+            ? 'Home'
+            : pathname?.startsWith('/dashboard/analytics') ? 'Analytics'
+            : pathname?.startsWith('/dashboard/team') ? 'Team Management'
+            : pathname?.startsWith('/dashboard/live') ? 'Live Feed'
+            : pathname?.startsWith('/dashboard/preferences') ? 'Preferences'
+            : 'Dashboard'}
+        </p>
+
+        {/* All filters + refresh — right-aligned */}
+        <div className="flex items-center gap-2">
+          {/* Filter */}
+          <button
+            className="flex items-center gap-2 rounded-md border transition-colors"
+            style={{
+              height: 34,
+              paddingLeft: 14,
+              paddingRight: 14,
+              borderColor: 'var(--color-border)',
+              color: 'var(--color-text-2)',
+              background: 'var(--color-surface)',
+              fontSize: 13,
+              fontWeight: 500,
+            }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--color-surface-2)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'var(--color-surface)'; }}
+          >
+            <SlidersHorizontal size={13} strokeWidth={1.5} />
+            Filter
+          </button>
 
           {/* Filter By Date */}
           <div className="relative">
             <button
               onClick={() => toggleDropdown('date')}
-              className="flex items-center gap-2 px-3 rounded-md text-sm font-medium border transition-colors"
+              className="flex items-center gap-2 rounded-md border transition-colors"
               style={{
-                height: 32,
+                height: 34,
+                paddingLeft: 14,
+                paddingRight: 14,
                 borderColor: activeDropdown === 'date' ? 'var(--color-primary)' : 'var(--color-border)',
                 color: activeDropdown === 'date' ? 'var(--color-primary)' : 'var(--color-text-2)',
                 background: activeDropdown === 'date' ? 'var(--color-primary-light)' : 'var(--color-surface)',
+                fontSize: 13,
+                fontWeight: 500,
               }}
             >
               <Calendar size={14} strokeWidth={1.5} />
-              Filter By Date
+              Filter by Date
             </button>
             {activeDropdown === 'date' && (
-              <div className="absolute top-full left-0 mt-1 w-48 rounded-md border shadow-lg z-50 p-2" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
-                {['Today', 'Yesterday', 'Last 7 Days', 'This Month'].map(f => (
-                  <button key={f} className="w-full text-left px-3 py-2 text-sm rounded-md hover:bg-gray-100" style={{ color: 'var(--color-text-1)' }}>{f}</button>
+              <div className="absolute top-full right-0 mt-1 w-48 rounded-md border shadow-lg z-50 p-1" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
+                {['Today', 'Yesterday', 'Last 7 Days', 'Last 30 Days', 'This Month', 'Custom Range'].map(f => (
+                  <button key={f} className="w-full text-left px-3 py-2 text-sm rounded hover:bg-gray-50 transition-colors" style={{ color: 'var(--color-text-1)' }}>{f}</button>
                 ))}
               </div>
             )}
           </div>
 
-          <div style={{ width: 1, height: 16, background: 'var(--color-border)', flexShrink: 0 }} />
-
           {/* Stores */}
           <div
-            className="flex items-center gap-2 px-3 rounded-md text-sm font-medium border"
-            style={{ height: 32, borderColor: 'var(--color-border)', color: 'var(--color-text-2)', background: 'var(--color-surface)' }}
+            className="flex items-center gap-2 rounded-md border"
+            style={{ height: 34, paddingLeft: 14, paddingRight: 14, borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
           >
-            <Store size={14} strokeWidth={1.5} style={{ color: 'var(--color-primary)' }} />
-            <span className="font-semibold" style={{ color: 'var(--color-text-1)' }}>8</span>
-            <span className="text-xs" style={{ color: 'var(--color-text-3)' }}>Stores</span>
+            <Store size={14} strokeWidth={1.5} style={{ color: 'var(--color-text-3)' }} />
+            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text-1)' }}>8</span>
+            <span style={{ fontSize: 12, color: 'var(--color-text-3)' }}>Stores</span>
           </div>
 
-          {/* Cameras */}
-          <div
-            className="flex items-center gap-2 px-3 rounded-md text-sm font-medium border"
-            style={{ height: 32, borderColor: 'var(--color-border)', color: 'var(--color-text-2)', background: 'var(--color-surface)' }}
-          >
-            <Camera size={14} strokeWidth={1.5} style={{ color: 'var(--color-secondary)' }} />
-            <span className="text-xs">
-              <span className="font-semibold" style={{ color: 'var(--color-success)' }}>24</span>
-              <span style={{ color: 'var(--color-text-3)' }}> online · </span>
-              <span className="font-semibold" style={{ color: 'var(--color-error)' }}>2</span>
-              <span style={{ color: 'var(--color-text-3)' }}> offline</span>
-            </span>
+          {/* Camera metric blocks */}
+          <div style={{ display: 'flex', height: 34, borderRadius: 6, overflow: 'hidden', border: '1px solid var(--color-border)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 11px', background: 'var(--color-surface)', borderRight: '1px solid var(--color-border)' }}>
+              <Camera size={14} strokeWidth={2} style={{ color: 'var(--color-text-2)' }} />
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 13px', background: '#64748B', borderRight: '1px solid rgba(255,255,255,0.12)' }}>
+              <span style={{ fontSize: 13, fontWeight: 600, color: 'white' }}>26</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 13px', background: '#2D8A55', borderRight: '1px solid rgba(255,255,255,0.12)' }}>
+              <span style={{ fontSize: 13, fontWeight: 600, color: 'white' }}>24</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 13px', background: '#B54040' }}>
+              <span style={{ fontSize: 13, fontWeight: 600, color: 'white' }}>2</span>
+            </div>
           </div>
-        </div>
 
-        <div className="flex-1" />
+          <div style={{ width: 1, height: 20, background: 'var(--color-border)', flexShrink: 0 }} />
 
-        {/* Right group */}
-        <div className="flex items-center gap-1.5">
-          <span className="text-xs" style={{ color: 'var(--color-text-3)', lineHeight: '32px' }}>
-            Last Refresh: <span className="font-medium" style={{ color: 'var(--color-text-2)' }}>just now</span>
-          </span>
+          {/* Refresh */}
           <button
             onClick={handleRefresh}
-            className="flex items-center gap-1.5 px-3 rounded-md text-sm font-medium border transition-colors"
-            style={{ height: 32, borderColor: 'var(--color-border)', color: 'var(--color-primary)', background: 'var(--color-surface)' }}
+            className="flex items-center gap-2 rounded-md border transition-colors"
+            style={{ height: 34, paddingLeft: 14, paddingRight: 14, borderColor: 'var(--color-border)', color: 'var(--color-primary)', background: 'var(--color-surface)', fontSize: 13, fontWeight: 500 }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--color-primary-light)'; (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-primary)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'var(--color-surface)'; (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-border)'; }}
           >
             <RefreshCw size={13} strokeWidth={1.5} className={isRefreshing ? 'animate-spin' : ''} />
             Refresh

@@ -1,23 +1,28 @@
 'use client';
 import React, { useState } from 'react';
 import {
-  Plus, Search, X, Edit2, Trash2, ChevronDown, ChevronUp,
-  Check, Eye, Minus, ShieldCheck, ExternalLink,
-  LayoutDashboard, BarChart2, Video, UserCog, Settings2, FileText,
+  Plus, Search, X, Edit2, Trash2, Check,
+  LayoutDashboard, BarChart2, Video, UserCog, FileText,
+  Store, Shield, ChevronRight, Users,
 } from 'lucide-react';
-import Link from 'next/link';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type Status    = 'Active' | 'On Leave' | 'Inactive';
 type PermLevel = 'full' | 'view' | 'none';
+type UserType  = 'admin' | 'regular';
+type UserCategory = 'all' | 'admin' | 'regular';
 
 interface Member {
   id: number;
   name: string;
-  roleId: string;
   email: string;
-  status: Status;
+  roleId: string;
+  userType: UserType;
   location: string;
+  storeAccess: string[];
+  status: Status;
+  avatar?: string;
+  customPerms?: Record<string, PermLevel>;
 }
 
 interface RoleDef {
@@ -25,234 +30,526 @@ interface RoleDef {
   name: string;
   description: string;
   color: string;
-  isSystem: boolean;
+  userType: UserType;
 }
 
-interface ModulePerm {
-  module: string;
-  icon: React.ReactNode;
-  level: PermLevel;
-}
-
-// ── Role definitions ──────────────────────────────────────────────────────────
+// ── Constants ─────────────────────────────────────────────────────────────────
 const ROLE_DEFS: RoleDef[] = [
-  { id: 'super_admin',       name: 'Super Admin',       description: 'Full unrestricted access',              color: '#655BD3', isSystem: true  },
-  { id: 'regional_director', name: 'Regional Director', description: 'Cross-store analytics & team oversight', color: '#00CE9C', isSystem: false },
-  { id: 'store_manager',     name: 'Store Manager',     description: 'Full access to assigned store & team',   color: '#3B82F6', isSystem: false },
-  { id: 'security_ops',      name: 'Security Ops',      description: 'Live feed monitoring & incident ops',    color: '#F59E0B', isSystem: false },
-  { id: 'staff',             name: 'Staff Associate',   description: 'Read-only dashboard access',             color: '#6B7280', isSystem: false },
+  { id: 'super_admin',       name: 'Super Admin',       description: 'Full unrestricted access to all modules',    color: '#655BD3', userType: 'admin'   },
+  { id: 'regional_director', name: 'Regional Director', description: 'Cross-store analytics & team oversight',      color: '#00CE9C', userType: 'admin'   },
+  { id: 'store_manager',     name: 'Store Manager',     description: 'Full access to assigned store & team',        color: '#3B82F6', userType: 'regular' },
+  { id: 'security_ops',      name: 'Security Ops',      description: 'Live feed monitoring & incident management',   color: '#F59E0B', userType: 'regular' },
+  { id: 'staff',             name: 'Staff Associate',   description: 'Read-only dashboard & analytics access',       color: '#6B7280', userType: 'regular' },
 ];
 
-const I = {
-  dash:     <LayoutDashboard size={12} strokeWidth={1.5} />,
-  analytics:<BarChart2 size={12} strokeWidth={1.5} />,
-  feed:     <Video size={12} strokeWidth={1.5} />,
-  team:     <UserCog size={12} strokeWidth={1.5} />,
-  prefs:    <Settings2 size={12} strokeWidth={1.5} />,
-  reports:  <FileText size={12} strokeWidth={1.5} />,
+const MODULE_ICONS: Record<string, React.ReactNode> = {
+  dashboard: <LayoutDashboard size={13} strokeWidth={1.5} />,
+  analytics: <BarChart2      size={13} strokeWidth={1.5} />,
+  live_feed: <Video          size={13} strokeWidth={1.5} />,
+  team:      <UserCog        size={13} strokeWidth={1.5} />,
+  reports:   <FileText       size={13} strokeWidth={1.5} />,
 };
 
-const ROLE_PERMS: Record<string, ModulePerm[]> = {
-  super_admin:       [
-    { module: 'Dashboard',  icon: I.dash,      level: 'full' },
-    { module: 'Analytics',  icon: I.analytics, level: 'full' },
-    { module: 'Live Feed',  icon: I.feed,      level: 'full' },
-    { module: 'Team',       icon: I.team,      level: 'full' },
-    { module: 'Reports',    icon: I.reports,   level: 'full' },
-  ],
-  regional_director: [
-    { module: 'Dashboard',  icon: I.dash,      level: 'full' },
-    { module: 'Analytics',  icon: I.analytics, level: 'full' },
-    { module: 'Live Feed',  icon: I.feed,      level: 'full' },
-    { module: 'Team',       icon: I.team,      level: 'view' },
-    { module: 'Reports',    icon: I.reports,   level: 'full' },
-  ],
-  store_manager:     [
-    { module: 'Dashboard',  icon: I.dash,      level: 'full' },
-    { module: 'Analytics',  icon: I.analytics, level: 'view' },
-    { module: 'Live Feed',  icon: I.feed,      level: 'full' },
-    { module: 'Team',       icon: I.team,      level: 'view' },
-    { module: 'Reports',    icon: I.reports,   level: 'view' },
-  ],
-  security_ops:      [
-    { module: 'Dashboard',  icon: I.dash,      level: 'view' },
-    { module: 'Analytics',  icon: I.analytics, level: 'none' },
-    { module: 'Live Feed',  icon: I.feed,      level: 'full' },
-    { module: 'Team',       icon: I.team,      level: 'none' },
-    { module: 'Reports',    icon: I.reports,   level: 'view' },
-  ],
-  staff:             [
-    { module: 'Dashboard',  icon: I.dash,      level: 'view' },
-    { module: 'Analytics',  icon: I.analytics, level: 'view' },
-    { module: 'Live Feed',  icon: I.feed,      level: 'view' },
-    { module: 'Team',       icon: I.team,      level: 'none' },
-    { module: 'Reports',    icon: I.reports,   level: 'view' },
-  ],
+const MODULES = [
+  { key: 'dashboard', label: 'Dashboard' },
+  { key: 'analytics', label: 'Analytics' },
+  { key: 'live_feed', label: 'Live Feed' },
+  { key: 'team',      label: 'Team' },
+  { key: 'reports',   label: 'Reports' },
+];
+
+const DEFAULT_ROLE_PERMS: Record<string, Record<string, PermLevel>> = {
+  super_admin:       { dashboard: 'full', analytics: 'full', live_feed: 'full', team: 'full',  reports: 'full' },
+  regional_director: { dashboard: 'full', analytics: 'full', live_feed: 'full', team: 'view',  reports: 'full' },
+  store_manager:     { dashboard: 'full', analytics: 'view', live_feed: 'full', team: 'view',  reports: 'view' },
+  security_ops:      { dashboard: 'view', analytics: 'none', live_feed: 'full', team: 'none',  reports: 'view' },
+  staff:             { dashboard: 'view', analytics: 'view', live_feed: 'view', team: 'none',  reports: 'view' },
 };
 
-// ── Static data ───────────────────────────────────────────────────────────────
+const LOCATIONS = [
+  'Marina Bay Sands', 'Orchard Central', 'VivoCity', 'Bugis Junction',
+  'Tampines Mall', 'Jurong Point', 'Northpoint City', 'Causeway Point', 'Singapore HQ',
+];
+
+const STATUS_CFG: Record<Status, { dot: string; color: string }> = {
+  Active:     { dot: '#16A34A', color: '#16A34A' },
+  'On Leave': { dot: '#D97706', color: '#D97706' },
+  Inactive:   { dot: '#9CA3AF', color: '#9CA3AF' },
+};
+
+const PERM_CFG: Record<PermLevel, { label: string; bg: string; color: string; border: string }> = {
+  full: { label: 'Full',      bg: '#F0FDF4', color: '#16A34A', border: '#BBF7D0' },
+  view: { label: 'View',      bg: '#EFF6FF', color: '#2563EB', border: '#BFDBFE' },
+  none: { label: 'No Access', bg: '#F9FAFB', color: '#9CA3AF', border: '#E5E7EB' },
+};
+
 const INITIAL_MEMBERS: Member[] = [
-  { id: 1, name: 'Aditi Sharma',  roleId: 'store_manager',     email: 'aditi.sharma@olyretail.com',  status: 'Active',   location: 'Marina Bay Sands' },
-  { id: 2, name: 'Jason Lee',     roleId: 'regional_director', email: 'jason.lee@olyretail.com',     status: 'Active',   location: 'Singapore HQ'     },
-  { id: 3, name: 'Sarah Chen',    roleId: 'staff',             email: 'sarah.chen@olyretail.com',    status: 'On Leave', location: 'Orchard Central'  },
-  { id: 4, name: 'Michael Tan',   roleId: 'security_ops',      email: 'michael.tan@olyretail.com',   status: 'Active',   location: 'VivoCity'         },
+  { id: 1, name: 'Aditi Sharma',  email: 'aditi.sharma@olyretail.com',  roleId: 'store_manager',     userType: 'regular', location: 'Marina Bay Sands', storeAccess: ['Marina Bay Sands', 'Orchard Central'],  status: 'Active',   avatar: 'https://i.pravatar.cc/68?img=47' },
+  { id: 2, name: 'Jason Lee',     email: 'jason.lee@olyretail.com',     roleId: 'regional_director', userType: 'admin',   location: 'Singapore HQ',     storeAccess: ['Marina Bay Sands', 'VivoCity', 'Bugis Junction', 'Tampines Mall'], status: 'Active',  avatar: 'https://i.pravatar.cc/68?img=12' },
+  { id: 3, name: 'Sarah Chen',    email: 'sarah.chen@olyretail.com',    roleId: 'staff',             userType: 'regular', location: 'Orchard Central',  storeAccess: ['Orchard Central'],                      status: 'On Leave', avatar: 'https://i.pravatar.cc/68?img=44' },
+  { id: 4, name: 'Michael Tan',   email: 'michael.tan@olyretail.com',   roleId: 'security_ops',      userType: 'regular', location: 'VivoCity',         storeAccess: ['VivoCity', 'Bugis Junction'],            status: 'Active',   avatar: 'https://i.pravatar.cc/68?img=15' },
+  { id: 5, name: 'Priya Nair',    email: 'priya.nair@olyretail.com',    roleId: 'super_admin',       userType: 'admin',   location: 'Singapore HQ',     storeAccess: LOCATIONS,                                status: 'Active',   avatar: 'https://i.pravatar.cc/68?img=49' },
 ];
 
-const LOCATIONS = ['Marina Bay Sands', 'Orchard Central', 'VivoCity', 'Bugis Junction', 'Tampines Mall', 'Singapore HQ'];
-const STATUSES: Status[] = ['Active', 'On Leave', 'Inactive'];
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function getRoleDef(roleId: string): RoleDef {
+  return ROLE_DEFS.find(r => r.id === roleId) ?? ROLE_DEFS[4];
+}
 
-const STATUS_CFG: Record<Status, { bg: string; color: string }> = {
-  Active:     { bg: 'rgba(22,163,74,0.1)',   color: '#16A34A' },
-  'On Leave': { bg: 'rgba(217,119,6,0.1)',   color: '#D97706' },
-  Inactive:   { bg: 'rgba(107,114,128,0.1)', color: '#6B7280' },
-};
+function getEffectivePerms(member: Member): Record<string, PermLevel> {
+  const base = DEFAULT_ROLE_PERMS[member.roleId] ?? DEFAULT_ROLE_PERMS['staff'];
+  return { ...base, ...member.customPerms };
+}
 
-const PERM_CFG: Record<PermLevel, { label: string; bg: string; color: string; icon: React.ReactNode }> = {
-  full: { label: 'Full',  bg: '#EEE9FF', color: '#655BD3', icon: <Check size={9} strokeWidth={2.5} /> },
-  view: { label: 'View',  bg: '#DBEAFE', color: '#2563EB', icon: <Eye   size={9} strokeWidth={2}   /> },
-  none: { label: 'None',  bg: '#F3F4F6', color: '#9CA3AF', icon: <Minus size={9} strokeWidth={2.5} /> },
-};
+function getInitials(name: string): string {
+  return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+}
 
-const BLANK = { name: '', roleId: 'store_manager', email: '', status: 'Active' as Status, location: 'Marina Bay Sands' };
+// avatar bg colors by index
+const AVATAR_COLORS = ['#655BD3', '#00CE9C', '#3B82F6', '#F59E0B', '#EC4899'];
 
-// ── Permissions preview strip ─────────────────────────────────────────────────
-function PermStrip({ roleId }: { roleId: string }) {
-  const perms = ROLE_PERMS[roleId] ?? ROLE_PERMS['staff'];
+// ── Access cell — clean store pills only ──────────────────────────────────────
+function AccessCell({ member }: { member: Member }) {
+  const SHOW = 2;
+  const visible  = member.storeAccess.slice(0, SHOW);
+  const overflow = member.storeAccess.length - SHOW;
+
   return (
-    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
-      {perms.map(p => {
-        const cfg = PERM_CFG[p.level];
-        return (
-          <span key={p.module} style={{
-            display: 'inline-flex', alignItems: 'center', gap: 4,
-            padding: '3px 8px', borderRadius: 5, fontSize: 11, fontWeight: 600,
-            background: cfg.bg, color: cfg.color,
-          }}>
-            <span style={{ opacity: 0.8 }}>{p.icon}</span>
-            {p.module}
-            <span style={{ opacity: 0.6, fontSize: 9, fontWeight: 700, marginLeft: 1 }}>
-              {cfg.label.toUpperCase()}
-            </span>
-          </span>
-        );
-      })}
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, alignItems: 'center', justifyContent: 'center' }}>
+      {visible.map(s => (
+        <span key={s} style={{
+          padding: '4px 10px',
+          borderRadius: 6,
+          fontSize: 11.5,
+          fontWeight: 500,
+          background: '#F8F9FA',
+          color: '#374151',
+          border: '1px solid #E5E7EB',
+          whiteSpace: 'nowrap',
+          maxWidth: 140,
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          display: 'inline-block',
+        }}>
+          {s}
+        </span>
+      ))}
+      {overflow > 0 && (
+        <span style={{
+          padding: '4px 10px',
+          borderRadius: 6,
+          fontSize: 11.5,
+          fontWeight: 600,
+          background: '#F5F3FF',
+          color: '#655BD3',
+          border: '1px solid #EDE9FE',
+          whiteSpace: 'nowrap',
+        }}>
+          +{overflow} more
+        </span>
+      )}
     </div>
   );
 }
 
-// ── Member form (shared by Add + Edit) ───────────────────────────────────────
-function MemberForm({
-  title, form, setForm, onSubmit, onClose, submitLabel,
-}: {
-  title: string;
-  form: typeof BLANK & { id?: number };
-  setForm: (f: typeof BLANK) => void;
-  onSubmit: (e: React.FormEvent) => void;
-  onClose: () => void;
-  submitLabel: string;
+// ── Module permission row for permissions tab ─────────────────────────────────
+function PermToggleRow({ module, icon, level, onChange }: {
+  module: string;
+  icon: React.ReactNode;
+  level: PermLevel;
+  onChange: (l: PermLevel) => void;
 }) {
-  const assignableRoles = ROLE_DEFS.filter(r => !r.isSystem);
-  const selectedRole    = ROLE_DEFS.find(r => r.id === form.roleId) ?? ROLE_DEFS[2];
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: 14,
+      padding: '10px 0',
+      borderBottom: '1px solid #F3F4F6',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 9, width: 120, flexShrink: 0 }}>
+        <span style={{ color: '#9CA3AF', display: 'flex', flexShrink: 0 }}>{icon}</span>
+        <span style={{ fontSize: 13, fontWeight: 500, color: '#374151' }}>{module}</span>
+      </div>
+      <div style={{ display: 'flex', gap: 4, flex: 1 }}>
+        {(['none', 'view', 'full'] as PermLevel[]).map(l => {
+          const active = level === l;
+          const cfg = PERM_CFG[l];
+          return (
+            <button
+              key={l}
+              type="button"
+              onClick={() => onChange(l)}
+              style={{
+                flex: 1, height: 32, borderRadius: 7,
+                border: `1.5px solid ${active ? cfg.border : '#E5E7EB'}`,
+                background: active ? cfg.bg : 'white',
+                color: active ? cfg.color : '#9CA3AF',
+                fontSize: 12, fontWeight: active ? 700 : 500,
+                cursor: 'pointer', transition: 'all 140ms ease',
+              }}
+            >
+              {cfg.label}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ── Add / Edit Member Modal ───────────────────────────────────────────────────
+const BLANK_FORM = {
+  name: '', email: '', roleId: 'store_manager', userType: 'regular' as UserType,
+  location: 'Marina Bay Sands', storeAccess: ['Marina Bay Sands'], status: 'Active' as Status,
+};
+
+function MemberModal({
+  mode, initial, onClose, onSave,
+}: {
+  mode: 'add' | 'edit';
+  initial: typeof BLANK_FORM & { id?: number; customPerms?: Record<string, PermLevel> };
+  onClose: () => void;
+  onSave: (data: typeof BLANK_FORM & { customPerms: Record<string, PermLevel> }) => void;
+}) {
+  const [tab, setTab] = useState<'details' | 'permissions'>('details');
+  const [form, setForm] = useState(initial);
+  const [perms, setPerms] = useState<Record<string, PermLevel>>(
+    initial.customPerms ?? { ...DEFAULT_ROLE_PERMS[initial.roleId] ?? DEFAULT_ROLE_PERMS['staff'] }
+  );
+
+  const handleRoleChange = (roleId: string) => {
+    const roleDef = ROLE_DEFS.find(r => r.id === roleId);
+    setForm(f => ({ ...f, roleId, userType: roleDef?.userType ?? f.userType }));
+    setPerms({ ...DEFAULT_ROLE_PERMS[roleId] ?? DEFAULT_ROLE_PERMS['staff'] });
+  };
+
+  const toggleStore = (store: string) => {
+    setForm(f => ({
+      ...f,
+      storeAccess: f.storeAccess.includes(store)
+        ? f.storeAccess.filter(s => s !== store)
+        : [...f.storeAccess, store],
+    }));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.name.trim() || !form.email.trim()) return;
+    onSave({ ...form, customPerms: perms });
+  };
+
+  const selectedRole = ROLE_DEFS.find(r => r.id === form.roleId) ?? ROLE_DEFS[2];
+  const filteredRoles = ROLE_DEFS.filter(r => r.userType === form.userType);
+
+  const inputStyle: React.CSSProperties = {
+    width: '100%', border: '1.5px solid #E5E7EB', borderRadius: 8,
+    padding: '9px 12px', fontSize: 13, color: '#111827',
+    outline: 'none', boxSizing: 'border-box', background: 'white',
+    transition: 'border-color 150ms ease',
+  };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(17,24,39,0.55)' }} onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
+      style={{ background: 'rgba(17,24,39,0.55)', backdropFilter: 'blur(3px)' }}
+      onClick={onClose}
+    >
       <div
-        className="bg-white rounded-2xl shadow-2xl w-full"
-        style={{ maxWidth: 480, padding: '28px 28px 24px', maxHeight: '90vh', overflowY: 'auto' }}
+        style={{
+          background: 'white',
+          borderRadius: 20,
+          width: '100%',
+          maxWidth: 580,
+          maxHeight: '92vh',
+          display: 'flex',
+          flexDirection: 'column',
+          boxShadow: '0 24px 80px rgba(0,0,0,0.18)',
+          overflow: 'hidden',
+        }}
         onClick={e => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between mb-5">
-          <h3 style={{ fontSize: 15, fontWeight: 700, color: '#111827' }}>{title}</h3>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100" style={{ color: '#9CA3AF' }}><X size={16} /></button>
+        {/* ── Modal Header ── */}
+        <div style={{
+          padding: '20px 24px 0',
+          flexShrink: 0,
+          background: 'white',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
+            <div>
+              <h3 style={{ fontSize: 16, fontWeight: 700, color: '#111827', margin: 0, letterSpacing: '-0.01em' }}>
+                {mode === 'add' ? 'Add Team Member' : 'Edit Member'}
+              </h3>
+              <p style={{ fontSize: 12.5, color: '#9CA3AF', margin: '3px 0 0' }}>
+                {mode === 'add' ? 'Fill in details, assign a role, and configure access.' : 'Update member details and access permissions.'}
+              </p>
+            </div>
+            <button
+              onClick={onClose}
+              style={{
+                width: 32, height: 32, borderRadius: 8,
+                border: '1px solid #E5E7EB', background: '#FAFAFA',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer', color: '#6B7280', flexShrink: 0,
+                transition: 'all 150ms ease',
+              }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#F3F4F6'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = '#FAFAFA'; }}
+            >
+              <X size={14} strokeWidth={2} />
+            </button>
+          </div>
+
+          {/* Tab strip */}
+          <div style={{ display: 'flex', gap: 0, borderBottom: '1.5px solid #F3F4F6' }}>
+            {(['details', 'permissions'] as const).map(t => (
+              <button
+                key={t}
+                type="button"
+                onClick={() => setTab(t)}
+                style={{
+                  padding: '9px 18px',
+                  fontSize: 13, fontWeight: tab === t ? 700 : 500,
+                  border: 'none', background: 'transparent', cursor: 'pointer',
+                  color: tab === t ? '#655BD3' : '#9CA3AF',
+                  borderBottom: tab === t ? '2px solid #655BD3' : '2px solid transparent',
+                  marginBottom: -1.5,
+                  transition: 'color 150ms ease',
+                }}
+              >
+                {t === 'details' ? 'User Details' : 'Permissions'}
+              </button>
+            ))}
+          </div>
         </div>
 
-        <form onSubmit={onSubmit} className="space-y-4">
-          {/* Name */}
-          <div>
-            <label className="block text-xs font-semibold mb-1.5" style={{ color: '#374151' }}>Full Name</label>
-            <input
-              type="text" required autoFocus
-              placeholder="e.g. Jane Smith"
-              value={form.name}
-              onChange={e => setForm({ ...form, name: e.target.value })}
-              className="w-full text-sm rounded-lg px-3 py-2.5 outline-none"
-              style={{ border: '1px solid #E5E7EB', color: '#111827' }}
-            />
-          </div>
+        {/* ── Body ── */}
+        <form onSubmit={handleSubmit} style={{ flex: 1, overflowY: 'auto', padding: '20px 24px 4px' }}>
 
-          {/* Email */}
-          <div>
-            <label className="block text-xs font-semibold mb-1.5" style={{ color: '#374151' }}>Email</label>
-            <input
-              type="email" required
-              placeholder="jane.smith@olyretail.com"
-              value={form.email}
-              onChange={e => setForm({ ...form, email: e.target.value })}
-              className="w-full text-sm rounded-lg px-3 py-2.5 outline-none"
-              style={{ border: '1px solid #E5E7EB', color: '#111827' }}
-            />
-          </div>
+          {tab === 'details' ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
 
-          {/* Role + permissions preview */}
-          <div>
-            <label className="block text-xs font-semibold mb-1.5" style={{ color: '#374151' }}>Role</label>
-            <select
-              value={form.roleId}
-              onChange={e => setForm({ ...form, roleId: e.target.value })}
-              className="w-full text-sm rounded-lg px-3 py-2.5 outline-none"
-              style={{ border: '1px solid #E5E7EB', color: '#111827', background: 'white' }}
-            >
-              {assignableRoles.map(r => (
-                <option key={r.id} value={r.id}>{r.name}</option>
+              {/* Name + Email */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: 11.5, fontWeight: 600, color: '#374151', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Full Name *</label>
+                  <input
+                    type="text" required autoFocus={mode === 'add'}
+                    placeholder="e.g. Jane Smith"
+                    value={form.name}
+                    onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                    style={inputStyle}
+                    onFocus={e => (e.currentTarget.style.borderColor = '#655BD3')}
+                    onBlur={e => (e.currentTarget.style.borderColor = '#E5E7EB')}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: 11.5, fontWeight: 600, color: '#374151', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Email Address *</label>
+                  <input
+                    type="email" required
+                    placeholder="jane@olyretail.com"
+                    value={form.email}
+                    onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                    style={inputStyle}
+                    onFocus={e => (e.currentTarget.style.borderColor = '#655BD3')}
+                    onBlur={e => (e.currentTarget.style.borderColor = '#E5E7EB')}
+                  />
+                </div>
+              </div>
+
+              {/* User Type segmented control */}
+              <div>
+                <label style={{ display: 'block', fontSize: 11.5, fontWeight: 600, color: '#374151', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.04em' }}>User Type</label>
+                <div style={{
+                  display: 'flex', gap: 0,
+                  background: '#F3F4F6', borderRadius: 10, padding: 3,
+                }}>
+                  {(['admin', 'regular'] as UserType[]).map(ut => {
+                    const active = form.userType === ut;
+                    return (
+                      <button
+                        key={ut} type="button"
+                        onClick={() => setForm(f => ({ ...f, userType: ut }))}
+                        style={{
+                          flex: 1, height: 34, borderRadius: 8,
+                          border: 'none',
+                          background: active ? 'white' : 'transparent',
+                          color: active ? '#655BD3' : '#6B7280',
+                          fontSize: 13, fontWeight: active ? 700 : 500,
+                          cursor: 'pointer',
+                          boxShadow: active ? '0 1px 4px rgba(0,0,0,0.10)' : 'none',
+                          transition: 'all 150ms ease',
+                        }}
+                      >
+                        {ut === 'admin' ? 'Admin User' : 'Regular User'}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Role — 2-column compact cards */}
+              <div>
+                <label style={{ display: 'block', fontSize: 11.5, fontWeight: 600, color: '#374151', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Role</label>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 7 }}>
+                  {filteredRoles.map(r => {
+                    const active = form.roleId === r.id;
+                    return (
+                      <button
+                        key={r.id} type="button"
+                        onClick={() => handleRoleChange(r.id)}
+                        style={{
+                          padding: '10px 12px', borderRadius: 9,
+                          border: `1.5px solid ${active ? r.color + '80' : '#E5E7EB'}`,
+                          background: active ? r.color + '0D' : '#FAFAFA',
+                          textAlign: 'left', cursor: 'pointer',
+                          transition: 'all 150ms ease',
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 4 }}>
+                          <span style={{ width: 8, height: 8, borderRadius: '50%', background: r.color, flexShrink: 0 }} />
+                          <span style={{ fontSize: 12.5, fontWeight: 700, color: active ? r.color : '#111827', flex: 1 }}>{r.name}</span>
+                          {active && <Check size={12} strokeWidth={2.5} style={{ color: r.color, flexShrink: 0 }} />}
+                        </div>
+                        <p style={{ fontSize: 11, color: '#9CA3AF', margin: 0, lineHeight: 1.4 }}>{r.description}</p>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Location + Status */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: 11.5, fontWeight: 600, color: '#374151', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Primary Location</label>
+                  <select
+                    value={form.location}
+                    onChange={e => setForm(f => ({ ...f, location: e.target.value }))}
+                    style={{ ...inputStyle, cursor: 'pointer' }}
+                  >
+                    {LOCATIONS.map(l => <option key={l}>{l}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: 11.5, fontWeight: 600, color: '#374151', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Status</label>
+                  <select
+                    value={form.status}
+                    onChange={e => setForm(f => ({ ...f, status: e.target.value as Status }))}
+                    style={{ ...inputStyle, cursor: 'pointer' }}
+                  >
+                    {(['Active', 'On Leave', 'Inactive'] as Status[]).map(s => <option key={s}>{s}</option>)}
+                  </select>
+                </div>
+              </div>
+
+              {/* Set Permissions link */}
+              <button
+                type="button"
+                onClick={() => setTab('permissions')}
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  width: '100%', padding: '11px 14px', borderRadius: 9,
+                  border: '1.5px solid #E5E7EB',
+                  background: '#FAFAFA',
+                  color: '#374151', fontSize: 13, fontWeight: 500,
+                  cursor: 'pointer', transition: 'all 150ms ease',
+                }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = '#655BD3'; (e.currentTarget as HTMLElement).style.background = '#F5F3FF'; (e.currentTarget as HTMLElement).style.color = '#655BD3'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = '#E5E7EB'; (e.currentTarget as HTMLElement).style.background = '#FAFAFA'; (e.currentTarget as HTMLElement).style.color = '#374151'; }}
+              >
+                <span>Configure module & store access</span>
+                <ChevronRight size={15} strokeWidth={2} />
+              </button>
+            </div>
+
+          ) : (
+            /* ── Permissions Tab ── */
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+
+              {/* Role context banner */}
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 10,
+                padding: '10px 14px', borderRadius: 9, marginBottom: 18,
+                background: selectedRole.color + '0D',
+                border: `1.5px solid ${selectedRole.color}30`,
+              }}>
+                <span style={{ width: 8, height: 8, borderRadius: '50%', background: selectedRole.color, flexShrink: 0 }} />
+                <span style={{ fontSize: 12.5, fontWeight: 600, color: selectedRole.color }}>
+                  {selectedRole.name}
+                </span>
+                <span style={{ fontSize: 12, color: selectedRole.color, opacity: 0.7 }}>
+                  — default permissions applied. Customise below.
+                </span>
+              </div>
+
+              {/* Module toggles */}
+              <p style={{ fontSize: 10.5, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>Module Access</p>
+              {MODULES.map(m => (
+                <PermToggleRow
+                  key={m.key}
+                  module={m.label}
+                  icon={MODULE_ICONS[m.key]}
+                  level={(perms[m.key] ?? 'none') as PermLevel}
+                  onChange={l => setPerms(p => ({ ...p, [m.key]: l }))}
+                />
               ))}
-            </select>
-            <p className="text-xs mt-1.5" style={{ color: '#9CA3AF' }}>{selectedRole.description}</p>
 
-            {/* Live permissions preview */}
-            <div style={{ marginTop: 10, padding: '10px 12px', background: '#F9FAFB', borderRadius: 8, border: '1px solid #F3F4F6' }}>
-              <p style={{ fontSize: 10, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>
-                Access granted by this role
-              </p>
-              <PermStrip roleId={form.roleId} />
+              {/* Store access */}
+              <p style={{ fontSize: 10.5, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 20, marginBottom: 10 }}>Store Access</p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                {LOCATIONS.map(store => {
+                  const active = form.storeAccess.includes(store);
+                  return (
+                    <button
+                      key={store} type="button"
+                      onClick={() => toggleStore(store)}
+                      style={{
+                        display: 'inline-flex', alignItems: 'center', gap: active ? 5 : 0,
+                        padding: '6px 12px', borderRadius: 7,
+                        border: `1.5px solid ${active ? '#655BD3' : '#E5E7EB'}`,
+                        background: active ? '#F5F3FF' : '#FAFAFA',
+                        color: active ? '#655BD3' : '#6B7280',
+                        fontSize: 12.5, fontWeight: active ? 600 : 400,
+                        cursor: 'pointer', transition: 'all 120ms ease',
+                      }}
+                    >
+                      {active && <Check size={11} strokeWidth={2.5} style={{ flexShrink: 0 }} />}
+                      {store}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          </div>
-
-          {/* Location + Status */}
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-semibold mb-1.5" style={{ color: '#374151' }}>Location</label>
-              <select
-                value={form.location}
-                onChange={e => setForm({ ...form, location: e.target.value })}
-                className="w-full text-sm rounded-lg px-3 py-2.5 outline-none"
-                style={{ border: '1px solid #E5E7EB', color: '#111827', background: 'white' }}
-              >
-                {LOCATIONS.map(l => <option key={l}>{l}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs font-semibold mb-1.5" style={{ color: '#374151' }}>Status</label>
-              <select
-                value={form.status}
-                onChange={e => setForm({ ...form, status: e.target.value as Status })}
-                className="w-full text-sm rounded-lg px-3 py-2.5 outline-none"
-                style={{ border: '1px solid #E5E7EB', color: '#111827', background: 'white' }}
-              >
-                {STATUSES.map(s => <option key={s}>{s}</option>)}
-              </select>
-            </div>
-          </div>
-
-          {/* Actions */}
-          <div className="flex gap-3 pt-1">
-            <button type="button" onClick={onClose} className="flex-1 py-2.5 rounded-lg text-sm font-medium" style={{ border: '1px solid #E5E7EB', color: '#374151' }}>
-              Cancel
-            </button>
-            <button type="submit" className="flex-1 py-2.5 rounded-lg text-sm font-semibold text-white" style={{ background: '#655BD3' }}>
-              {submitLabel}
-            </button>
-          </div>
+          )}
         </form>
+
+        {/* ── Footer ── */}
+        <div style={{
+          padding: '14px 24px 20px',
+          borderTop: '1px solid #F3F4F6',
+          display: 'flex', gap: 10, flexShrink: 0,
+        }}>
+          <button
+            type="button" onClick={onClose}
+            style={{
+              flex: 1, height: 40, borderRadius: 9,
+              border: '1.5px solid #E5E7EB', background: 'white',
+              color: '#374151', fontSize: 13, fontWeight: 500, cursor: 'pointer',
+            }}
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={e => handleSubmit({ preventDefault: () => {} } as React.FormEvent)}
+            style={{
+              flex: 2, height: 40, borderRadius: 9,
+              border: 'none', background: '#655BD3',
+              color: 'white', fontSize: 13, fontWeight: 700, cursor: 'pointer',
+              letterSpacing: '-0.01em',
+            }}
+          >
+            {mode === 'add' ? 'Add Member' : 'Save Changes'}
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -261,33 +558,33 @@ function MemberForm({
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function TeamPage() {
   const [members,    setMembers]    = useState<Member[]>(INITIAL_MEMBERS);
+  const [category,   setCategory]   = useState<UserCategory>('all');
   const [search,     setSearch]     = useState('');
-  const [expandedId, setExpandedId] = useState<number | null>(null);
   const [addOpen,    setAddOpen]    = useState(false);
   const [editMember, setEditMember] = useState<Member | null>(null);
   const [deleteId,   setDeleteId]   = useState<number | null>(null);
-  const [addForm,    setAddForm]    = useState<typeof BLANK>({ ...BLANK });
 
-  const filtered = members.filter(m =>
-    m.name.toLowerCase().includes(search.toLowerCase()) ||
-    m.email.toLowerCase().includes(search.toLowerCase()) ||
-    m.location.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = members.filter(m => {
+    const matchesCategory =
+      category === 'all' ||
+      (category === 'admin'   && m.userType === 'admin') ||
+      (category === 'regular' && m.userType === 'regular');
+    const q = search.toLowerCase();
+    const matchesSearch = !q ||
+      m.name.toLowerCase().includes(q) ||
+      m.email.toLowerCase().includes(q) ||
+      m.location.toLowerCase().includes(q);
+    return matchesCategory && matchesSearch;
+  });
 
-  const getRoleDef = (roleId: string) => ROLE_DEFS.find(r => r.id === roleId) ?? ROLE_DEFS[4];
-
-  const handleAdd = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!addForm.name.trim() || !addForm.email.trim()) return;
-    setMembers(prev => [...prev, { ...addForm, id: Date.now() }]);
-    setAddForm({ ...BLANK });
+  const handleAdd = (data: typeof BLANK_FORM & { customPerms: Record<string, PermLevel> }) => {
+    setMembers(prev => [...prev, { ...data, id: Date.now(), storeAccess: data.storeAccess.length ? data.storeAccess : [data.location] }]);
     setAddOpen(false);
   };
 
-  const handleEditSave = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleEditSave = (data: typeof BLANK_FORM & { customPerms: Record<string, PermLevel> }) => {
     if (!editMember) return;
-    setMembers(prev => prev.map(m => m.id === editMember.id ? editMember : m));
+    setMembers(prev => prev.map(m => m.id === editMember.id ? { ...m, ...data } : m));
     setEditMember(null);
   };
 
@@ -296,216 +593,293 @@ export default function TeamPage() {
     setDeleteId(null);
   };
 
+  const adminCount   = members.filter(m => m.userType === 'admin').length;
+  const regularCount = members.filter(m => m.userType === 'regular').length;
+
   return (
-    <div className="p-8">
+    <div style={{ padding: '28px 32px', minHeight: '100%' }}>
 
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <h1 style={{ fontSize: 20, fontWeight: 700, color: '#111827' }}>Team Members</h1>
-          <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: 'rgba(101,91,211,0.1)', color: '#655BD3' }}>
-            {members.length}
-          </span>
+      {/* Toolbar */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+
+        {/* Category tabs — segmented control */}
+        <div style={{
+          display: 'flex', gap: 2,
+          background: '#F3F4F6', borderRadius: 10, padding: 3,
+        }}>
+          {([
+            { key: 'all',     label: 'All Users',     count: members.length },
+            { key: 'admin',   label: 'Admin',         count: adminCount     },
+            { key: 'regular', label: 'Regular',       count: regularCount   },
+          ] as { key: UserCategory; label: string; count: number }[]).map(tab => {
+            const active = category === tab.key;
+            return (
+              <button
+                key={tab.key}
+                onClick={() => setCategory(tab.key)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 7,
+                  padding: '6px 14px', borderRadius: 7, border: 'none',
+                  background: active ? 'white' : 'transparent',
+                  color: active ? '#111827' : '#6B7280',
+                  fontSize: 13, fontWeight: active ? 600 : 400,
+                  cursor: 'pointer',
+                  boxShadow: active ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+                  transition: 'all 150ms ease',
+                }}
+              >
+                {tab.label}
+                <span style={{
+                  fontSize: 11, fontWeight: 700, minWidth: 18,
+                  padding: '1px 6px', borderRadius: 8,
+                  background: active ? '#EEE9FF' : '#E5E7EB',
+                  color: active ? '#655BD3' : '#9CA3AF',
+                  transition: 'all 150ms ease',
+                }}>
+                  {tab.count}
+                </span>
+              </button>
+            );
+          })}
         </div>
-        <div className="flex items-center gap-2">
-          <Link
-            href="/dashboard/team/permissions"
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
-            style={{ border: '1px solid #E5E7EB', color: '#374151', textDecoration: 'none' }}
-          >
-            <ShieldCheck size={14} strokeWidth={1.5} style={{ color: '#655BD3' }} />
-            Manage Roles
-            <ExternalLink size={11} strokeWidth={1.5} style={{ color: '#D1D5DB' }} />
-          </Link>
-          <button
-            onClick={() => { setAddForm({ ...BLANK }); setAddOpen(true); }}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white"
-            style={{ background: '#655BD3', border: 'none', cursor: 'pointer' }}
-          >
-            <Plus size={14} strokeWidth={2} />
-            Add Member
-          </button>
-        </div>
-      </div>
 
-      {/* Table card */}
-      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-
-        {/* Search bar */}
-        <div className="px-5 py-3 border-b flex items-center" style={{ borderColor: '#F3F4F6' }}>
-          <div className="relative" style={{ width: 260 }}>
-            <Search size={13} className="absolute left-3 top-2.5" style={{ color: '#9CA3AF' }} />
+        {/* Search + Add */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ position: 'relative' }}>
+            <Search size={13} style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: '#9CA3AF', pointerEvents: 'none' }} />
             <input
               type="text"
               placeholder="Search members..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 text-sm rounded-lg border outline-none"
-              style={{ borderColor: '#E5E7EB', color: '#111827' }}
+              style={{
+                width: 240, paddingLeft: 33, paddingRight: 12, height: 36,
+                border: '1.5px solid #E5E7EB', borderRadius: 8,
+                fontSize: 13, color: '#111827', outline: 'none',
+                transition: 'border-color 150ms ease',
+              }}
+              onFocus={e => (e.currentTarget.style.borderColor = '#655BD3')}
+              onBlur={e => (e.currentTarget.style.borderColor = '#E5E7EB')}
             />
           </div>
+          <button
+            onClick={() => setAddOpen(true)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 7,
+              height: 36, paddingLeft: 16, paddingRight: 16,
+              borderRadius: 8, border: 'none', background: '#655BD3',
+              color: 'white', fontSize: 13, fontWeight: 700, cursor: 'pointer',
+              letterSpacing: '-0.01em',
+            }}
+          >
+            <Plus size={14} strokeWidth={2.5} />
+            Add Member
+          </button>
         </div>
+      </div>
 
-        {/* Table */}
-        <table className="w-full text-left border-collapse">
+      {/* Table */}
+      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
+          <colgroup>
+            <col style={{ width: '24%' }} />
+            <col style={{ width: '14%' }} />
+            <col style={{ width: '22%' }} />
+            <col style={{ width: 'auto' }} />
+            <col style={{ width: 96 }} />
+          </colgroup>
           <thead>
-            <tr style={{ borderBottom: '1px solid #F3F4F6', background: '#FAFAFA' }}>
-              <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#9CA3AF' }}>Member</th>
-              <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#9CA3AF' }}>Role</th>
-              <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#9CA3AF' }}>Location</th>
-              <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#9CA3AF' }}>Status</th>
-              <th className="px-6 py-3" />
+            <tr style={{ background: '#FAFAFA', borderBottom: '1.5px solid #F0F0F0' }}>
+              {(['Member Name', 'Role', 'Email', 'Access', 'Actions'] as const).map((h, i) => (
+                <th key={i} style={{
+                  padding: '11px 20px',
+                  textAlign: i === 0 ? 'left' : 'center',
+                  fontSize: 10.5, fontWeight: 700, color: '#9CA3AF',
+                  textTransform: 'uppercase', letterSpacing: '0.07em',
+                }}>
+                  {h}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-6 py-10 text-center text-sm" style={{ color: '#9CA3AF' }}>
+                <td colSpan={5} style={{ padding: '48px 20px', textAlign: 'center', color: '#9CA3AF', fontSize: 13 }}>
                   No members match your search.
                 </td>
               </tr>
             )}
             {filtered.map((member, idx) => {
-              const sc       = STATUS_CFG[member.status];
-              const role     = getRoleDef(member.roleId);
-              const expanded = expandedId === member.id;
+              const role   = getRoleDef(member.roleId);
+              const sc     = STATUS_CFG[member.status];
+              const bgColor = AVATAR_COLORS[idx % AVATAR_COLORS.length];
 
               return (
-                <React.Fragment key={member.id}>
-                  {/* ── Main row ── */}
-                  <tr
-                    className="cursor-pointer transition-colors"
-                    style={{ borderTop: idx === 0 ? 'none' : '1px solid rgba(0,0,0,0.05)' }}
-                    onClick={() => setExpandedId(expanded ? null : member.id)}
-                    onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = '#FAFAFA'}
-                    onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
-                  >
-                    {/* Member */}
-                    <td className="px-6 py-3.5">
-                      <div className="flex items-center gap-3">
-                        <div
-                          className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
-                          style={{ background: role.color }}
-                        >
-                          {member.name.split(' ').map(n => n[0]).join('')}
-                        </div>
-                        <div>
-                          <p className="text-sm font-semibold" style={{ color: '#111827' }}>{member.name}</p>
-                          <p className="text-xs" style={{ color: '#9CA3AF' }}>{member.email}</p>
-                        </div>
-                      </div>
-                    </td>
-
-                    {/* Role */}
-                    <td className="px-6 py-3.5">
-                      <span style={{
-                        display: 'inline-flex', alignItems: 'center', gap: 5,
-                        padding: '3px 9px', borderRadius: 6, fontSize: 11.5, fontWeight: 600,
-                        background: role.color + '18', color: role.color,
+                <tr
+                  key={member.id}
+                  style={{ borderTop: idx === 0 ? 'none' : '1px solid #F3F4F6', transition: 'background 120ms ease' }}
+                  onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = '#FAFAFA'}
+                  onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
+                >
+                  {/* Member Name */}
+                  <td style={{ padding: '13px 20px', verticalAlign: 'middle', textAlign: 'left' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 10 }}>
+                      <div style={{
+                        width: 34, height: 34, borderRadius: '50%',
+                        background: bgColor,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        color: 'white', fontSize: 11, fontWeight: 700, flexShrink: 0,
+                        letterSpacing: '0.02em', overflow: 'hidden',
+                        border: '2px solid #E5E7EB',
                       }}>
-                        {role.name}
-                      </span>
-                    </td>
-
-                    {/* Location */}
-                    <td className="px-6 py-3.5 text-sm" style={{ color: '#6B7280' }}>{member.location}</td>
-
-                    {/* Status */}
-                    <td className="px-6 py-3.5">
-                      <span className="px-2.5 py-1 text-xs font-medium rounded-full" style={{ background: sc.bg, color: sc.color }}>
-                        {member.status}
-                      </span>
-                    </td>
-
-                    {/* Actions */}
-                    <td className="px-6 py-3.5">
-                      <div className="flex items-center justify-end gap-1.5" onClick={e => e.stopPropagation()}>
-                        <button
-                          onClick={() => setEditMember(member)}
-                          className="p-1.5 rounded-md transition-colors hover:bg-gray-100"
-                          style={{ color: '#9CA3AF', border: 'none', background: 'transparent', cursor: 'pointer' }}
-                        >
-                          <Edit2 size={13} strokeWidth={1.5} />
-                        </button>
-                        <button
-                          onClick={() => setDeleteId(member.id)}
-                          className="p-1.5 rounded-md transition-colors hover:bg-red-50"
-                          style={{ color: '#9CA3AF', border: 'none', background: 'transparent', cursor: 'pointer' }}
-                        >
-                          <Trash2 size={13} strokeWidth={1.5} />
-                        </button>
-                        <span style={{ color: expanded ? '#655BD3' : '#D1D5DB', display: 'flex', marginLeft: 2 }}>
-                          {expanded ? <ChevronUp size={14} strokeWidth={2} /> : <ChevronDown size={14} strokeWidth={2} />}
+                        {member.avatar
+                          ? <img src={member.avatar} alt={member.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          : getInitials(member.name)}
+                      </div>
+                      <div style={{ minWidth: 0 }}>
+                        <p style={{ fontSize: 13, fontWeight: 600, color: '#111827', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {member.name}
+                        </p>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 500, color: sc.color, marginTop: 2 }}>
+                          <span style={{ width: 5, height: 5, borderRadius: '50%', background: sc.dot, flexShrink: 0 }} />
+                          {member.status}
                         </span>
                       </div>
-                    </td>
-                  </tr>
+                    </div>
+                  </td>
 
-                  {/* ── Expanded permissions row ── */}
-                  {expanded && (
-                    <tr style={{ background: '#FAFAFA' }}>
-                      <td colSpan={5} style={{ padding: '12px 24px 14px 60px', borderTop: '1px dashed #EBEBEB' }}>
-                        <p style={{ fontSize: 10.5, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>
-                          Access — {role.name}
-                        </p>
-                        <PermStrip roleId={member.roleId} />
-                        <Link
-                          href="/dashboard/team/permissions"
-                          className="inline-flex items-center gap-1 mt-2.5"
-                          style={{ fontSize: 11, color: '#655BD3', textDecoration: 'none' }}
-                        >
-                          Edit role permissions <ExternalLink size={10} strokeWidth={1.5} />
-                        </Link>
-                      </td>
-                    </tr>
-                  )}
-                </React.Fragment>
+                  {/* Role */}
+                  <td style={{ padding: '13px 20px', verticalAlign: 'middle', textAlign: 'center' }}>
+                    <span style={{
+                      display: 'inline-block',
+                      padding: '2px 8px', borderRadius: 4,
+                      fontSize: 10.5, fontWeight: 600,
+                      letterSpacing: '0.04em', textTransform: 'uppercase',
+                      background: role.userType === 'admin' ? '#EEE9FF' : '#F1F5F9',
+                      color: role.userType === 'admin' ? '#6D5FD5' : '#4B5563',
+                      whiteSpace: 'nowrap',
+                    }}>
+                      {role.name}
+                    </span>
+                  </td>
+
+                  {/* Email */}
+                  <td style={{ padding: '13px 20px', verticalAlign: 'middle', textAlign: 'center' }}>
+                    <span style={{ fontSize: 12.5, color: '#6B7280', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {member.email}
+                    </span>
+                  </td>
+
+                  {/* Access */}
+                  <td style={{ padding: '13px 20px', verticalAlign: 'middle', textAlign: 'center' }}>
+                    <AccessCell member={member} />
+                  </td>
+
+                  {/* Actions */}
+                  <td style={{ padding: '13px 20px', verticalAlign: 'middle' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                      <button
+                        onClick={() => setEditMember(member)}
+                        title="Edit member"
+                        style={{
+                          width: 32, height: 32, borderRadius: 7,
+                          border: '1.5px solid #E5E7EB', background: 'white',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          cursor: 'pointer', color: '#655BD3', transition: 'all 150ms ease',
+                        }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#F5F3FF'; (e.currentTarget as HTMLElement).style.borderColor = '#DDD6FE'; }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'white'; (e.currentTarget as HTMLElement).style.borderColor = '#E5E7EB'; }}
+                      >
+                        <Edit2 size={14} strokeWidth={1.75} />
+                      </button>
+                      <button
+                        onClick={() => setDeleteId(member.id)}
+                        title="Remove member"
+                        style={{
+                          width: 32, height: 32, borderRadius: 7,
+                          border: '1.5px solid #E5E7EB', background: 'white',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          cursor: 'pointer', color: '#EF4444', transition: 'all 150ms ease',
+                        }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#FEF2F2'; (e.currentTarget as HTMLElement).style.borderColor = '#FECACA'; }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'white'; (e.currentTarget as HTMLElement).style.borderColor = '#E5E7EB'; }}
+                      >
+                        <Trash2 size={14} strokeWidth={1.75} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
               );
             })}
           </tbody>
         </table>
+
+        <div style={{ padding: '10px 20px', borderTop: '1px solid #F3F4F6' }}>
+          <span style={{ fontSize: 12, color: '#9CA3AF' }}>
+            Showing {filtered.length} of {members.length} members
+          </span>
+        </div>
       </div>
 
-      {/* Add Member Modal */}
+      {/* Add Modal */}
       {addOpen && (
-        <MemberForm
-          title="Add Team Member"
-          form={addForm}
-          setForm={setAddForm}
-          onSubmit={handleAdd}
-          onClose={() => setAddOpen(false)}
-          submitLabel="Add Member"
-        />
+        <MemberModal mode="add" initial={{ ...BLANK_FORM }} onClose={() => setAddOpen(false)} onSave={handleAdd} />
       )}
 
-      {/* Edit Member Modal */}
+      {/* Edit Modal */}
       {editMember && (
-        <MemberForm
-          title="Edit Member"
-          form={editMember}
-          setForm={f => setEditMember({ ...editMember, ...f })}
-          onSubmit={handleEditSave}
+        <MemberModal
+          mode="edit"
+          initial={{
+            name: editMember.name, email: editMember.email,
+            roleId: editMember.roleId, userType: editMember.userType,
+            location: editMember.location, storeAccess: editMember.storeAccess,
+            status: editMember.status, id: editMember.id,
+            customPerms: editMember.customPerms,
+          }}
           onClose={() => setEditMember(null)}
-          submitLabel="Save Changes"
+          onSave={handleEditSave}
         />
       )}
 
-      {/* Delete Confirmation */}
+      {/* Delete confirmation */}
       {deleteId !== null && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(17,24,39,0.55)' }} onClick={() => setDeleteId(null)}>
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-7" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: '#FEE2E2' }}>
-                <Trash2 size={16} style={{ color: '#DC2626' }} />
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center"
+          style={{ background: 'rgba(17,24,39,0.55)', backdropFilter: 'blur(2px)' }}
+          onClick={() => setDeleteId(null)}
+        >
+          <div
+            className="bg-white"
+            style={{ borderRadius: 16, width: 360, padding: '28px', boxShadow: '0 24px 64px rgba(0,0,0,0.16)' }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
+              <div style={{ width: 42, height: 42, borderRadius: 12, background: '#FEF2F2', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Trash2 size={18} style={{ color: '#EF4444' }} strokeWidth={1.75} />
               </div>
-              <h3 className="text-base font-bold" style={{ color: '#111827' }}>Remove Member</h3>
+              <div>
+                <p style={{ fontSize: 15, fontWeight: 700, color: '#111827', margin: 0 }}>Remove Member</p>
+                <p style={{ fontSize: 12, color: '#9CA3AF', margin: '2px 0 0' }}>This action cannot be undone.</p>
+              </div>
             </div>
-            <p className="text-sm mb-6" style={{ color: '#6B7280' }}>
-              Remove <strong>{members.find(m => m.id === deleteId)?.name}</strong> from the team? This cannot be undone.
+            <p style={{ fontSize: 13, color: '#374151', marginBottom: 22, lineHeight: 1.6 }}>
+              Are you sure you want to remove <strong>{members.find(m => m.id === deleteId)?.name}</strong> from the team? They will lose all access immediately.
             </p>
-            <div className="flex gap-3">
-              <button onClick={() => setDeleteId(null)} className="flex-1 py-2.5 rounded-lg text-sm font-medium" style={{ border: '1px solid #E5E7EB', color: '#374151' }}>Cancel</button>
-              <button onClick={handleDelete} className="flex-1 py-2.5 rounded-lg text-sm font-semibold text-white" style={{ background: '#DC2626', border: 'none', cursor: 'pointer' }}>Remove</button>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button
+                onClick={() => setDeleteId(null)}
+                style={{ flex: 1, height: 40, borderRadius: 9, border: '1.5px solid #E5E7EB', background: 'white', color: '#374151', fontSize: 13, fontWeight: 500, cursor: 'pointer' }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDelete}
+                style={{ flex: 1, height: 40, borderRadius: 9, border: 'none', background: '#EF4444', color: 'white', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}
+              >
+                Remove
+              </button>
             </div>
           </div>
         </div>

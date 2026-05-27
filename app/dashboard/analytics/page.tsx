@@ -9,7 +9,7 @@ import { VisitorSnapshots } from '@/components/VisitorSnapshots';
 import {
   AreaChart, Area, BarChart, Bar, LineChart, Line,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, ComposedChart,
+  PieChart, Pie, Cell, ComposedChart, Treemap,
 } from 'recharts';
 
 // ── Widget catalog ────────────────────────────────────────────────────────────
@@ -233,6 +233,93 @@ function MiniWidgetPreview({ id }: { id: string }) {
           ))}
         </div>
       );
+    case 'overall_footfall_trends':
+      return (
+        <ResponsiveContainer width="100%" height={H}>
+          <ComposedChart data={INDIA_WALKIN_HOURLY.slice(0, 7)} margin={{ top: 4, right: 4, left: -52, bottom: -16 }}>
+            <Bar dataKey="walkins" fill="#655BD3" radius={[2,2,0,0]} fillOpacity={0.85} />
+            <Line type="monotone" dataKey="prev" stroke="#00CE9C" strokeWidth={1.5} dot={false} />
+          </ComposedChart>
+        </ResponsiveContainer>
+      );
+    case 'footfall_age_groups':
+      return (
+        <ResponsiveContainer width="100%" height={H}>
+          <BarChart data={AGE_GROUP_HOURLY.slice(0, 7)} margin={{ top: 4, right: 4, left: -52, bottom: -16 }} barCategoryGap="20%">
+            <Bar dataKey="kids"   stackId="a" fill="#F59E0B" />
+            <Bar dataKey="teens"  stackId="a" fill="#655BD3" />
+            <Bar dataKey="youths" stackId="a" fill="#00CE9C" />
+            <Bar dataKey="mature" stackId="a" fill="#EC4899" radius={[2,2,0,0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      );
+    case 'footfall_gender':
+      return (
+        <ResponsiveContainer width="100%" height={H}>
+          <BarChart data={GENDER_HOURLY.slice(0, 7)} margin={{ top: 4, right: 4, left: -52, bottom: -16 }} barGap={2} barCategoryGap="28%">
+            <Bar dataKey="male"   fill="#3B82F6" radius={[2,2,0,0]} />
+            <Bar dataKey="female" fill="#EC4899" radius={[2,2,0,0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      );
+    case 'footfall_heatmap': {
+      const colors = ['#7C3AED','#655BD3','#8B5CF6','#A78BFA','#C4B5FD','#DDD6FE','#EDE9FE','#F5F3FF'];
+      return (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3, height: H, alignContent: 'flex-start' }}>
+          {HEATMAP_TREEMAP_DATA.map((d, i) => (
+            <div key={d.name} style={{ background: colors[i], borderRadius: 3, padding: '2px 4px', flexShrink: 0 }}>
+              <span style={{ fontSize: 8, color: i < 4 ? '#fff' : '#374151', fontWeight: 600 }}>{d.pct}%</span>
+            </div>
+          ))}
+        </div>
+      );
+    }
+    case 'demographics_breakdown':
+      return (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, height: H }}>
+          <ResponsiveContainer width={80} height={H}>
+            <PieChart>
+              <Pie data={GENDER_PIE_DATA} cx="50%" cy="50%" innerRadius={18} outerRadius={30} dataKey="value" paddingAngle={2}>
+                {GENDER_PIE_DATA.map((d, i) => <Cell key={i} fill={d.color} />)}
+              </Pie>
+            </PieChart>
+          </ResponsiveContainer>
+          <ResponsiveContainer width={80} height={H}>
+            <PieChart>
+              <Pie data={AGE_RANGE_PIE_DATA} cx="50%" cy="50%" innerRadius={18} outerRadius={30} dataKey="value" paddingAngle={2}>
+                {AGE_RANGE_PIE_DATA.map((d, i) => <Cell key={i} fill={d.color} />)}
+              </Pie>
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+      );
+    case 'store_performance_footfall':
+      return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 7, height: H, justifyContent: 'center', padding: '2px 0' }}>
+          {STORE_DEMO_PERF.slice(0,4).map(s => (
+            <div key={s.store}>
+              <div style={{ display: 'flex', height: 6, borderRadius: 99, overflow: 'hidden' }}>
+                <div style={{ width: `${s.kids}%`, background: '#F59E0B' }} />
+                <div style={{ width: `${s.teens}%`, background: '#655BD3' }} />
+                <div style={{ width: `${s.youths}%`, background: '#00CE9C' }} />
+                <div style={{ width: `${s.mature}%`, background: '#EC4899' }} />
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+    case 'store_performance_overall':
+      return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, height: H, justifyContent: 'center', padding: '2px 0' }}>
+          {TOP5_STORES.map((s, i) => (
+            <div key={s.store} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div style={{ flex: 1, height: 6, background: '#F3F4F6', borderRadius: 99 }}>
+                <div style={{ height: '100%', borderRadius: 99, width: `${(s.visitors/15234)*100}%`, background: i < 3 ? '#00CE9C' : '#93C5FD' }} />
+              </div>
+            </div>
+          ))}
+        </div>
+      );
     default:
       return <div style={{ height: H }} />;
   }
@@ -251,6 +338,25 @@ const ALL_WIDGETS: WidgetDef[] = [
   { id: 'top_stores',       label: 'Top Stores by Visitors', description: 'Ranked store performance',               group: 'Store Performance', preview: <MiniWidgetPreview id="top_stores" /> },
   { id: 'store_conversion', label: 'Store Conversion Rate',  description: 'Conversion by location',                  group: 'Store Performance', preview: <MiniWidgetPreview id="store_conversion" /> },
   { id: 'store_heatmap',    label: 'Store Heatmap',          description: 'Traffic intensity by zone',               group: 'Store Performance', preview: <MiniWidgetPreview id="store_heatmap" /> },
+  { id: 'overall_footfall_trends',   label: 'Overall Footfall Trends',      description: 'Pan India vs location-wise walk-in traffic',      group: 'Footfall',          preview: <MiniWidgetPreview id="overall_footfall_trends" /> },
+  { id: 'footfall_age_groups',       label: 'Footfall by Age Groups',       description: 'Age-group traffic by hour and region',             group: 'Demographics',      preview: <MiniWidgetPreview id="footfall_age_groups" /> },
+  { id: 'footfall_gender',           label: 'Footfall by Gender',           description: 'Gender-split traffic by hour and region',          group: 'Demographics',      preview: <MiniWidgetPreview id="footfall_gender" /> },
+  { id: 'footfall_heatmap',          label: 'Regional Footfall Heatmap',    description: 'Treemap of visitor distribution by region/state',  group: 'Footfall',          preview: <MiniWidgetPreview id="footfall_heatmap" /> },
+  { id: 'demographics_breakdown',    label: 'Demographics Breakdown',       description: 'Gender and age-range pie chart breakdown',         group: 'Demographics',      preview: <MiniWidgetPreview id="demographics_breakdown" /> },
+  { id: 'store_performance_footfall',label: 'Store Performance by Footfall',description: 'Store rankings with demographic breakdown',        group: 'Store Performance', preview: <MiniWidgetPreview id="store_performance_footfall" /> },
+  { id: 'store_performance_overall', label: 'Store Performance Overview',   description: 'Top 5 and bottom 5 stores by visitors',           group: 'Store Performance', preview: <MiniWidgetPreview id="store_performance_overall" /> },
+  { id: 'india_walkin_chart',    label: 'Pan India Walk-in Traffic',    description: 'Hourly walk-in vs previous period',               group: 'Footfall',          preview: <MiniWidgetPreview id="overall_footfall_trends" /> },
+  { id: 'region_compare_chart',  label: 'Region Walk-in Comparison',   description: 'This year vs last year by region',                group: 'Footfall',          preview: <MiniWidgetPreview id="overall_footfall_trends" /> },
+  { id: 'age_grp_hourly',        label: 'Age Groups by Hour',           description: 'Stacked age-group traffic per hour',              group: 'Demographics',      preview: <MiniWidgetPreview id="footfall_age_groups" /> },
+  { id: 'age_grp_regional',      label: 'Age Groups by Region',         description: 'Stacked age-group traffic per region',            group: 'Demographics',      preview: <MiniWidgetPreview id="footfall_age_groups" /> },
+  { id: 'gender_by_hour',        label: 'Gender Traffic by Hour',       description: 'Male vs female visitors per hour',                group: 'Demographics',      preview: <MiniWidgetPreview id="footfall_gender" /> },
+  { id: 'gender_by_region',      label: 'Gender Traffic by Region',     description: 'Male vs female visitors per region',              group: 'Demographics',      preview: <MiniWidgetPreview id="footfall_gender" /> },
+  { id: 'gender_breakdown_pie',  label: 'Gender Distribution',          description: 'Gender share as a donut chart',                   group: 'Demographics',      preview: <MiniWidgetPreview id="demographics_breakdown" /> },
+  { id: 'age_breakdown_pie',     label: 'Age Range Distribution',       description: 'Age range share as a donut chart',                group: 'Demographics',      preview: <MiniWidgetPreview id="demographics_breakdown" /> },
+  { id: 'store_demo_ranking',    label: 'Store Demographic Footfall',   description: 'Store rankings with demographic segment bars',    group: 'Store Performance', preview: <MiniWidgetPreview id="store_performance_footfall" /> },
+  { id: 'store_staff_assist',    label: 'Staff Assist by Store',        description: 'Assist duration buckets per store',               group: 'Store Performance', preview: <MiniWidgetPreview id="store_performance_footfall" /> },
+  { id: 'top5_performers',       label: 'Top 5 Performing Stores',      description: 'Ranked top 5 stores by visitor count',           group: 'Store Performance', preview: <MiniWidgetPreview id="top_stores" /> },
+  { id: 'bottom5_performers',    label: 'Bottom 5 Performing Stores',   description: 'Ranked bottom 5 stores by visitor count',        group: 'Store Performance', preview: <MiniWidgetPreview id="top_stores" /> },
 ];
 
 // Template definitions with icons and colors
@@ -333,6 +439,258 @@ const DONUT_DATA = [
   { name: 'F 13–21', value: 12, color: '#F472B6' },
   { name: 'M 35+',   value: 15, color: '#1D4ED8' },
   { name: 'Other',   value: 10, color: '#8B5CF6' },
+];
+
+// ── Timeframe datasets ────────────────────────────────────────────────────────
+type Timeframe = 'D' | 'W' | 'M' | 'Y';
+
+const WEEKLY = [
+  { m: 'Mon', footfall: 2100, passerby: 6100, male: 120, female: 100, conv: 9.5,  target: 15 },
+  { m: 'Tue', footfall: 2350, passerby: 6800, male: 135, female: 115, conv: 10.1, target: 15 },
+  { m: 'Wed', footfall: 2200, passerby: 6400, male: 128, female: 108, conv: 9.8,  target: 15 },
+  { m: 'Thu', footfall: 2480, passerby: 7200, male: 140, female: 122, conv: 10.3, target: 15 },
+  { m: 'Fri', footfall: 2700, passerby: 7800, male: 158, female: 134, conv: 10.9, target: 15 },
+  { m: 'Sat', footfall: 3200, passerby: 9200, male: 188, female: 162, conv: 11.5, target: 15 },
+  { m: 'Sun', footfall: 2900, passerby: 8300, male: 168, female: 144, conv: 11.1, target: 15 },
+];
+
+const YEARLY = [
+  { m: '2020', footfall: 148000, passerby: 430000, male: 8800,  female: 7200,  conv: 10.2, target: 15 },
+  { m: '2021', footfall: 162000, passerby: 471000, male: 9600,  female: 8000,  conv: 10.8, target: 15 },
+  { m: '2022', footfall: 178000, passerby: 516000, male: 10600, female: 8800,  conv: 11.2, target: 15 },
+  { m: '2023', footfall: 192000, passerby: 557000, male: 11400, female: 9500,  conv: 11.8, target: 15 },
+  { m: '2024', footfall: 205000, passerby: 595000, male: 12200, female: 10100, conv: 12.4, target: 15 },
+  { m: '2025', footfall: 218000, passerby: 632000, male: 13000, female: 10800, conv: 13.0, target: 15 },
+];
+
+function getTfData(tf: Timeframe) {
+  switch (tf) {
+    case 'D': return HOURLY.map(d => ({ m: d.h, footfall: d.v, passerby: Math.round(d.v * 3.2), male: Math.round(d.v * 0.54), female: Math.round(d.v * 0.46), conv: +(8 + d.q * 0.3).toFixed(1), target: 15 }));
+    case 'W': return WEEKLY;
+    case 'Y': return YEARLY;
+    default:  return MONTHLY;
+  }
+}
+
+function getChartData(tf: Timeframe) {
+  const tfData = getTfData(tf);
+  const sScale = tf === 'D' ? 0.033 : tf === 'W' ? 0.233 : tf === 'M' ? 1 : 12;
+  const rScale = tf === 'D' ? 0.033 : tf === 'W' ? 0.23  : tf === 'M' ? 1 : 12;
+
+  const peakHours = tfData.map(d => ({
+    h: d.m,
+    v: d.footfall,
+    q: Math.round(d.footfall / (tf === 'Y' ? 6000 : tf === 'M' ? 600 : tf === 'W' ? 90 : 18)),
+  }));
+
+  const waitTime = peakHours.map(d => ({
+    h: d.h,
+    wait: +(d.q * 0.28 + 0.8).toFixed(1),
+  }));
+
+  const storePerfData = STORE_PERF.map(s => ({ ...s, v: Math.round(s.v * sScale) }));
+  const top5          = TOP5_STORES.map(s    => ({ ...s, visitors: Math.round(s.visitors * sScale) }));
+  const bottom5       = BOTTOM5_STORES.map(s => ({ ...s, visitors: Math.round(s.visitors * sScale) }));
+  const storeDemoPerf = STORE_DEMO_PERF.map(s => ({ ...s, visitors: Math.round(s.visitors * sScale) }));
+  const top5Max       = Math.max(...top5.map(s => s.visitors)) || 1;
+
+  const indiaWalkin = tf === 'D'
+    ? INDIA_WALKIN_HOURLY
+    : tfData.map(d => ({ h: d.m, walkins: Math.round(d.footfall * 8), prev: Math.round(d.footfall * 8 * 0.88) }));
+
+  const regionCompare = REGION_COMPARE_DATA.map(r => ({
+    region: r.region, lastYear: Math.round(r.lastYear * rScale), thisYear: Math.round(r.thisYear * rScale),
+  }));
+
+  const ageGroupTime = tf === 'D'
+    ? AGE_GROUP_HOURLY
+    : tfData.map(d => ({
+        h: d.m,
+        kids:   Math.round(d.footfall * 0.086),
+        teens:  Math.round(d.footfall * 0.152),
+        youths: Math.round(d.footfall * 0.343),
+        mature: Math.round(d.footfall * 0.262),
+      }));
+
+  const ageGroupRegional = AGE_GROUP_REGIONAL.map(r => ({
+    region: r.region,
+    kids:   Math.round(r.kids   * rScale),
+    teens:  Math.round(r.teens  * rScale),
+    youths: Math.round(r.youths * rScale),
+    mature: Math.round(r.mature * rScale),
+  }));
+
+  const genderTime = tf === 'D'
+    ? GENDER_HOURLY
+    : tfData.map(d => ({ h: d.m, male: d.male, female: d.female }));
+
+  const genderRegional = GENDER_REGIONAL.map(r => ({
+    region: r.region, male: Math.round(r.male * rScale), female: Math.round(r.female * rScale),
+  }));
+
+  const hmCols =
+    tf === 'D' ? ['9am',  '10am', '11am', '12pm', '1pm',  '2pm',  '3pm'] :
+    tf === 'W' ? ['Mon',  'Tue',  'Wed',  'Thu',  'Fri',  'Sat',  'Sun'] :
+    tf === 'M' ? ['Wk 1', 'Wk 2', 'Wk 3', 'Wk 4'] :
+                 ['Q1',   'Q2',   'Q3',   'Q4'];
+
+  const hmData: number[][] =
+    tf === 'D' ? [
+      [13, 27, 40, 53, 40, 27, 13],
+      [20, 40, 60, 80, 60, 40, 20],
+      [27, 47, 73, 100, 73, 47, 27],
+      [20, 33, 53, 67, 53, 33, 20],
+      [13, 27, 40, 47, 40, 27, 13],
+    ] :
+    tf === 'W' ? [
+      [35, 42, 48, 55, 68, 95, 80],
+      [42, 50, 60, 68, 82, 100, 88],
+      [55, 65, 78, 85, 92, 100, 95],
+      [45, 52, 62, 72, 78, 88, 80],
+      [30, 38, 45, 52, 60, 72, 65],
+    ] :
+    tf === 'M' ? [
+      [55, 62, 78, 85],
+      [65, 72, 88, 92],
+      [75, 85, 95, 100],
+      [60, 68, 80, 88],
+      [45, 52, 62, 70],
+    ] : [
+      [62, 78, 88, 72],
+      [72, 88, 95, 82],
+      [82, 95, 100, 90],
+      [68, 82, 90, 78],
+      [55, 68, 75, 65],
+    ];
+
+  const totalFootfall =
+    tf === 'D' ? '5,842' : tf === 'W' ? '42,890' : tf === 'M' ? '1,24,134' : '14,82,560';
+  const totalChange =
+    tf === 'D' ? 12 : tf === 'W' ? 8 : tf === 'M' ? 18 : 22;
+
+  return {
+    peakHours, waitTime,
+    storePerfData, top5, bottom5, storeDemoPerf, top5Max,
+    indiaWalkin, regionCompare,
+    ageGroupTime, ageGroupRegional,
+    genderTime, genderRegional,
+    hmCols, hmData,
+    totalFootfall, totalChange,
+  };
+}
+
+// ── New chart data ────────────────────────────────────────────────────────────
+const INDIA_WALKIN_HOURLY = [
+  { h: '8am',  walkins: 120, prev: 95  }, { h: '9am',  walkins: 285, prev: 240 },
+  { h: '10am', walkins: 420, prev: 380 }, { h: '11am', walkins: 510, prev: 465 },
+  { h: '12pm', walkins: 580, prev: 530 }, { h: '1pm',  walkins: 640, prev: 590 },
+  { h: '2pm',  walkins: 600, prev: 555 }, { h: '3pm',  walkins: 540, prev: 505 },
+  { h: '4pm',  walkins: 475, prev: 440 }, { h: '5pm',  walkins: 510, prev: 470 },
+  { h: '6pm',  walkins: 490, prev: 455 }, { h: '7pm',  walkins: 380, prev: 345 },
+];
+
+const REGION_COMPARE_DATA = [
+  { region: 'North',   lastYear: 18200, thisYear: 21500 },
+  { region: 'South',   lastYear: 24100, thisYear: 29300 },
+  { region: 'East',    lastYear: 14800, thisYear: 17200 },
+  { region: 'West',    lastYear: 22300, thisYear: 26800 },
+  { region: 'Central', lastYear: 10900, thisYear: 12900 },
+];
+
+const AGE_GROUP_HOURLY = [
+  { h: '8am',  kids: 18,  teens: 28,  youths: 48,  mature: 26  },
+  { h: '9am',  kids: 32,  teens: 55,  youths: 120, mature: 78  },
+  { h: '10am', kids: 45,  teens: 82,  youths: 185, mature: 108 },
+  { h: '11am', kids: 55,  teens: 95,  youths: 225, mature: 135 },
+  { h: '12pm', kids: 65,  teens: 110, youths: 260, mature: 145 },
+  { h: '1pm',  kids: 70,  teens: 125, youths: 290, mature: 155 },
+  { h: '2pm',  kids: 62,  teens: 115, youths: 272, mature: 151 },
+  { h: '3pm',  kids: 58,  teens: 102, youths: 245, mature: 135 },
+  { h: '4pm',  kids: 50,  teens: 92,  youths: 215, mature: 118 },
+  { h: '5pm',  kids: 55,  teens: 98,  youths: 228, mature: 129 },
+  { h: '6pm',  kids: 48,  teens: 88,  youths: 218, mature: 136 },
+  { h: '7pm',  kids: 38,  teens: 68,  youths: 168, mature: 106 },
+];
+
+const AGE_GROUP_REGIONAL = [
+  { region: 'North',   kids: 1240, teens: 2180, youths: 4920, mature: 3660 },
+  { region: 'South',   kids: 1680, teens: 2940, youths: 6620, mature: 4960 },
+  { region: 'East',    kids: 980,  teens: 1720, youths: 3880, mature: 2920 },
+  { region: 'West',    kids: 1420, teens: 2480, youths: 5600, mature: 4200 },
+  { region: 'Central', kids: 760,  teens: 1340, youths: 3020, mature: 2260 },
+];
+
+const GENDER_HOURLY = [
+  { h: '8am',  male: 65,  female: 55  }, { h: '9am',  male: 148, female: 137 },
+  { h: '10am', male: 218, female: 202 }, { h: '11am', male: 264, female: 246 },
+  { h: '12pm', male: 298, female: 282 }, { h: '1pm',  male: 328, female: 312 },
+  { h: '2pm',  male: 310, female: 290 }, { h: '3pm',  male: 278, female: 262 },
+  { h: '4pm',  male: 245, female: 230 }, { h: '5pm',  male: 262, female: 248 },
+  { h: '6pm',  male: 252, female: 238 }, { h: '7pm',  male: 195, female: 185 },
+];
+
+const GENDER_REGIONAL = [
+  { region: 'North',   male: 10800, female: 10700 },
+  { region: 'South',   male: 14600, female: 14700 },
+  { region: 'East',    male: 8560,  female: 8640  },
+  { region: 'West',    male: 13200, female: 13600 },
+  { region: 'Central', male: 6420,  female: 6480  },
+];
+
+const HEATMAP_TREEMAP_DATA = [
+  { name: 'Maharashtra', value: 28500, pct: 23.1, stores: 12, fill: '#1E3A8A' },
+  { name: 'Delhi NCR',   value: 24200, pct: 19.6, stores: 10, fill: '#1D4ED8' },
+  { name: 'Karnataka',   value: 18100, pct: 14.7, stores: 8,  fill: '#0369A1' },
+  { name: 'Tamil Nadu',  value: 15800, pct: 12.8, stores: 7,  fill: '#0F766E' },
+  { name: 'Gujarat',     value: 12400, pct: 10.1, stores: 5,  fill: '#15803D' },
+  { name: 'Rajasthan',   value: 9600,  pct: 7.8,  stores: 4,  fill: '#B45309' },
+  { name: 'Punjab',      value: 7200,  pct: 5.8,  stores: 3,  fill: '#7C3AED' },
+  { name: 'Others',      value: 7500,  pct: 6.1,  stores: 5,  fill: '#374151' },
+];
+
+const GENDER_PIE_DATA = [
+  { name: 'Male',   value: 42, color: '#3B82F6' },
+  { name: 'Female', value: 48, color: '#EC4899' },
+  { name: 'Other',  value: 10, color: '#8B5CF6' },
+];
+
+const AGE_RANGE_PIE_DATA = [
+  { name: 'Kids 0–12',   value: 12, color: '#93C5FD' },
+  { name: 'Teens 13–21', value: 6,  color: '#A78BFA' },
+  { name: 'Youths 22–35',value: 40, color: '#3B82F6' },
+  { name: 'Mature 35+',  value: 42, color: '#1D4ED8' },
+];
+
+const STORE_DEMO_PERF = [
+  { store: 'Marina Bay Sands', visitors: 15234, kids: 8,  teens: 15, youths: 44, mature: 33 },
+  { store: 'Orchard Central',  visitors: 12450, kids: 7,  teens: 14, youths: 46, mature: 33 },
+  { store: 'VivoCity',         visitors: 11800, kids: 9,  teens: 16, youths: 42, mature: 33 },
+  { store: 'Bugis Junction',   visitors: 10200, kids: 10, teens: 17, youths: 40, mature: 33 },
+  { store: 'Tampines Mall',    visitors: 9600,  kids: 12, teens: 18, youths: 38, mature: 32 },
+];
+
+const STORE_ASSIST_DATA = [
+  { store: 'MBS', s10: 42, s30: 24, s60: 18, s120: 10, unattended: 6 },
+  { store: 'OC',  s10: 38, s30: 22, s60: 20, s120: 12, unattended: 8 },
+  { store: 'VVC', s10: 44, s30: 20, s60: 16, s120: 11, unattended: 9 },
+  { store: 'BJ',  s10: 36, s30: 26, s60: 22, s120: 9,  unattended: 7 },
+  { store: 'TM',  s10: 40, s30: 23, s60: 19, s120: 11, unattended: 7 },
+];
+
+const TOP5_STORES = [
+  { store: 'Marina Bay Sands', visitors: 15234 },
+  { store: 'Orchard Central',  visitors: 12450 },
+  { store: 'VivoCity',         visitors: 11800 },
+  { store: 'Bugis Junction',   visitors: 10200 },
+  { store: 'Tampines Mall',    visitors: 9600  },
+];
+
+const BOTTOM5_STORES = [
+  { store: 'Causeway Point',  visitors: 6900 },
+  { store: 'Clementi Mall',   visitors: 4800 },
+  { store: 'Bishan Junction', visitors: 5200 },
+  { store: 'Jurong Point',    visitors: 8900 },
+  { store: 'Northpoint City', visitors: 7800 },
 ];
 
 // ── SKILL.md chart tokens ─────────────────────────────────────────────────────
@@ -422,18 +780,53 @@ const WIDGET_INFO: Record<string, { title: string; description: string; calculat
     description: 'Visualises foot traffic intensity across zones and time slots. Darker cells indicate higher congestion — useful for zone planning and staffing.',
     calculation: 'Intensity = zone visitor count ÷ zone capacity × 100. Colours map to 5 intensity tiers from low (light purple) to high (solid purple).',
   },
+  overall_footfall_trends: {
+    title: 'Overall Footfall Trends',
+    description: 'Compares Pan India walk-in totals (current vs previous period) alongside location-wise performance across all regions.',
+    calculation: 'Walk-in totals aggregated from all entrance cameras across all regions, compared against the same period last year.',
+  },
+  footfall_age_groups: {
+    title: 'Footfall by Age Groups',
+    description: 'Shows visitor distribution across Kids (3–12), Teens (13–21), Youths (22–35), and Mature (35+) age groups by hour and by region.',
+    calculation: 'AI age classification per entry event grouped into 4 bands, aggregated hourly (left panel) and by region (right panel).',
+  },
+  footfall_gender: {
+    title: 'Footfall by Gender',
+    description: 'Male vs Female visitor traffic split by hour of day and by region. Helps identify which segments drive traffic at specific times.',
+    calculation: 'Gender inference from AI vision model per entry event, aggregated hourly and by geographic region.',
+  },
+  footfall_heatmap: {
+    title: 'Regional Footfall Heatmap',
+    description: 'Treemap showing relative visitor volume by region/state. Larger, darker tiles represent regions with more visitors.',
+    calculation: 'Total entry events per region during the selected period, sized proportionally to each region\'s share of total footfall.',
+  },
+  demographics_breakdown: {
+    title: 'Demographics Breakdown',
+    description: 'Side-by-side pie charts showing overall gender distribution and age range distribution across all visitors.',
+    calculation: 'AI classification model output per entry event, aggregated across all stores for the selected period.',
+  },
+  store_performance_footfall: {
+    title: 'Store Performance by Footfall',
+    description: 'Left: store rankings with segmented demographic bars. Right: staff assist effectiveness by time-on-floor bucket per store.',
+    calculation: 'Footfall from entry events per store. Assist data from staff interaction events classified by engagement duration.',
+  },
+  store_performance_overall: {
+    title: 'Store Performance Overview',
+    description: 'Quick comparison of Top 5 and Bottom 5 performing stores by total visitor count for the selected period.',
+    calculation: 'Entry events per store location sorted highest (top 5) and lowest (bottom 5). Progress bars are relative to the top performer.',
+  },
 };
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null;
   return (
-    <div style={{ background: '#1A1A2E', borderRadius: 8, padding: '8px 12px', boxShadow: '0 4px 16px rgba(0,0,0,0.18)' }}>
-      <p style={{ fontSize: 11, color: '#9CA3AF', marginBottom: 4 }}>{label}</p>
+    <div style={{ background: 'white', borderRadius: 10, padding: '10px 14px', boxShadow: '0 4px 20px rgba(0,0,0,0.10)', border: '1px solid #E5E7EB' }}>
+      <p style={{ fontSize: 11, color: '#9CA3AF', marginBottom: 5, fontWeight: 600 }}>{label}</p>
       {payload.map((entry: any, i: number) => (
-        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: i < payload.length - 1 ? 2 : 0 }}>
-          <span style={{ width: 8, height: 8, borderRadius: '50%', background: entry.color, flexShrink: 0 }} />
-          <span style={{ fontSize: 12, color: '#D1D5DB' }}>{entry.name}</span>
-          <span style={{ fontSize: 13, color: '#fff', fontWeight: 700, marginLeft: 'auto', paddingLeft: 12 }}>
+        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: i < payload.length - 1 ? 3 : 0 }}>
+          <span style={{ width: 9, height: 9, borderRadius: 2, background: entry.color, flexShrink: 0 }} />
+          <span style={{ fontSize: 12, color: '#6B7280' }}>{entry.name}</span>
+          <span style={{ fontSize: 13, color: '#111827', fontWeight: 700, marginLeft: 'auto', paddingLeft: 16 }}>
             {typeof entry.value === 'number' ? entry.value.toLocaleString() : entry.value}
           </span>
         </div>
@@ -444,20 +837,20 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 const ChartLegend = ({ items }: { items: { color: string; label: string; dash?: boolean }[] }) => (
   <div style={{
-    display: 'flex', flexWrap: 'wrap', gap: '4px 20px',
-    paddingTop: 8, marginTop: 6,
+    display: 'flex', flexWrap: 'wrap', gap: '6px 24px',
+    paddingTop: 10, marginTop: 8,
     borderTop: '1px solid #F3F4F6', flexShrink: 0,
   }}>
     {items.map((item, i) => (
-      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
         {item.dash ? (
-          <svg width="18" height="10" style={{ flexShrink: 0, display: 'block' }}>
-            <line x1="0" y1="5" x2="18" y2="5" stroke={item.color} strokeWidth="2" strokeDasharray="5 3" />
+          <svg width="20" height="10" style={{ flexShrink: 0, display: 'block' }}>
+            <line x1="0" y1="5" x2="20" y2="5" stroke={item.color} strokeWidth="2.5" strokeDasharray="5 3" />
           </svg>
         ) : (
-          <span style={{ width: 8, height: 8, borderRadius: '50%', background: item.color, flexShrink: 0 }} />
+          <span style={{ width: 10, height: 10, borderRadius: 3, background: item.color, flexShrink: 0 }} />
         )}
-        <span style={{ fontSize: 11, color: '#6B7280' }}>{item.label}</span>
+        <span style={{ fontSize: 12, color: '#374151', fontWeight: 500 }}>{item.label}</span>
       </div>
     ))}
   </div>
@@ -495,11 +888,11 @@ function GlobalLegend() {
       <span style={{ fontSize: 10, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
         {title}
       </span>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px 14px' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 16px' }}>
         {items.map(item => (
-          <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-            <span style={{ width: 9, height: 9, borderRadius: '50%', background: item.color, flexShrink: 0, boxShadow: `0 0 0 2px ${item.color}22` }} />
-            <span style={{ fontSize: 11.5, color: '#374151', whiteSpace: 'nowrap' }}>{item.label}</span>
+          <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ width: 10, height: 10, borderRadius: 3, background: item.color, flexShrink: 0 }} />
+            <span style={{ fontSize: 12, color: '#374151', whiteSpace: 'nowrap', fontWeight: 500 }}>{item.label}</span>
           </div>
         ))}
       </div>
@@ -641,7 +1034,33 @@ const WIDGET_ACCENT: Record<string, string> = {
   conversion_rate: '#F59E0B', demographics_donut: '#655BD3', gender_trend: '#3B82F6',
   age_bar: '#EC4899', queue_length: '#DC2626', wait_time: '#D97706',
   top_stores: '#3B82F6', store_conversion: '#655BD3', store_heatmap: '#8B5CF6',
+  overall_footfall_trends: '#655BD3', footfall_age_groups: '#F59E0B',
+  footfall_gender: '#3B82F6', footfall_heatmap: '#7C3AED',
+  demographics_breakdown: '#EC4899', store_performance_footfall: '#00CE9C',
+  store_performance_overall: '#3B82F6',
+  india_walkin_chart: '#655BD3', region_compare_chart: '#7C3AED',
+  age_grp_hourly: '#F59E0B', age_grp_regional: '#F59E0B',
+  gender_by_hour: '#3B82F6', gender_by_region: '#3B82F6',
+  gender_breakdown_pie: '#3B82F6', age_breakdown_pie: '#1D4ED8',
+  store_demo_ranking: '#00CE9C', store_staff_assist: '#655BD3',
+  top5_performers: '#00CE9C', bottom5_performers: '#EF4444',
 };
+
+// ── Chart height overrides for tall/complex widgets ───────────────────────────
+const WIDGET_HEIGHTS: Record<string, number> = {
+  overall_footfall_trends: 360,
+  footfall_age_groups: 360,
+  footfall_gender: 300,
+  footfall_heatmap: 300,
+  demographics_breakdown: 280,
+  store_performance_footfall: 320,
+  store_performance_overall: 260,
+};
+
+// ── Widgets that should span both grid columns ────────────────────────────────
+const FULL_WIDTH_IDS = new Set([
+  'footfall_heatmap',
+]);
 
 // ── Widget renderer ───────────────────────────────────────────────────────────
 function PlacedWidget({
@@ -652,6 +1071,7 @@ function PlacedWidget({
   onDragStart,
   onDragEnter,
   onDragEnd,
+  timeframe = 'M',
 }: {
   widgetId: string;
   onRemove: () => void;
@@ -660,34 +1080,41 @@ function PlacedWidget({
   onDragStart?: (i: number) => void;
   onDragEnter?: (i: number) => void;
   onDragEnd?: () => void;
+  timeframe?: Timeframe;
 }) {
+  // All hooks must be unconditional — early return comes AFTER
+  const color = WIDGET_ACCENT[widgetId] ?? '#655BD3';
+  const [showSnapshots, setShowSnapshots] = useState(false);
+  const [genderFilter, setGenderFilter] = useState('All');
+  const [agGenderFilter, setAgGenderFilter] = useState('All');
+  const [ageGrpFilter, setAgeGrpFilter] = useState('All');
+
   const def = ALL_WIDGETS.find(w => w.id === widgetId);
   if (!def) return null;
 
-  const color = WIDGET_ACCENT[widgetId] ?? '#655BD3';
-  const [showSnapshots, setShowSnapshots] = useState(false);
-
   function renderChart() {
+    const tfData = getTfData(timeframe);
+    const cd = getChartData(timeframe);
     switch (widgetId) {
       case 'footfall_trend':
         return (
           <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
             <div style={{ flex: 1, minHeight: 0 }}>
               <ResponsiveContainer width={700} height="100%">
-                <BarChart data={MONTHLY} margin={{ top: 8, right: 0, left: -20, bottom: 0 }} barCategoryGap="35%">
+                <BarChart data={tfData} margin={{ top: 8, right: 0, left: -20, bottom: 0 }} barCategoryGap="35%">
                   <defs>
                     <linearGradient id="ffGrad1" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#655BD3" stopOpacity={1} />
-                      <stop offset="100%" stopColor="#655BD3" stopOpacity={0.4} />
+                      <stop offset="0%" stopColor="#7C3AED" stopOpacity={1} />
+                      <stop offset="100%" stopColor="#655BD3" stopOpacity={1} />
                     </linearGradient>
                     <linearGradient id="ffGrad2" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#00CE9C" stopOpacity={1} />
-                      <stop offset="100%" stopColor="#00CE9C" stopOpacity={0.4} />
+                      <stop offset="0%" stopColor="#059669" stopOpacity={1} />
+                      <stop offset="100%" stopColor="#00CE9C" stopOpacity={1} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="4 4" stroke="#F3F4F6" vertical={false} />
                   <XAxis dataKey="m" axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} />
-                  <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} tickFormatter={(v: any) => `${(v/1000).toFixed(0)}K`} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} tickFormatter={(v: any) => v >= 1000 ? `${(v/1000).toFixed(0)}K` : v} />
                   <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(101,91,211,0.06)' }} />
                   <Bar dataKey="footfall" name="Footfall" fill="url(#ffGrad1)" radius={[6,6,0,0]} />
                   <Bar dataKey="passerby" name="Passerby" fill="url(#ffGrad2)" radius={[6,6,0,0]} />
@@ -698,7 +1125,7 @@ function PlacedWidget({
         );
 
       case 'passerby_trend': {
-        const passData = MONTHLY.map(d => ({ ...d, prev: Math.round(d.passerby * 0.88) }));
+        const passData = tfData.map(d => ({ ...d, prev: Math.round(d.passerby * 0.88) }));
         return (
           <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
             <div style={{ flex: 1, minHeight: 0 }}>
@@ -706,12 +1133,12 @@ function PlacedWidget({
                 <AreaChart data={passData} margin={{ top: 8, right: 0, left: -20, bottom: 0 }}>
                   <defs>
                     <linearGradient id="pbGrad1" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#00CE9C" stopOpacity={0.15} />
-                      <stop offset="100%" stopColor="#00CE9C" stopOpacity={0} />
+                      <stop offset="0%" stopColor="#00CE9C" stopOpacity={0.18} />
+                      <stop offset="100%" stopColor="#00CE9C" stopOpacity={0.04} />
                     </linearGradient>
                     <linearGradient id="pbGrad2" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#655BD3" stopOpacity={0.15} />
-                      <stop offset="100%" stopColor="#655BD3" stopOpacity={0} />
+                      <stop offset="0%" stopColor="#655BD3" stopOpacity={0.14} />
+                      <stop offset="100%" stopColor="#655BD3" stopOpacity={0.03} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="4 4" stroke="#F3F4F6" vertical={false} />
@@ -728,7 +1155,7 @@ function PlacedWidget({
       }
 
       case 'conversion_rate': {
-        const convData = MONTHLY.map(d => ({ ...d, target: 15 }));
+        const convData = tfData.map(d => ({ ...d, target: 15 }));
         return (
           <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
             <div style={{ flex: 1, minHeight: 0 }}>
@@ -736,8 +1163,8 @@ function PlacedWidget({
                 <ComposedChart data={convData} margin={{ top: 8, right: 0, left: -20, bottom: 0 }}>
                   <defs>
                     <linearGradient id="convGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#F59E0B" stopOpacity={1} />
-                      <stop offset="100%" stopColor="#F59E0B" stopOpacity={0.4} />
+                      <stop offset="0%" stopColor="#B45309" stopOpacity={1} />
+                      <stop offset="100%" stopColor="#F59E0B" stopOpacity={1} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="4 4" stroke="#F3F4F6" vertical={false} />
@@ -754,14 +1181,13 @@ function PlacedWidget({
       }
 
       case 'wait_time': {
-        const wtHourly = HOURLY.map(d => ({ h: d.h, wait: +(d.q * 0.28 + 0.5).toFixed(1) }));
         return (
           <ResponsiveContainer width={650} height="100%">
-            <AreaChart data={wtHourly} margin={{ top: 8, right: 0, left: -20, bottom: 0 }}>
+            <AreaChart data={cd.waitTime} margin={{ top: 8, right: 0, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id="wtGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#D97706" stopOpacity={0.15} />
-                  <stop offset="100%" stopColor="#D97706" stopOpacity={0} />
+                  <stop offset="0%" stopColor="#D97706" stopOpacity={0.16} />
+                  <stop offset="100%" stopColor="#D97706" stopOpacity={0.04} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="4 4" stroke="#F3F4F6" vertical={false} />
@@ -775,14 +1201,14 @@ function PlacedWidget({
       }
 
       case 'peak_hours': {
-        const peakMax = Math.max(...HOURLY.map(d => d.v));
+        const peakMax = Math.max(...cd.peakHours.map((d: any) => d.v));
         return (
           <ResponsiveContainer width={650} height="100%">
-            <BarChart data={HOURLY} margin={{ top: 8, right: 0, left: -20, bottom: 0 }} barCategoryGap="35%">
+            <BarChart data={cd.peakHours} margin={{ top: 8, right: 0, left: -20, bottom: 0 }} barCategoryGap="35%">
               <defs>
                 <linearGradient id="peakHigh" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#655BD3" stopOpacity={1} />
-                  <stop offset="100%" stopColor="#655BD3" stopOpacity={0.4} />
+                  <stop offset="0%" stopColor="#7C3AED" stopOpacity={1} />
+                  <stop offset="100%" stopColor="#655BD3" stopOpacity={1} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="4 4" stroke="#F3F4F6" vertical={false} />
@@ -790,7 +1216,7 @@ function PlacedWidget({
               <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} />
               <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(101,91,211,0.06)' }} />
               <Bar dataKey="v" name="Visitors" radius={[6,6,0,0]}>
-                {HOURLY.map((d, i) => (
+                {cd.peakHours.map((d: any, i: number) => (
                   <Cell key={i} fill={d.v === peakMax ? 'url(#peakHigh)' : CHART_COLORS.muted} />
                 ))}
               </Bar>
@@ -837,7 +1263,7 @@ function PlacedWidget({
           <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
             <div style={{ flex: 1 }}>
               <ResponsiveContainer width={700} height="100%">
-                <LineChart data={MONTHLY} margin={{ top: 8, right: 0, left: -20, bottom: 0 }}>
+                <LineChart data={tfData} margin={{ top: 8, right: 0, left: -20, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="4 4" stroke="#F3F4F6" vertical={false} />
                   <XAxis dataKey="m" axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} />
                   <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} />
@@ -870,14 +1296,14 @@ function PlacedWidget({
       }
 
       case 'queue_length': {
-        const maxQ = Math.max(...HOURLY.map(d => d.q));
+        const maxQ = Math.max(...cd.peakHours.map((d: any) => d.q));
         return (
           <ResponsiveContainer width={650} height="100%">
-            <BarChart data={HOURLY} margin={{ top: 8, right: 0, left: -20, bottom: 0 }} barCategoryGap="35%">
+            <BarChart data={cd.peakHours} margin={{ top: 8, right: 0, left: -20, bottom: 0 }} barCategoryGap="35%">
               <defs>
                 <linearGradient id="queueHigh" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#655BD3" stopOpacity={1} />
-                  <stop offset="100%" stopColor="#655BD3" stopOpacity={0.4} />
+                  <stop offset="0%" stopColor="#7C3AED" stopOpacity={1} />
+                  <stop offset="100%" stopColor="#655BD3" stopOpacity={1} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="4 4" stroke="#F3F4F6" vertical={false} />
@@ -885,7 +1311,7 @@ function PlacedWidget({
               <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} />
               <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(101,91,211,0.06)' }} />
               <Bar dataKey="q" name="Queue depth" radius={[6,6,0,0]}>
-                {HOURLY.map((d, i) => (
+                {cd.peakHours.map((d: any, i: number) => (
                   <Cell key={i} fill={d.q === maxQ ? 'url(#queueHigh)' : CHART_COLORS.muted} />
                 ))}
               </Bar>
@@ -894,29 +1320,31 @@ function PlacedWidget({
         );
       }
 
-      case 'top_stores':
+      case 'top_stores': {
+        const spMax = cd.storePerfData[0]?.v || 1;
         return (
           <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
-            {STORE_PERF.map((s, i) => (
-              <div key={s.store} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', borderBottom: i < STORE_PERF.length - 1 ? '1px solid #F3F4F6' : 'none' }}>
+            {cd.storePerfData.map((s: any, i: number) => (
+              <div key={s.store} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', borderBottom: i < cd.storePerfData.length - 1 ? '1px solid #F3F4F6' : 'none' }}>
                 <span style={{ fontSize: 12, color: '#9CA3AF', width: 16, flexShrink: 0 }}>{i + 1}</span>
                 <span style={{ fontSize: 13, color: '#374151', width: 148, flexShrink: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.store}</span>
                 <div style={{ flex: 1, minWidth: 0, height: 6, background: '#F3F4F6', borderRadius: 99 }}>
-                  <div style={{ height: '100%', borderRadius: 99, width: `${(s.v / 15234) * 100}%`, backgroundColor: '#655BD3' }} />
+                  <div style={{ height: '100%', borderRadius: 99, width: `${(s.v / spMax) * 100}%`, backgroundColor: '#655BD3' }} />
                 </div>
                 <span style={{ fontSize: 13, fontWeight: 600, color: '#111827', width: 48, textAlign: 'right', flexShrink: 0 }}>
-                  {(s.v / 1000).toFixed(1)}K
+                  {s.v >= 1000 ? (s.v / 1000).toFixed(1) + 'K' : s.v}
                 </span>
               </div>
             ))}
           </div>
         );
+      }
 
       case 'store_conversion':
         return (
           <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
-            {STORE_PERF.map((s, i) => (
-              <div key={s.store} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', borderBottom: i < STORE_PERF.length - 1 ? '1px solid #F3F4F6' : 'none' }}>
+            {cd.storePerfData.map((s: any, i: number) => (
+              <div key={s.store} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', borderBottom: i < cd.storePerfData.length - 1 ? '1px solid #F3F4F6' : 'none' }}>
                 <span style={{ fontSize: 13, color: '#374151', width: 148, flexShrink: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.store}</span>
                 <div style={{ flex: 1, minWidth: 0, height: 6, background: '#F3F4F6', borderRadius: 99 }}>
                   <div style={{ height: '100%', borderRadius: 99, width: `${(s.conv / 20) * 100}%`, backgroundColor: '#754C7F' }} />
@@ -938,14 +1366,8 @@ function PlacedWidget({
         const getHeatColor = (val: number) =>
           HEATMAP_COLORS.find(c => val >= c.min && val < c.max) ?? HEATMAP_COLORS[0];
         const hmRows = ['Ent A', 'Ent B', 'L1', 'L2', 'L3'];
-        const hmCols = ['9am', '10am', '11am', '12pm', '1pm', '2pm', '3pm'];
-        const hmData = [
-          [13, 27, 40, 53, 40, 27, 13],
-          [20, 40, 60, 80, 60, 40, 20],
-          [27, 47, 73, 100, 73, 47, 27],
-          [20, 33, 53, 67, 53, 33, 20],
-          [13, 27, 40, 47, 40, 27, 13],
-        ];
+        const hmCols = cd.hmCols;
+        const hmData = cd.hmData;
         return (
           <div style={{ overflowX: 'auto', height: '100%' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11 }}>
@@ -985,6 +1407,601 @@ function PlacedWidget({
         );
       }
 
+      case 'overall_footfall_trends': {
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+                <span style={{ fontSize: 24, fontWeight: 700, color: '#111827' }}>{cd.totalFootfall}</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: '#16A34A', background: '#DCFCE7', padding: '2px 8px', borderRadius: 6 }}>▲ {cd.totalChange}% vs Last Period</span>
+              </div>
+              <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ fontSize: 11, color: '#6B7280' }}>Gender:</span>
+                <select value={genderFilter} onChange={e => setGenderFilter(e.target.value)} style={{ fontSize: 12, padding: '3px 8px', borderRadius: 6, border: '1px solid #E5E7EB', background: 'white', color: '#374151', cursor: 'pointer' }}>
+                  <option>All</option><option>Male</option><option>Female</option>
+                </select>
+              </div>
+            </div>
+            <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, minHeight: 0 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+                <p style={{ fontSize: 11, fontWeight: 600, color: '#374151', marginBottom: 6, flexShrink: 0 }}>Pan India Walk-in Traffic</p>
+                <div style={{ flex: 1 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <ComposedChart data={cd.indiaWalkin} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="4 4" stroke="#F3F4F6" vertical={false} />
+                      <XAxis dataKey="h" axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 10 }} />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 10 }} />
+                      <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(101,91,211,0.06)' }} />
+                      <Bar dataKey="walkins" name="Walk-ins" fill="#655BD3" radius={[4,4,0,0]} fillOpacity={0.88} />
+                      <Line type="monotone" dataKey="prev" name="Previous Period" stroke="#00CE9C" strokeWidth={2} dot={false} activeDot={{ r: 4, fill: '#00CE9C', stroke: '#fff', strokeWidth: 2 }} />
+                    </ComposedChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+                <p style={{ fontSize: 11, fontWeight: 600, color: '#374151', marginBottom: 6, flexShrink: 0 }}>Location Wise Walk-in Traffic (Regions)</p>
+                <div style={{ flex: 1 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={cd.regionCompare} margin={{ top: 4, right: 8, left: -20, bottom: 0 }} barGap={4} barCategoryGap="30%">
+                      <CartesianGrid strokeDasharray="4 4" stroke="#F3F4F6" vertical={false} />
+                      <XAxis dataKey="region" axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 10 }} />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 10 }} tickFormatter={(v: any) => `${(v/1000).toFixed(0)}K`} />
+                      <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(101,91,211,0.04)' }} />
+                      <Bar dataKey="lastYear" name="Last Year" fill="#A78BFA" radius={[4,4,0,0]} />
+                      <Bar dataKey="thisYear" name="This Year" fill="#655BD3" radius={[4,4,0,0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 16, paddingTop: 6, borderTop: '1px solid #F3F4F6', flexShrink: 0 }}>
+              {[['Walk-ins', '#655BD3'], ['Previous Period', '#00CE9C'], ['Last Year', '#A78BFA'], ['This Year', '#655BD3']].map(([label, color]) => (
+                <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: color, flexShrink: 0 }} />
+                  <span style={{ fontSize: 10.5, color: '#6B7280' }}>{label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      }
+
+      case 'footfall_age_groups': {
+        const AGE_COLORS = { kids: '#F59E0B', teens: '#655BD3', youths: '#00CE9C', mature: '#EC4899' };
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+              <span style={{ fontSize: 11, color: '#6B7280', fontWeight: 500 }}>Filter by Gender:</span>
+              <select value={agGenderFilter} onChange={e => setAgGenderFilter(e.target.value)} style={{ fontSize: 12, padding: '3px 8px', borderRadius: 6, border: '1px solid #E5E7EB', background: 'white', color: '#374151' }}>
+                <option>All</option><option>Male</option><option>Female</option>
+              </select>
+            </div>
+            <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, minHeight: 0 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+                <p style={{ fontSize: 11, fontWeight: 600, color: '#374151', marginBottom: 6, flexShrink: 0 }}>Pan India Walk-in Age-Group Traffic</p>
+                <div style={{ flex: 1 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={cd.ageGroupTime} margin={{ top: 4, right: 8, left: -20, bottom: 0 }} barCategoryGap="20%">
+                      <CartesianGrid strokeDasharray="4 4" stroke="#F3F4F6" vertical={false} />
+                      <XAxis dataKey="h" axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 10 }} />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 10 }} />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Bar dataKey="kids"   name="Kids 3–12"    stackId="a" fill={AGE_COLORS.kids} />
+                      <Bar dataKey="teens"  name="Teens 13–21"  stackId="a" fill={AGE_COLORS.teens} />
+                      <Bar dataKey="youths" name="Youths 22–35" stackId="a" fill={AGE_COLORS.youths} />
+                      <Bar dataKey="mature" name="Mature 35+"   stackId="a" fill={AGE_COLORS.mature} radius={[4,4,0,0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+                <p style={{ fontSize: 11, fontWeight: 600, color: '#374151', marginBottom: 6, flexShrink: 0 }}>Location Wise Walk-in Age-Group Traffic (Regions)</p>
+                <div style={{ flex: 1 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={cd.ageGroupRegional} margin={{ top: 4, right: 8, left: -20, bottom: 0 }} barCategoryGap="20%">
+                      <CartesianGrid strokeDasharray="4 4" stroke="#F3F4F6" vertical={false} />
+                      <XAxis dataKey="region" axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 10 }} />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 10 }} tickFormatter={(v: any) => `${(v/1000).toFixed(0)}K`} />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Bar dataKey="kids"   name="Kids 3–12"    stackId="a" fill={AGE_COLORS.kids} />
+                      <Bar dataKey="teens"  name="Teens 13–21"  stackId="a" fill={AGE_COLORS.teens} />
+                      <Bar dataKey="youths" name="Youths 22–35" stackId="a" fill={AGE_COLORS.youths} />
+                      <Bar dataKey="mature" name="Mature 35+"   stackId="a" fill={AGE_COLORS.mature} radius={[4,4,0,0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 16, paddingTop: 6, borderTop: '1px solid #F3F4F6', flexShrink: 0 }}>
+              {([['Kids 3–12', AGE_COLORS.kids], ['Teens 13–21', AGE_COLORS.teens], ['Youths 22–35', AGE_COLORS.youths], ['Mature 35+', AGE_COLORS.mature]] as [string, string][]).map(([label, c]) => (
+                <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: c, flexShrink: 0 }} />
+                  <span style={{ fontSize: 10.5, color: '#6B7280' }}>{label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      }
+
+      case 'footfall_gender': {
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+              <span style={{ fontSize: 11, color: '#6B7280', fontWeight: 500 }}>Filter by Age Group:</span>
+              <select value={ageGrpFilter} onChange={e => setAgeGrpFilter(e.target.value)} style={{ fontSize: 12, padding: '3px 8px', borderRadius: 6, border: '1px solid #E5E7EB', background: 'white', color: '#374151' }}>
+                <option>All</option><option>Kids 3–12</option><option>Teens 13–21</option><option>Youths 22–35</option><option>Mature 35+</option>
+              </select>
+            </div>
+            <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, minHeight: 0 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+                <p style={{ fontSize: 11, fontWeight: 600, color: '#374151', marginBottom: 6, flexShrink: 0 }}>Pan India Walk-in Gender Traffic</p>
+                <div style={{ flex: 1 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={cd.genderTime} margin={{ top: 4, right: 8, left: -20, bottom: 0 }} barGap={3} barCategoryGap="28%">
+                      <CartesianGrid strokeDasharray="4 4" stroke="#F3F4F6" vertical={false} />
+                      <XAxis dataKey="h" axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 10 }} />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 10 }} />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Bar dataKey="male"   name="Male"   fill="#3B82F6" radius={[4,4,0,0]} />
+                      <Bar dataKey="female" name="Female" fill="#EC4899" radius={[4,4,0,0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+                <p style={{ fontSize: 11, fontWeight: 600, color: '#374151', marginBottom: 6, flexShrink: 0 }}>Location Wise Walk-in Gender Traffic (Regions)</p>
+                <div style={{ flex: 1 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={cd.genderRegional} margin={{ top: 4, right: 8, left: -20, bottom: 0 }} barGap={4} barCategoryGap="30%">
+                      <CartesianGrid strokeDasharray="4 4" stroke="#F3F4F6" vertical={false} />
+                      <XAxis dataKey="region" axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 10 }} />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 10 }} tickFormatter={(v: any) => `${(v/1000).toFixed(0)}K`} />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Bar dataKey="male"   name="Male"   fill="#3B82F6" radius={[4,4,0,0]} />
+                      <Bar dataKey="female" name="Female" fill="#EC4899" radius={[4,4,0,0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 16, paddingTop: 6, borderTop: '1px solid #F3F4F6', flexShrink: 0 }}>
+              {[['Male', '#3B82F6'], ['Female', '#EC4899']].map(([label, c]) => (
+                <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: c, flexShrink: 0 }} />
+                  <span style={{ fontSize: 10.5, color: '#6B7280' }}>{label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      }
+
+      case 'footfall_heatmap': {
+        const TreemapContent = ({ x, y, width, height, name, pct, stores, value: cellValue, fill: cellFill }: any) => {
+          if (!width || !height || width < 10 || height < 10) return null;
+          return (
+            <g>
+              <rect x={x} y={y} width={width} height={height} style={{ fill: cellFill ?? '#1D4ED8', stroke: '#fff', strokeWidth: 2.5 }} rx={6} />
+              {width > 50 && height > 32 && (
+                <>
+                  <text x={x + 10} y={y + 22} fill="#fff" fontSize={13} fontWeight={700}>{name}</text>
+                  {height > 50 && <text x={x + 10} y={y + 38} fill="rgba(255,255,255,0.85)" fontSize={11.5}>{pct}% · {stores} stores</text>}
+                  {height > 68 && <text x={x + 10} y={y + 54} fill="rgba(255,255,255,0.7)" fontSize={11}>{typeof cellValue === 'number' ? cellValue.toLocaleString() : ''} visitors</text>}
+                </>
+              )}
+            </g>
+          );
+        };
+        return (
+          <ResponsiveContainer width="100%" height="100%">
+            <Treemap
+              data={HEATMAP_TREEMAP_DATA}
+              dataKey="value"
+              aspectRatio={4 / 3}
+              content={<TreemapContent />}
+            />
+          </ResponsiveContainer>
+        );
+      }
+
+      case 'demographics_breakdown':
+        return (
+          <div style={{ display: 'flex', height: '100%', gap: 24 }}>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <p style={{ fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 8, flexShrink: 0 }}>Gender Breakdown</p>
+              <div style={{ flex: 1, minHeight: 0, width: '100%' }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={GENDER_PIE_DATA} cx="50%" cy="50%" innerRadius="35%" outerRadius="60%" dataKey="value" paddingAngle={3}>
+                      {GENDER_PIE_DATA.map((d, i) => <Cell key={i} fill={d.color} />)}
+                    </Pie>
+                    <Tooltip content={<CustomTooltip />} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <div style={{ display: 'flex', gap: 12, flexShrink: 0, marginTop: 6 }}>
+                {GENDER_PIE_DATA.map(d => (
+                  <div key={d.name} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: d.color }} />
+                    <span style={{ fontSize: 11, color: '#6B7280' }}>{d.name} ({d.value}%)</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div style={{ width: 1, background: '#F3F4F6', flexShrink: 0 }} />
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <p style={{ fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 8, flexShrink: 0 }}>Age Range Breakdown</p>
+              <div style={{ flex: 1, minHeight: 0, width: '100%' }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={AGE_RANGE_PIE_DATA} cx="50%" cy="50%" innerRadius="35%" outerRadius="60%" dataKey="value" paddingAngle={3}>
+                      {AGE_RANGE_PIE_DATA.map((d, i) => <Cell key={i} fill={d.color} />)}
+                    </Pie>
+                    <Tooltip content={<CustomTooltip />} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 12px', flexShrink: 0, marginTop: 6, justifyContent: 'center' }}>
+                {AGE_RANGE_PIE_DATA.map(d => (
+                  <div key={d.name} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: d.color }} />
+                    <span style={{ fontSize: 11, color: '#6B7280' }}>{d.name} ({d.value}%)</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'store_performance_footfall': {
+        const ASSIST_COLORS = ['#655BD3', '#8B5CF6', '#A78BFA', '#C4B5FD', '#E5E7EB'];
+        return (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, height: '100%' }}>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <p style={{ fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 10, flexShrink: 0 }}>Store Performance by Footfall</p>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                {cd.storeDemoPerf.map((s: any, i: number) => (
+                  <div key={s.store} style={{ padding: '6px 0', borderBottom: i < cd.storeDemoPerf.length - 1 ? '1px solid #F3F4F6' : 'none' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                      <span style={{ fontSize: 12, color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{s.store}</span>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: '#111827', flexShrink: 0, marginLeft: 8 }}>{(s.visitors/1000).toFixed(1)}K</span>
+                    </div>
+                    <div style={{ display: 'flex', height: 7, borderRadius: 99, overflow: 'hidden' }}>
+                      <div style={{ width: `${s.kids}%`,   background: '#F59E0B' }} />
+                      <div style={{ width: `${s.teens}%`,  background: '#655BD3' }} />
+                      <div style={{ width: `${s.youths}%`, background: '#00CE9C' }} />
+                      <div style={{ width: `${s.mature}%`, background: '#EC4899' }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+              <p style={{ fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 10, flexShrink: 0 }}>Store Performance by Assist</p>
+              <div style={{ flex: 1 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={STORE_ASSIST_DATA} margin={{ top: 4, right: 8, left: -20, bottom: 0 }} barCategoryGap="22%">
+                    <CartesianGrid strokeDasharray="4 4" stroke="#F3F4F6" vertical={false} />
+                    <XAxis dataKey="store" axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 10 }} />
+                    <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 10 }} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Bar dataKey="s10"        name="0–10s"       stackId="a" fill={ASSIST_COLORS[0]} />
+                    <Bar dataKey="s30"        name="11–30s"      stackId="a" fill={ASSIST_COLORS[1]} />
+                    <Bar dataKey="s60"        name="31–59s"      stackId="a" fill={ASSIST_COLORS[2]} />
+                    <Bar dataKey="s120"       name="1–2min"      stackId="a" fill={ASSIST_COLORS[3]} />
+                    <Bar dataKey="unattended" name="Unattended"  stackId="a" fill={ASSIST_COLORS[4]} radius={[4,4,0,0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+              <div style={{ display: 'flex', gap: 12, paddingTop: 6, borderTop: '1px solid #F3F4F6', flexShrink: 0, flexWrap: 'wrap' }}>
+                {(['0–10s','11–30s','31–59s','1–2min','Unattended'] as const).map((label, i) => (
+                  <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <span style={{ width: 7, height: 7, borderRadius: 2, background: ASSIST_COLORS[i], flexShrink: 0 }} />
+                    <span style={{ fontSize: 10, color: '#6B7280' }}>{label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      case 'store_performance_overall':
+        return (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, height: '100%' }}>
+            <div>
+              <div style={{ marginBottom: 10 }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: '#16A34A', background: '#DCFCE7', padding: '3px 10px', borderRadius: 20 }}>▲ Top 5 Stores</span>
+              </div>
+              {cd.top5.map((s: any, i: number) => (
+                <div key={s.store} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 0', borderBottom: i < cd.top5.length - 1 ? '1px solid #F3F4F6' : 'none' }}>
+                  <span style={{ fontSize: 11, color: '#9CA3AF', width: 14, flexShrink: 0 }}>{i+1}</span>
+                  <span style={{ fontSize: 12, color: '#374151', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.store}</span>
+                  <div style={{ width: 70, height: 5, background: '#F3F4F6', borderRadius: 99, flexShrink: 0 }}>
+                    <div style={{ height: '100%', borderRadius: 99, width: `${(s.visitors / cd.top5Max) * 100}%`, background: '#00CE9C' }} />
+                  </div>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: '#111827', width: 38, textAlign: 'right', flexShrink: 0 }}>{s.visitors >= 1000 ? (s.visitors/1000).toFixed(1) + 'K' : s.visitors}</span>
+                </div>
+              ))}
+            </div>
+            <div>
+              <div style={{ marginBottom: 10 }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: '#DC2626', background: '#FEE2E2', padding: '3px 10px', borderRadius: 20 }}>▼ Bottom 5 Stores</span>
+              </div>
+              {cd.bottom5.map((s: any, i: number) => (
+                <div key={s.store} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 0', borderBottom: i < cd.bottom5.length - 1 ? '1px solid #F3F4F6' : 'none' }}>
+                  <span style={{ fontSize: 11, color: '#9CA3AF', width: 14, flexShrink: 0 }}>{i+1}</span>
+                  <span style={{ fontSize: 12, color: '#374151', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.store}</span>
+                  <div style={{ width: 70, height: 5, background: '#F3F4F6', borderRadius: 99, flexShrink: 0 }}>
+                    <div style={{ height: '100%', borderRadius: 99, width: `${(s.visitors / cd.top5Max) * 100}%`, background: '#EF4444' }} />
+                  </div>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: '#111827', width: 38, textAlign: 'right', flexShrink: 0 }}>{s.visitors >= 1000 ? (s.visitors/1000).toFixed(1) + 'K' : s.visitors}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+
+      case 'india_walkin_chart':
+        return (
+          <ResponsiveContainer width="100%" height="100%">
+            <ComposedChart data={cd.indiaWalkin} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
+              <defs>
+                <linearGradient id="iwGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#7C3AED" stopOpacity={1} />
+                  <stop offset="100%" stopColor="#655BD3" stopOpacity={1} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="4 4" stroke="#F3F4F6" vertical={false} />
+              <XAxis dataKey="h" axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} />
+              <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} />
+              <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(101,91,211,0.05)' }} />
+              <Bar dataKey="walkins" name="Walk-ins" fill="url(#iwGrad)" radius={[6,6,0,0]} />
+              <Line type="monotone" dataKey="prev" name="Previous Period" stroke="#00CE9C" strokeWidth={2.5} dot={false} activeDot={{ r: 5, fill: '#00CE9C', stroke: '#fff', strokeWidth: 2 }} />
+            </ComposedChart>
+          </ResponsiveContainer>
+        );
+
+      case 'region_compare_chart':
+        return (
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={cd.regionCompare} margin={{ top: 8, right: 8, left: -20, bottom: 0 }} barGap={4} barCategoryGap="30%">
+              <defs>
+                <linearGradient id="rcLY" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#7C3AED" stopOpacity={1} />
+                  <stop offset="100%" stopColor="#A78BFA" stopOpacity={1} />
+                </linearGradient>
+                <linearGradient id="rcTY" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#4C1D95" stopOpacity={1} />
+                  <stop offset="100%" stopColor="#655BD3" stopOpacity={1} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="4 4" stroke="#F3F4F6" vertical={false} />
+              <XAxis dataKey="region" axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} />
+              <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} tickFormatter={(v: any) => `${(v/1000).toFixed(0)}K`} />
+              <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(101,91,211,0.04)' }} />
+              <Bar dataKey="lastYear" name="Last Year" fill="url(#rcLY)" radius={[6,6,0,0]} />
+              <Bar dataKey="thisYear" name="This Year" fill="url(#rcTY)" radius={[6,6,0,0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        );
+
+      case 'age_grp_hourly': {
+        const AGE_C = { kids: '#F59E0B', teens: '#655BD3', youths: '#00CE9C', mature: '#EC4899' };
+        return (
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={cd.ageGroupTime} margin={{ top: 8, right: 8, left: -20, bottom: 0 }} barCategoryGap="22%">
+              <CartesianGrid strokeDasharray="4 4" stroke="#F3F4F6" vertical={false} />
+              <XAxis dataKey="h" axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} />
+              <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} />
+              <Tooltip content={<CustomTooltip />} />
+              <Bar dataKey="kids"   name="Kids 3–12"    stackId="a" fill={AGE_C.kids} />
+              <Bar dataKey="teens"  name="Teens 13–21"  stackId="a" fill={AGE_C.teens} />
+              <Bar dataKey="youths" name="Youths 22–35" stackId="a" fill={AGE_C.youths} />
+              <Bar dataKey="mature" name="Mature 35+"   stackId="a" fill={AGE_C.mature} radius={[5,5,0,0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        );
+      }
+
+      case 'age_grp_regional': {
+        const AGE_C2 = { kids: '#F59E0B', teens: '#655BD3', youths: '#00CE9C', mature: '#EC4899' };
+        return (
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={cd.ageGroupRegional} margin={{ top: 8, right: 8, left: -20, bottom: 0 }} barCategoryGap="22%">
+              <CartesianGrid strokeDasharray="4 4" stroke="#F3F4F6" vertical={false} />
+              <XAxis dataKey="region" axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} />
+              <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} tickFormatter={(v: any) => `${(v/1000).toFixed(0)}K`} />
+              <Tooltip content={<CustomTooltip />} />
+              <Bar dataKey="kids"   name="Kids 3–12"    stackId="a" fill={AGE_C2.kids} />
+              <Bar dataKey="teens"  name="Teens 13–21"  stackId="a" fill={AGE_C2.teens} />
+              <Bar dataKey="youths" name="Youths 22–35" stackId="a" fill={AGE_C2.youths} />
+              <Bar dataKey="mature" name="Mature 35+"   stackId="a" fill={AGE_C2.mature} radius={[5,5,0,0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        );
+      }
+
+      case 'gender_by_hour':
+        return (
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={cd.genderTime} margin={{ top: 8, right: 8, left: -20, bottom: 0 }} barGap={3} barCategoryGap="28%">
+              <defs>
+                <linearGradient id="ghmGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#1D4ED8" stopOpacity={1} />
+                  <stop offset="100%" stopColor="#3B82F6" stopOpacity={1} />
+                </linearGradient>
+                <linearGradient id="ghfGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#BE185D" stopOpacity={1} />
+                  <stop offset="100%" stopColor="#EC4899" stopOpacity={1} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="4 4" stroke="#F3F4F6" vertical={false} />
+              <XAxis dataKey="h" axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} />
+              <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} />
+              <Tooltip content={<CustomTooltip />} />
+              <Bar dataKey="male"   name="Male"   fill="url(#ghmGrad)" radius={[5,5,0,0]} />
+              <Bar dataKey="female" name="Female" fill="url(#ghfGrad)" radius={[5,5,0,0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        );
+
+      case 'gender_by_region':
+        return (
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={cd.genderRegional} margin={{ top: 8, right: 8, left: -20, bottom: 0 }} barGap={4} barCategoryGap="30%">
+              <defs>
+                <linearGradient id="grmGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#1D4ED8" stopOpacity={1} />
+                  <stop offset="100%" stopColor="#3B82F6" stopOpacity={1} />
+                </linearGradient>
+                <linearGradient id="grfGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#BE185D" stopOpacity={1} />
+                  <stop offset="100%" stopColor="#EC4899" stopOpacity={1} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="4 4" stroke="#F3F4F6" vertical={false} />
+              <XAxis dataKey="region" axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} />
+              <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} tickFormatter={(v: any) => `${(v/1000).toFixed(0)}K`} />
+              <Tooltip content={<CustomTooltip />} />
+              <Bar dataKey="male"   name="Male"   fill="url(#grmGrad)" radius={[5,5,0,0]} />
+              <Bar dataKey="female" name="Female" fill="url(#grfGrad)" radius={[5,5,0,0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        );
+
+      case 'gender_breakdown_pie':
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', height: '100%', alignItems: 'center' }}>
+            <div style={{ flex: 1, minHeight: 0, width: '100%' }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={GENDER_PIE_DATA} cx="50%" cy="50%" innerRadius="35%" outerRadius="65%" dataKey="value" paddingAngle={3}>
+                    {GENDER_PIE_DATA.map((d, i) => <Cell key={i} fill={d.color} />)}
+                  </Pie>
+                  <Tooltip content={<CustomTooltip />} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            <div style={{ display: 'flex', gap: 16, flexShrink: 0, paddingTop: 8, borderTop: '1px solid #F3F4F6', width: '100%', justifyContent: 'center' }}>
+              {GENDER_PIE_DATA.map(d => (
+                <div key={d.name} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ width: 10, height: 10, borderRadius: 3, background: d.color }} />
+                  <span style={{ fontSize: 12, color: '#374151', fontWeight: 500 }}>{d.name} ({d.value}%)</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+
+      case 'age_breakdown_pie':
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', height: '100%', alignItems: 'center' }}>
+            <div style={{ flex: 1, minHeight: 0, width: '100%' }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={AGE_RANGE_PIE_DATA} cx="50%" cy="50%" innerRadius="35%" outerRadius="65%" dataKey="value" paddingAngle={3}>
+                    {AGE_RANGE_PIE_DATA.map((d, i) => <Cell key={i} fill={d.color} />)}
+                  </Pie>
+                  <Tooltip content={<CustomTooltip />} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 14px', flexShrink: 0, paddingTop: 8, borderTop: '1px solid #F3F4F6', width: '100%', justifyContent: 'center' }}>
+              {AGE_RANGE_PIE_DATA.map(d => (
+                <div key={d.name} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ width: 10, height: 10, borderRadius: 3, background: d.color }} />
+                  <span style={{ fontSize: 12, color: '#374151', fontWeight: 500 }}>{d.name} ({d.value}%)</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+
+      case 'store_demo_ranking':
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '100%' }}>
+            {cd.storeDemoPerf.map((s: any, i: number) => (
+              <div key={s.store} style={{ padding: '6px 0', borderBottom: i < cd.storeDemoPerf.length - 1 ? '1px solid #F3F4F6' : 'none' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                  <span style={{ fontSize: 12, color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{s.store}</span>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: '#111827', flexShrink: 0, marginLeft: 8 }}>{(s.visitors/1000).toFixed(1)}K</span>
+                </div>
+                <div style={{ display: 'flex', height: 7, borderRadius: 99, overflow: 'hidden' }}>
+                  <div style={{ width: `${s.kids}%`,   background: '#F59E0B' }} />
+                  <div style={{ width: `${s.teens}%`,  background: '#655BD3' }} />
+                  <div style={{ width: `${s.youths}%`, background: '#00CE9C' }} />
+                  <div style={{ width: `${s.mature}%`, background: '#EC4899' }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        );
+
+      case 'store_staff_assist': {
+        const ASSIST_C = ['#655BD3', '#8B5CF6', '#A78BFA', '#C4B5FD', '#E5E7EB'];
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+            <div style={{ flex: 1 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={STORE_ASSIST_DATA} margin={{ top: 8, right: 8, left: -20, bottom: 0 }} barCategoryGap="22%">
+                  <CartesianGrid strokeDasharray="4 4" stroke="#F3F4F6" vertical={false} />
+                  <XAxis dataKey="store" axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="s10"        name="0–10s"      stackId="a" fill={ASSIST_C[0]} />
+                  <Bar dataKey="s30"        name="11–30s"     stackId="a" fill={ASSIST_C[1]} />
+                  <Bar dataKey="s60"        name="31–59s"     stackId="a" fill={ASSIST_C[2]} />
+                  <Bar dataKey="s120"       name="1–2min"     stackId="a" fill={ASSIST_C[3]} />
+                  <Bar dataKey="unattended" name="Unattended" stackId="a" fill={ASSIST_C[4]} radius={[5,5,0,0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+            <div style={{ display: 'flex', gap: '6px 14px', paddingTop: 8, borderTop: '1px solid #F3F4F6', flexShrink: 0, flexWrap: 'wrap' }}>
+              {(['0–10s','11–30s','31–59s','1–2min','Unattended'] as const).map((label, i) => (
+                <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <span style={{ width: 10, height: 10, borderRadius: 3, background: ASSIST_C[i], flexShrink: 0 }} />
+                  <span style={{ fontSize: 11.5, color: '#374151', fontWeight: 500 }}>{label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      }
+
+      case 'top5_performers':
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
+            {cd.top5.map((s: any, i: number) => (
+              <div key={s.store} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', borderBottom: i < cd.top5.length - 1 ? '1px solid #F3F4F6' : 'none' }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: i === 0 ? '#F59E0B' : '#9CA3AF', width: 18, flexShrink: 0 }}>#{i+1}</span>
+                <span style={{ fontSize: 13, color: '#374151', width: 130, flexShrink: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.store}</span>
+                <div style={{ flex: 1, minWidth: 0, height: 6, background: '#F3F4F6', borderRadius: 99 }}>
+                  <div style={{ height: '100%', borderRadius: 99, width: `${(s.visitors / cd.top5Max) * 100}%`, background: '#00CE9C' }} />
+                </div>
+                <span style={{ fontSize: 13, fontWeight: 700, color: '#111827', width: 44, textAlign: 'right', flexShrink: 0 }}>{(s.visitors/1000).toFixed(1)}K</span>
+              </div>
+            ))}
+          </div>
+        );
+
+      case 'bottom5_performers':
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
+            {cd.bottom5.map((s: any, i: number) => (
+              <div key={s.store} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', borderBottom: i < cd.bottom5.length - 1 ? '1px solid #F3F4F6' : 'none' }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: '#EF4444', width: 18, flexShrink: 0 }}>#{i+1}</span>
+                <span style={{ fontSize: 13, color: '#374151', width: 130, flexShrink: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.store}</span>
+                <div style={{ flex: 1, minWidth: 0, height: 6, background: '#F3F4F6', borderRadius: 99 }}>
+                  <div style={{ height: '100%', borderRadius: 99, width: `${(s.visitors / cd.top5Max) * 100}%`, background: '#EF4444' }} />
+                </div>
+                <span style={{ fontSize: 13, fontWeight: 700, color: '#111827', width: 44, textAlign: 'right', flexShrink: 0 }}>{(s.visitors/1000).toFixed(1)}K</span>
+              </div>
+            ))}
+          </div>
+        );
+
       default:
         return (
           <div style={{ display: 'flex', height: '100%' }}>
@@ -1016,23 +2033,6 @@ function PlacedWidget({
           <p style={{ fontSize: 13, fontWeight: 700, color: '#111827' }}>{def.label}</p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          {widgetId === 'footfall_trend' && !editMode && (
-            <button
-              onClick={() => setShowSnapshots(s => !s)}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 5,
-                padding: '4px 10px', borderRadius: 6,
-                border: `1px solid ${showSnapshots ? '#655BD3' : '#E5E7EB'}`,
-                background: showSnapshots ? '#EEE9FF' : 'white',
-                color: showSnapshots ? '#655BD3' : '#6B7280',
-                fontSize: 11.5, fontWeight: 600, cursor: 'pointer',
-                transition: 'all 150ms ease',
-              }}
-            >
-              <Bell size={12} strokeWidth={2} />
-              New Snapshots
-            </button>
-          )}
           {editMode ? (
             <button
               onClick={onRemove}
@@ -1052,7 +2052,7 @@ function PlacedWidget({
       </div>
 
       {/* Chart area */}
-      <div style={{ height: 180, overflowX: 'auto', overflowY: 'hidden' }}>
+      <div style={{ height: WIDGET_HEIGHTS[widgetId] ?? 180, overflowX: 'auto', overflowY: 'hidden' }}>
         <div style={{ minWidth: '100%', height: '100%' }}>
           {renderChart()}
         </div>
@@ -1568,17 +2568,41 @@ const DEFAULT_TABS: AnalyticsTab[] = [
   {
     id: 'tab_overview',
     label: 'Overview',
-    widgets: ALL_WIDGETS.map(w => w.id),
+    widgets: [
+      // Footfall & Traffic
+      'india_walkin_chart', 'region_compare_chart',
+      'footfall_trend', 'passerby_trend',
+      'peak_hours', 'conversion_rate',
+      'footfall_heatmap',
+      // Queue
+      'queue_length', 'wait_time',
+      // Demographics
+      'demographics_donut', 'gender_trend',
+      'age_bar',
+      'gender_by_hour', 'gender_by_region',
+      'age_grp_hourly', 'age_grp_regional',
+      'gender_breakdown_pie', 'age_breakdown_pie',
+      // Store Performance
+      'top5_performers', 'bottom5_performers',
+      'top_stores', 'store_conversion',
+      'store_heatmap', 'store_demo_ranking',
+      'store_staff_assist',
+    ],
   },
   {
     id: 'tab_traffic',
     label: 'Traffic',
-    widgets: ['footfall_trend', 'passerby_trend', 'peak_hours', 'conversion_rate'],
+    widgets: ['india_walkin_chart', 'region_compare_chart', 'footfall_trend', 'passerby_trend', 'peak_hours', 'conversion_rate'],
   },
   {
     id: 'tab_demographics',
     label: 'Demographics',
-    widgets: ['demographics_donut', 'gender_trend', 'age_bar'],
+    widgets: ['gender_by_hour', 'gender_by_region', 'age_grp_hourly', 'age_grp_regional', 'gender_breakdown_pie', 'age_breakdown_pie', 'demographics_donut', 'gender_trend'],
+  },
+  {
+    id: 'tab_store_performance',
+    label: 'Store Performance',
+    widgets: ['top5_performers', 'bottom5_performers', 'store_demo_ranking', 'store_staff_assist', 'store_conversion', 'footfall_heatmap'],
   },
 ];
 
@@ -1589,6 +2613,7 @@ export default function AnalyticsPage() {
   const [showCreatePage, setShowCreatePage] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [draftWidgets, setDraftWidgets] = useState<string[]>([]);
+  const [timeframe, setTimeframe] = useState<Timeframe>('M');
   const dragItem = useRef<number | null>(null);
   const dragOver = useRef<number | null>(null);
 
@@ -1662,19 +2687,23 @@ export default function AnalyticsPage() {
       {/* Top tab bar — only shown when pages exist */}
       {tabs.length > 0 && (
         <div
-          className="flex items-center px-6 pt-4"
-          style={{ borderBottom: '1px solid #E5E7EB', background: 'white', flexShrink: 0, gap: 2 }}
+          style={{ display: 'flex', alignItems: 'stretch', padding: '0 24px', borderBottom: '1px solid #E5E7EB', background: 'white', flexShrink: 0, height: 52 }}
         >
           {/* Page tabs */}
           {tabs.map(tab => (
             <div key={tab.id} className="relative group flex items-center">
               <button
                 onClick={() => setActiveTab(tab.id)}
-                className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors rounded-t-md"
                 style={{
+                  display: 'flex', alignItems: 'center',
+                  padding: '0 14px',
+                  fontSize: 13, fontWeight: activeTab === tab.id ? 600 : 500,
                   color: activeTab === tab.id ? '#655BD3' : '#6B7280',
                   borderBottom: activeTab === tab.id ? '2px solid #655BD3' : '2px solid transparent',
+                  borderTop: 'none', borderLeft: 'none', borderRight: 'none',
                   marginBottom: -1,
+                  background: 'transparent', cursor: 'pointer',
+                  transition: 'color 150ms',
                 }}
               >
                 {tab.label}
@@ -1692,8 +2721,9 @@ export default function AnalyticsPage() {
           {/* New Page button */}
           <button
             onClick={() => setShowCreatePage(true)}
-            className="flex items-center gap-1 ml-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
-            style={{ color: '#655BD3', border: '1px solid #DDD6FE', background: '#F5F3FF' }}
+            style={{ display: 'flex', alignItems: 'center', gap: 5, marginLeft: 8, alignSelf: 'center', height: 32, padding: '0 14px', borderRadius: 6, fontSize: 12.5, fontWeight: 500, color: '#655BD3', border: '1px solid #DDD6FE', background: '#F5F3FF', cursor: 'pointer', whiteSpace: 'nowrap' }}
+            onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = '#EDE9FE'}
+            onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = '#F5F3FF'}
           >
             <Plus size={13} strokeWidth={2} />
             New Page
@@ -1701,14 +2731,49 @@ export default function AnalyticsPage() {
 
           <div className="flex-1" />
 
+          {/* D/W/M/Y timeframe selector — single pill container */}
+          <div
+            style={{
+              display: 'flex', alignItems: 'center', alignSelf: 'center',
+              marginRight: 8,
+              background: '#F3F4F6',
+              borderRadius: 6,
+              padding: 3,
+              gap: 2,
+            }}
+          >
+            {(['D', 'W', 'M', 'Y'] as Timeframe[]).map(tf => (
+              <button
+                key={tf}
+                onClick={() => setTimeframe(tf)}
+                style={{
+                  width: 32,
+                  height: 26,
+                  borderRadius: 6,
+                  border: 'none',
+                  background: timeframe === tf ? 'white' : 'transparent',
+                  boxShadow: timeframe === tf ? '0 1px 3px rgba(0,0,0,0.10)' : 'none',
+                  color: timeframe === tf ? '#655BD3' : '#6B7280',
+                  fontSize: 12,
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  transition: 'all 150ms ease',
+                }}
+              >
+                {tf}
+              </button>
+            ))}
+          </div>
+
+          <div style={{ width: 1, height: 20, background: '#E5E7EB', flexShrink: 0, alignSelf: 'center' }} />
+
           {/* Add Widgets + Edit Layout — shown when a page is active */}
           {activeTab && (
-            <div className="flex items-center gap-2 pb-1">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, alignSelf: 'center' }}>
               {isEditMode ? (
                 <button
                   onClick={cancelEditMode}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold"
-                  style={{ background: '#FEE2E2', color: '#DC2626', border: '1px solid #FECACA' }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 6, height: 34, padding: '0 14px', borderRadius: 6, fontSize: 12.5, fontWeight: 600, background: '#FEE2E2', color: '#DC2626', border: '1px solid #FECACA', cursor: 'pointer' }}
                 >
                   <X size={13} strokeWidth={2.5} />
                   Cancel Edit
@@ -1717,8 +2782,9 @@ export default function AnalyticsPage() {
                 <>
                   <button
                     onClick={() => setShowAddWidgets(true)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors"
-                    style={{ background: '#655BD3', color: 'white' }}
+                    style={{ display: 'flex', alignItems: 'center', gap: 6, height: 34, padding: '0 14px', borderRadius: 6, fontSize: 12.5, fontWeight: 600, background: '#655BD3', color: 'white', border: 'none', cursor: 'pointer' }}
+                    onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = '#5549C0'}
+                    onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = '#655BD3'}
                   >
                     <Plus size={13} strokeWidth={2.5} />
                     Add Widgets
@@ -1726,8 +2792,9 @@ export default function AnalyticsPage() {
                   {currentTab && currentTab.widgets.length > 0 && (
                     <button
                       onClick={enterEditMode}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold"
-                      style={{ background: '#F3F4F6', color: '#374151', border: '1px solid #E5E7EB' }}
+                      style={{ display: 'flex', alignItems: 'center', gap: 6, height: 34, padding: '0 14px', borderRadius: 6, fontSize: 12.5, fontWeight: 600, background: '#F3F4F6', color: '#374151', border: '1px solid #E5E7EB', cursor: 'pointer' }}
+                      onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = '#E9EAEC'}
+                      onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = '#F3F4F6'}
                     >
                       <Edit2 size={12} strokeWidth={2} />
                       Edit Layout
@@ -1765,7 +2832,7 @@ export default function AnalyticsPage() {
             <button
               onClick={cancelEditMode}
               style={{
-                padding: '6px 16px', borderRadius: 8,
+                padding: '6px 16px', borderRadius: 6,
                 border: '1px solid #DDD6FE',
                 background: 'white', color: '#655BD3',
                 fontSize: 12.5, fontWeight: 500, cursor: 'pointer',
@@ -1774,7 +2841,7 @@ export default function AnalyticsPage() {
             <button
               onClick={saveLayout}
               style={{
-                padding: '6px 16px', borderRadius: 8,
+                padding: '6px 16px', borderRadius: 6,
                 border: 'none',
                 background: '#655BD3', color: 'white',
                 fontSize: 12.5, fontWeight: 600, cursor: 'pointer',
@@ -1833,22 +2900,24 @@ export default function AnalyticsPage() {
             <GlobalLegend />
             <div className="grid grid-cols-2 gap-4">
               {(isEditMode ? draftWidgets : currentTab.widgets).map((widgetId, index) => (
-                <PlacedWidget
-                  key={widgetId}
-                  widgetId={widgetId}
-                  onRemove={() => {
-                    if (isEditMode) {
-                      setDraftWidgets(prev => prev.filter(w => w !== widgetId));
-                    } else {
-                      removeWidget(widgetId);
-                    }
-                  }}
-                  editMode={isEditMode}
-                  dragIndex={index}
-                  onDragStart={(i) => { dragItem.current = i; }}
-                  onDragEnter={(i) => { dragOver.current = i; }}
-                  onDragEnd={handleDragSort}
-                />
+                <div key={widgetId} style={{ gridColumn: FULL_WIDTH_IDS.has(widgetId) ? 'span 2' : 'span 1' }}>
+                  <PlacedWidget
+                    widgetId={widgetId}
+                    onRemove={() => {
+                      if (isEditMode) {
+                        setDraftWidgets(prev => prev.filter(w => w !== widgetId));
+                      } else {
+                        removeWidget(widgetId);
+                      }
+                    }}
+                    editMode={isEditMode}
+                    dragIndex={index}
+                    onDragStart={(i) => { dragItem.current = i; }}
+                    onDragEnter={(i) => { dragOver.current = i; }}
+                    onDragEnd={handleDragSort}
+                    timeframe={timeframe}
+                  />
+                </div>
               ))}
             </div>
             </>

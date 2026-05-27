@@ -26,7 +26,7 @@ export default function ProfilePage() {
     .toUpperCase();
 
   return (
-    <div className="p-8 max-w-4xl">
+    <div className="p-8">
       <div className="flex items-center gap-3 mb-8">
         <UserCircle size={24} style={{ color: 'var(--color-primary)' }} strokeWidth={1.5} />
         <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--color-text-1)' }}>Profile Settings</h1>
