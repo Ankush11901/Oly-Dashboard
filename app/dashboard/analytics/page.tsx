@@ -2386,12 +2386,15 @@ function CreatePageModal({ onClose, onCreate }: { onClose: () => void; onCreate:
     setSelectedTemplate(tplId);
     setIsCustomCard(false);
     setActiveTab('templates');
+    const tpl = TEMPLATES.find(t => t.id === tplId);
+    if (tpl) setPageTitle(tpl.label);
   };
 
   const handleSelectCustom = () => {
     setSelectedTemplate(null);
     setIsCustomCard(true);
     setActiveTab('custom');
+    setPageTitle('');
   };
 
   const handleCreate = () => {
@@ -2454,7 +2457,13 @@ function CreatePageModal({ onClose, onCreate }: { onClose: () => void; onCreate:
             {(['templates', 'custom'] as const).map(tab => (
               <button
                 key={tab}
-                onClick={() => setActiveTab(tab)}
+                onClick={() => {
+                  setActiveTab(tab);
+                  if (tab === 'custom') {
+                    setSelectedTemplate(null);
+                    setPageTitle('');
+                  }
+                }}
                 className="px-4 py-2 text-sm font-medium capitalize transition-colors"
                 style={{
                   color: activeTab === tab ? '#655BD3' : '#6B7280',
