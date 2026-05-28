@@ -270,7 +270,7 @@ const LOG_COLORS: Record<LogType, { bg: string; color: string; border: string }>
 
 function getMockLogs(member: Member): LogEvent[] {
   const roleName = getRoleDef(member.roleId).name;
-  return [
+  const logs: LogEvent[] = [
     { id: 1, type: 'login',    description: 'Logged in',                  detail: 'Successful login · Chrome · Singapore',           timestamp: '2026-05-28T08:01:00Z' },
     { id: 2, type: 'profile',  description: 'Profile picture updated',    detail: 'Avatar image changed',                            timestamp: '2026-05-20T14:32:00Z' },
     { id: 3, type: 'login',    description: 'Logged in',                  detail: 'Successful login · Safari · Singapore',           timestamp: '2026-05-15T17:45:00Z' },
@@ -279,7 +279,8 @@ function getMockLogs(member: Member): LogEvent[] {
     { id: 6, type: 'store',    description: 'Store access modified',      detail: `${member.storeAccess.length} store(s) assigned`,  timestamp: '2026-04-14T16:40:00Z' },
     { id: 7, type: 'profile',  description: 'Profile picture updated',    detail: 'Avatar image changed',                            timestamp: '2026-03-12T13:22:00Z' },
     { id: 8, type: 'store',    description: 'Store access modified',      detail: 'Access to Bugis Junction revoked',                timestamp: '2026-03-05T10:10:00Z' },
-  ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+  ];
+  return logs.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 }
 
 function fmtDateTime(iso: string): { date: string; time: string } {
