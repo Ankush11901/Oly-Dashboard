@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Plus, Search, X, Edit2, Trash2, Check,
   LayoutDashboard, BarChart2, Video, UserCog, FileText,
@@ -108,45 +108,131 @@ function getInitials(name: string): string {
 // avatar bg colors by index
 const AVATAR_COLORS = ['#655BD3', '#00CE9C', '#3B82F6', '#F59E0B', '#EC4899'];
 
-// ── Access cell — clean store pills only ──────────────────────────────────────
+// ── Access cell — pills + smart viewport-aware fixed popover ──────────────────
 function AccessCell({ member }: { member: Member }) {
-  const SHOW = 2;
+  const SHOW     = 2;
   const visible  = member.storeAccess.slice(0, SHOW);
   const overflow = member.storeAccess.length - SHOW;
+  // Cap the displayed overflow label at 3 — avoids "+7 more" etc.
+  const overflowLabel = Math.min(overflow, 3);
+
+  const [open,   setOpen]   = useState(false);
+  const [pos,    setPos]    = useState({ top: 0, left: 0 });
+  const btnRef     = useRef<HTMLButtonElement>(null);
+  const popoverRef = useRef<HTMLDivElement>(null);
+
+  const toggle = () => {
+    if (!open && btnRef.current) {
+      const r = btnRef.current.getBoundingClientRect();
+      // Initial anchor: below button, horizontally centred
+      setPos({ top: r.bottom + 6, left: r.left + r.width / 2 });
+    }
+    setOpen(v => !v);
+  };
+
+  // After the popover renders, clamp it fully inside the viewport.
+  // Prefer opening below; only flip above when there is genuinely not enough room.
+  useEffect(() => {
+    if (!open || !popoverRef.current || !btnRef.current) return;
+    const el  = popoverRef.current;
+    const btn = btnRef.current.getBoundingClientRect();
+    const box = el.getBoundingClientRect();
+    const vw  = window.innerWidth;
+    const vh  = window.innerHeight;
+    const GAP = 8;
+
+    // Always try below first
+    let newTop  = btn.bottom + 6;
+    let newLeft = pos.left - box.width / 2;
+
+    // Only flip above if it genuinely overflows AND there is more room above
+    const spaceBelow = vh - btn.bottom - GAP;
+    const spaceAbove = btn.top - GAP;
+    if (box.height > spaceBelow && spaceAbove > spaceBelow) {
+      newTop = btn.top - 6 - box.height;
+    }
+    if (newTop < GAP) newTop = GAP;
+
+    // Clamp horizontal edges
+    if (newLeft + box.width > vw - GAP) newLeft = vw - GAP - box.width;
+    if (newLeft < GAP) newLeft = GAP;
+
+    el.style.top       = `${newTop}px`;
+    el.style.left      = `${newLeft}px`;
+    el.style.transform = 'none';
+  }, [open, pos]);
+
+  // Close on outside click
+  useEffect(() => {
+    if (!open) return;
+    const close = (e: MouseEvent) => {
+      if (
+        btnRef.current     && !btnRef.current.contains(e.target as Node) &&
+        popoverRef.current && !popoverRef.current.contains(e.target as Node)
+      ) setOpen(false);
+    };
+    document.addEventListener('mousedown', close);
+    return () => document.removeEventListener('mousedown', close);
+  }, [open]);
 
   return (
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, alignItems: 'center', justifyContent: 'center' }}>
       {visible.map(s => (
         <span key={s} style={{
-          padding: '4px 10px',
-          borderRadius: 6,
-          fontSize: 11.5,
-          fontWeight: 500,
-          background: '#F8F9FA',
-          color: '#374151',
-          border: '1px solid #E5E7EB',
-          whiteSpace: 'nowrap',
-          maxWidth: 140,
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          display: 'inline-block',
+          padding: '4px 10px', borderRadius: 6, fontSize: 11.5, fontWeight: 500,
+          background: '#F8F9FA', color: '#374151', border: '1px solid #E5E7EB',
+          whiteSpace: 'nowrap', maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', display: 'inline-block',
         }}>
           {s}
         </span>
       ))}
       {overflow > 0 && (
-        <span style={{
-          padding: '4px 10px',
-          borderRadius: 6,
-          fontSize: 11.5,
-          fontWeight: 600,
-          background: '#F5F3FF',
-          color: '#655BD3',
-          border: '1px solid #EDE9FE',
-          whiteSpace: 'nowrap',
-        }}>
-          +{overflow} more
-        </span>
+        <button
+          ref={btnRef}
+          onClick={toggle}
+          style={{
+            padding: '4px 10px', borderRadius: 6, fontSize: 11.5, fontWeight: 600,
+            background: open ? '#EDE9FE' : '#F5F3FF', color: '#655BD3',
+            border: `1px solid ${open ? '#C4B5FD' : '#EDE9FE'}`,
+            whiteSpace: 'nowrap', cursor: 'pointer', transition: 'all 120ms',
+          }}
+        >
+          +{overflowLabel} more
+        </button>
+      )}
+
+      {/* Viewport-aware fixed popover */}
+      {open && (
+        <div
+          ref={popoverRef}
+          style={{
+            position: 'fixed',
+            top: pos.top,
+            left: pos.left,
+            transform: 'translateX(-50%)', // overridden by useEffect clamp
+            background: 'white',
+            border: '1px solid #E5E7EB',
+            borderRadius: 10,
+            boxShadow: '0 8px 28px rgba(0,0,0,0.14)',
+            zIndex: 9999,
+            minWidth: 210,
+            padding: 12,
+          }}
+        >
+          <p style={{ fontSize: 10, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8 }}>
+            More Stores
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+            {member.storeAccess.slice(SHOW, SHOW + overflowLabel).map(s => (
+              <span key={s} style={{
+                padding: '5px 10px', borderRadius: 6, fontSize: 12, fontWeight: 500,
+                background: '#F8F9FA', color: '#374151', border: '1px solid #E5E7EB', display: 'block',
+              }}>
+                {s}
+              </span>
+            ))}
+          </div>
+        </div>
       )}
     </div>
   );
@@ -741,10 +827,6 @@ export default function TeamPage() {
                         <p style={{ fontSize: 13, fontWeight: 600, color: '#111827', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                           {member.name}
                         </p>
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 500, color: sc.color, marginTop: 2 }}>
-                          <span style={{ width: 5, height: 5, borderRadius: '50%', background: sc.dot, flexShrink: 0 }} />
-                          {member.status}
-                        </span>
                       </div>
                     </div>
                   </td>

@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { AnimatedNumber } from '@/components/AnimatedNumber';
 import { useDashboardContext } from '@/components/DashboardProvider';
+import { WhatsNewCarousel } from '@/components/WhatsNewCarousel';
 
 // ── KPI card ──────────────────────────────────────────────────────────────────
 interface KpiCard {
@@ -379,40 +380,9 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* What's New */}
+          {/* What's New — carousel */}
           <div style={cardStyle}>
-            <div style={{ padding: '18px 20px 14px', borderBottom: '1px solid #F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div>
-                <p style={{ fontSize: 14, fontWeight: 700, color: '#0F172A' }}>What&apos;s New</p>
-                <p style={{ fontSize: 11, color: '#64748B', marginTop: 2 }}>Platform updates &amp; releases</p>
-              </div>
-              <button
-                style={{ fontSize: 12, fontWeight: 600, color: '#655BD3', background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 3, flexShrink: 0 }}
-                onMouseEnter={e => (e.currentTarget as HTMLElement).style.opacity = '0.75'}
-                onMouseLeave={e => (e.currentTarget as HTMLElement).style.opacity = '1'}
-              >
-                Changelog <ChevronRight size={12} strokeWidth={2} />
-              </button>
-            </div>
-            <div>
-              {WHATS_NEW.slice(0, 3).map((item, idx) => (
-                <div
-                  key={item.id}
-                  style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '12px 20px', borderTop: idx === 0 ? 'none' : '1px solid #F1F5F9', cursor: 'pointer', transition: 'background 120ms' }}
-                  onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = '#FAFBFF'}
-                  onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
-                >
-                  <div style={{ width: 28, height: 28, borderRadius: 7, background: `${item.color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: item.color, flexShrink: 0, marginTop: 1 }}>
-                    {item.icon}
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ fontSize: 12.5, fontWeight: 600, color: '#1E293B', lineHeight: 1.3, marginBottom: 2 }}>{item.title}</p>
-                    <p style={{ fontSize: 11, color: '#64748B', lineHeight: 1.5 }}>{item.desc}</p>
-                  </div>
-                  <span style={{ fontSize: 11, color: '#94A3B8', flexShrink: 0, marginTop: 1 }}>{item.date}</span>
-                </div>
-              ))}
-            </div>
+            <WhatsNewCarousel />
           </div>
         </div>
 

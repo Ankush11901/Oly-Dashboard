@@ -430,39 +430,39 @@
 
   /* ── Nav mock ── */
   .nav-mock {
-    background: #fff; border-radius: 12px;
-    width: 220px; border: 1px solid #E5E7EB;
+    background: #1A1A2E; border-radius: 12px;
+    width: 220px; border: 1px solid rgba(255,255,255,0.08);
     overflow: hidden;
   }
   .nm-logo {
     height: 52px; padding: 0 16px;
     display: flex; align-items: center;
-    border-bottom: 1px solid #E5E7EB;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
     font-size: 15px; font-weight: 700; color: #655BD3; letter-spacing: -0.3px;
   }
   .nm-body { padding: 8px 10px; display: flex; flex-direction: column; gap: 2px; }
   .nm-item {
     display: flex; align-items: center; gap: 9px;
     height: 40px; padding: 0 12px; border-radius: 8px;
-    font-size: 13.5px; font-weight: 500; color: #374151;
+    font-size: 13.5px; font-weight: 500; color: #D1D5DB;
     cursor: pointer; transition: all 120ms; text-decoration: none;
     border-left: 2px solid transparent;
   }
-  .nm-item:hover { background: #F9FAFB; }
-  .nm-item.active { background: #EEE9FF; color: #655BD3; font-weight: 600; border-left: 2px solid #655BD3; }
+  .nm-item:hover { background: rgba(255,255,255,0.06); }
+  .nm-item.active { background: rgba(101,91,211,0.25); color: #fff; font-weight: 600; border-left: 2px solid #655BD3; }
   .nm-icon { color: #6B7280; flex-shrink: 0; display: flex; }
-  .nm-icon.active-icon { color: #655BD3; }
+  .nm-icon.active-icon { color: #fff; }
   .nm-sub-item {
     display: flex; align-items: center;
     height: 32px; padding: 0 12px; padding-left: 38px; border-radius: 8px;
-    font-size: 12.5px; font-weight: 400; color: #9CA3AF;
+    font-size: 12.5px; font-weight: 400; color: #6B7280;
     cursor: pointer; text-decoration: none;
     border-left: 2px solid transparent;
   }
-  .nm-sub-item:hover { background: #F9FAFB; }
-  .nm-sub-item.active { color: #655BD3; background: #EEE9FF; border-left: 2px solid #655BD3; font-weight: 500; }
+  .nm-sub-item:hover { background: rgba(255,255,255,0.06); color: #D1D5DB; }
+  .nm-sub-item.active { color: #fff; background: rgba(101,91,211,0.25); border-left: 2px solid #655BD3; font-weight: 500; }
   .nm-footer {
-    padding: 12px 16px; border-top: 1px solid #E5E7EB;
+    padding: 12px 16px; border-top: 1px solid rgba(255,255,255,0.08);
     display: flex; align-items: center; gap: 10px;
   }
   .nm-avatar {
@@ -470,22 +470,23 @@
     background: #655BD3; color: #fff; font-size: 11px; font-weight: 600;
     display: flex; align-items: center; justify-content: center; flex-shrink: 0;
   }
-  .nm-user-name { font-size: 13px; font-weight: 600; color: #111827; }
+  .nm-user-name { font-size: 13px; font-weight: 600; color: #F9FAFB; }
   .nm-user-email { font-size: 11px; color: #6B7280; }
-  .nm-chevron { margin-left: auto; color: #9CA3AF; font-size: 12px; }
+  .nm-chevron { margin-left: auto; color: #6B7280; font-size: 12px; }
 
   /* ── Tooltip mock ── */
   .tooltip-demo { position: relative; display: inline-block; }
   .tooltip-box {
     position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%);
-    background: var(--color-ink); color: #fff; font-size: 12px;
+    background: #fff; color: #111827; font-size: 12px;
     padding: 6px 12px; border-radius: 6px; white-space: nowrap;
     pointer-events: none;
     box-shadow: var(--shadow-lg);
+    border: 1px solid #E5E7EB;
   }
   .tooltip-box::after {
     content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
-    border: 5px solid transparent; border-top-color: var(--color-ink);
+    border: 5px solid transparent; border-top-color: #E5E7EB;
   }
 
   /* ── Metric card mock ── */
@@ -1211,60 +1212,68 @@
       <div class="section-header">
         <div class="section-eyebrow">09b — Components</div>
         <div class="section-title">KPI Cards</div>
-        <div class="section-desc">Top-row metric cards. The icon and large value share the same horizontal row. Change percentage pill is anchored top-right. All KPI icon tints use a single brand violet (#655BD3) for visual unity.</div>
+        <div class="section-desc">Top-row metric cards. Each card uses a distinct semantic color for psychology: purple (authority/brand), blue (movement/flow), amber (urgency/attention), green (success/positive). Colored top border + tinted icon wrap reinforce the card's semantic meaning.</div>
       </div>
 
       <div class="grid-4" style="margin-bottom:16px">
-        <div style="background:white;border-radius:10px;padding:16px 18px;box-shadow:0 1px 3px rgba(0,0,0,0.06),0 1px 2px rgba(0,0,0,0.04);border:1px solid rgba(0,0,0,0.05)">
+        <!-- Card 1: Total Footfall — brand violet (authority) -->
+        <div style="background:white;border-radius:10px;padding:16px 18px;box-shadow:0 2px 8px rgba(0,0,0,0.055),0 1px 2px rgba(0,0,0,0.035);border:1px solid rgba(101,91,211,0.13);border-top:3px solid #655BD3;position:relative;overflow:hidden">
+          <div style="position:absolute;top:-18px;right:-18px;width:72px;height:72px;border-radius:50%;background:rgba(101,91,211,0.06)"></div>
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:9px">
             <div style="display:flex;align-items:center;gap:11px">
-              <div style="width:34px;height:34px;border-radius:8px;background:rgba(101,91,211,0.09);color:#655BD3;display:flex;align-items:center;justify-content:center">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              <div style="width:34px;height:34px;border-radius:8px;background:rgba(101,91,211,0.10);color:#655BD3;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
               </div>
-              <span style="font-size:26px;font-weight:700;color:#111827;letter-spacing:-0.5px">15,234</span>
+              <span style="font-size:26px;font-weight:700;color:#0F172A;line-height:1">15,234</span>
             </div>
-            <span style="display:inline-flex;align-items:center;gap:3px;padding:3px 7px;border-radius:9999px;font-size:11px;font-weight:700;background:#DCFCE7;color:#16A34A">↑ 12.4%</span>
+            <span style="display:inline-flex;align-items:center;gap:2px;padding:3px 7px;border-radius:9999px;font-size:11px;font-weight:700;background:#DCFCE7;color:#16A34A;flex-shrink:0;align-self:flex-start">↑ 8.2%</span>
           </div>
-          <p style="font-size:12px;font-weight:500;color:#94A3B8">Total Footfall</p>
+          <p style="font-size:12px;font-weight:500;color:#94A3B8;line-height:1">Total Footfall</p>
         </div>
 
-        <div style="background:white;border-radius:10px;padding:16px 18px;box-shadow:0 1px 3px rgba(0,0,0,0.06),0 1px 2px rgba(0,0,0,0.04);border:1px solid rgba(0,0,0,0.05)">
+        <!-- Card 2: Passerby Count — sky blue (movement) -->
+        <div style="background:white;border-radius:10px;padding:16px 18px;box-shadow:0 2px 8px rgba(0,0,0,0.055),0 1px 2px rgba(0,0,0,0.035);border:1px solid rgba(14,165,233,0.13);border-top:3px solid #0EA5E9;position:relative;overflow:hidden">
+          <div style="position:absolute;top:-18px;right:-18px;width:72px;height:72px;border-radius:50%;background:rgba(14,165,233,0.06)"></div>
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:9px">
             <div style="display:flex;align-items:center;gap:11px">
-              <div style="width:34px;height:34px;border-radius:8px;background:rgba(101,91,211,0.09);color:#655BD3;display:flex;align-items:center;justify-content:center">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+              <div style="width:34px;height:34px;border-radius:8px;background:rgba(14,165,233,0.10);color:#0EA5E9;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
               </div>
-              <span style="font-size:26px;font-weight:700;color:#111827;letter-spacing:-0.5px">12.4%</span>
+              <span style="font-size:26px;font-weight:700;color:#0F172A;line-height:1">45,621</span>
             </div>
-            <span style="display:inline-flex;align-items:center;gap:3px;padding:3px 7px;border-radius:9999px;font-size:11px;font-weight:700;background:#DCFCE7;color:#16A34A">↑ 2.1%</span>
+            <span style="display:inline-flex;align-items:center;gap:2px;padding:3px 7px;border-radius:9999px;font-size:11px;font-weight:700;background:#DCFCE7;color:#16A34A;flex-shrink:0;align-self:flex-start">↑ 3.1%</span>
           </div>
-          <p style="font-size:12px;font-weight:500;color:#94A3B8">Conversion Rate</p>
+          <p style="font-size:12px;font-weight:500;color:#94A3B8;line-height:1">Passerby Count</p>
         </div>
 
-        <div style="background:white;border-radius:10px;padding:16px 18px;box-shadow:0 1px 3px rgba(0,0,0,0.06),0 1px 2px rgba(0,0,0,0.04);border:1px solid rgba(0,0,0,0.05)">
+        <!-- Card 3: Avg Conversion — amber (urgency/caution) -->
+        <div style="background:white;border-radius:10px;padding:16px 18px;box-shadow:0 2px 8px rgba(0,0,0,0.055),0 1px 2px rgba(0,0,0,0.035);border:1px solid rgba(245,158,11,0.13);border-top:3px solid #F59E0B;position:relative;overflow:hidden">
+          <div style="position:absolute;top:-18px;right:-18px;width:72px;height:72px;border-radius:50%;background:rgba(245,158,11,0.06)"></div>
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:9px">
             <div style="display:flex;align-items:center;gap:11px">
-              <div style="width:34px;height:34px;border-radius:8px;background:rgba(101,91,211,0.09);color:#655BD3;display:flex;align-items:center;justify-content:center">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <div style="width:34px;height:34px;border-radius:8px;background:rgba(245,158,11,0.10);color:#F59E0B;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
               </div>
-              <span style="font-size:26px;font-weight:700;color:#111827;letter-spacing:-0.5px">4.2m</span>
+              <span style="font-size:26px;font-weight:700;color:#0F172A;line-height:1">12.4%</span>
             </div>
-            <span style="display:inline-flex;align-items:center;gap:3px;padding:3px 7px;border-radius:9999px;font-size:11px;font-weight:700;background:#FEE2E2;color:#DC2626">↑ 8.3%</span>
+            <span style="display:inline-flex;align-items:center;gap:2px;padding:3px 7px;border-radius:9999px;font-size:11px;font-weight:700;background:#FEE2E2;color:#DC2626;flex-shrink:0;align-self:flex-start">↓ 1.2%</span>
           </div>
-          <p style="font-size:12px;font-weight:500;color:#94A3B8">Avg Queue Wait</p>
+          <p style="font-size:12px;font-weight:500;color:#94A3B8;line-height:1">Avg Conversion</p>
         </div>
 
-        <div style="background:white;border-radius:10px;padding:16px 18px;box-shadow:0 1px 3px rgba(0,0,0,0.06),0 1px 2px rgba(0,0,0,0.04);border:1px solid rgba(0,0,0,0.05)">
+        <!-- Card 4: Top Store Visitors — emerald (success) -->
+        <div style="background:white;border-radius:10px;padding:16px 18px;box-shadow:0 2px 8px rgba(0,0,0,0.055),0 1px 2px rgba(0,0,0,0.035);border:1px solid rgba(16,185,129,0.13);border-top:3px solid #10B981;position:relative;overflow:hidden">
+          <div style="position:absolute;top:-18px;right:-18px;width:72px;height:72px;border-radius:50%;background:rgba(16,185,129,0.06)"></div>
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:9px">
             <div style="display:flex;align-items:center;gap:11px">
-              <div style="width:34px;height:34px;border-radius:8px;background:rgba(101,91,211,0.09);color:#655BD3;display:flex;align-items:center;justify-content:center">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              <div style="width:34px;height:34px;border-radius:8px;background:rgba(16,185,129,0.10);color:#10B981;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
               </div>
-              <span style="font-size:26px;font-weight:700;color:#111827;letter-spacing:-0.5px">8</span>
+              <span style="font-size:26px;font-weight:700;color:#0F172A;line-height:1">15,234</span>
             </div>
-            <span style="display:inline-flex;align-items:center;gap:3px;padding:3px 7px;border-radius:9999px;font-size:11px;font-weight:700;background:#DCFCE7;color:#16A34A">↑ 14.2%</span>
+            <span style="display:inline-flex;align-items:center;gap:2px;padding:3px 7px;border-radius:9999px;font-size:11px;font-weight:700;background:#DCFCE7;color:#16A34A;flex-shrink:0;align-self:flex-start">↑ 5.7%</span>
           </div>
-          <p style="font-size:12px;font-weight:500;color:#94A3B8">Active Stores</p>
+          <p style="font-size:12px;font-weight:500;color:#94A3B8;line-height:1">Top Store Visitors</p>
         </div>
       </div>
 
@@ -1276,8 +1285,11 @@
             <tr><td>Card border radius</td><td><code>10px</code></td></tr>
             <tr><td>Card padding</td><td><code>16px 18px</code></td></tr>
             <tr><td>Icon wrap size</td><td><code>34×34px</code> · border-radius <code>8px</code></td></tr>
-            <tr><td>Icon wrap background</td><td><code>rgba(101,91,211,0.09)</code> — brand violet at ~9% opacity</td></tr>
-            <tr><td>Icon colour</td><td><code>#655BD3</code> — always brand violet, all cards</td></tr>
+            <tr><td>Top border</td><td><code>3px solid</code> — card's semantic color (see below)</td></tr>
+            <tr><td>Icon wrap background</td><td>Card color at ~10% opacity — e.g. <code>rgba(101,91,211,0.10)</code></td></tr>
+            <tr><td>Icon colour</td><td>Matches card's semantic color (not fixed to brand violet)</td></tr>
+            <tr><td>Card colors</td><td>Footfall: <code>#655BD3</code> · Passerby: <code>#0EA5E9</code> · Conversion: <code>#F59E0B</code> · Store: <code>#10B981</code></td></tr>
+            <tr><td>Color psychology</td><td>Purple = authority/brand · Blue = movement · Amber = urgency · Green = success</td></tr>
             <tr><td>Icon size</td><td><code>16px</code> · strokeWidth <code>1.5</code></td></tr>
             <tr><td>Value font</td><td><code>26px</code> · weight <code>700</code> · letter-spacing <code>-0.5px</code></td></tr>
             <tr><td>Label font</td><td><code>12px</code> · weight <code>500</code> · colour <code>#94A3B8</code></td></tr>
@@ -1392,7 +1404,7 @@
       <div class="section-header">
         <div class="section-eyebrow">08b — Components</div>
         <div class="section-title">Filter Bar &amp; Controls</div>
-        <div class="section-desc">Second row of the top bar — 64px height. All control buttons: 34px height, 6px border radius. Dropdown panels: 8px radius. The camera strip is a connected segmented component with zero gap between blocks.</div>
+        <div class="section-desc">Second row of the top bar — 64px height. All control buttons: 34px height, 6px border radius. Dropdown panels: 8px radius. The camera strip is a connected segmented component: first block is an "All Cameras ▾" dropdown, followed by three colored stat blocks (total / online / offline).</div>
       </div>
 
       <div class="card" style="margin-bottom:16px">
@@ -1411,9 +1423,10 @@
             <span style="font-size:13px;font-weight:700;color:#111827">8</span>
             <span style="font-size:12px;color:#9CA3AF">Stores</span>
           </div>
-          <div style="display:flex;height:34px;border-radius:6px;overflow:hidden;border:1px solid #E5E7EB">
-            <div style="display:flex;align-items:center;justify-content:center;padding:0 11px;background:white;border-right:1px solid #E5E7EB">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+          <div style="display:flex;height:34px;border-radius:6px;border:1px solid #E5E7EB;overflow:hidden">
+            <div style="display:flex;align-items:center;gap:5px;padding:0 11px;background:white;border-right:1px solid #E5E7EB;cursor:pointer;white-space:nowrap">
+              <span style="font-size:12px;font-weight:500;color:#374151">All Cameras</span>
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
             </div>
             <div style="display:flex;align-items:center;justify-content:center;padding:0 13px;background:#64748B;border-right:1px solid rgba(255,255,255,0.12)">
               <span style="font-size:13px;font-weight:600;color:white">26</span>
@@ -1437,8 +1450,9 @@
         <div class="card-title">Camera Strip — Connected Segment Pattern</div>
         <div style="margin-bottom:16px">
           <div style="display:flex;height:34px;border-radius:6px;overflow:hidden;border:1px solid #E5E7EB;width:fit-content">
-            <div style="display:flex;align-items:center;justify-content:center;padding:0 11px;background:white;border-right:1px solid #E5E7EB">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+            <div style="display:flex;align-items:center;gap:5px;padding:0 12px;background:white;border-right:1px solid #E5E7EB;cursor:pointer;white-space:nowrap">
+              <span style="font-size:12px;font-weight:500;color:#374151">All Cameras</span>
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
             </div>
             <div style="display:flex;align-items:center;justify-content:center;padding:0 13px;background:#64748B;border-right:1px solid rgba(255,255,255,0.12)">
               <span style="font-size:13px;font-weight:600;color:white">26</span>
@@ -1454,13 +1468,14 @@
         <table class="token-table" style="max-width:520px">
           <thead><tr><th>Segment</th><th>Background</th><th>Meaning</th></tr></thead>
           <tbody>
-            <tr><td>Icon block</td><td>Surface white</td><td>Camera identifier · Camera icon 14px / strokeWidth 2</td></tr>
+            <tr><td>Dropdown label</td><td>Surface white</td><td>"All Cameras ▾" text button · opens camera category dropdown (All / Entrance / Cash Bill)</td></tr>
             <tr><td>Total block</td><td><code>#64748B</code> — muted slate</td><td>Total cameras installed</td></tr>
             <tr><td>Online block</td><td><code>#2D8A55</code> — muted green</td><td>Cameras online with active feed</td></tr>
             <tr><td>Offline block</td><td><code>#B54040</code> — muted red</td><td>Cameras offline or in error</td></tr>
           </tbody>
         </table>
         <div style="margin-top:12px;font-size:13px;color:#6B7280;line-height:1.9">
+          · First segment: white bg text button "All Cameras" + chevron — clicking opens dropdown with options: All Cameras / Entrance Cameras / Cash Bill Cameras<br>
           · Container: <code style="font-family:monospace;background:#F3F4F6;padding:1px 5px;border-radius:4px">overflow: hidden</code> on parent + <code style="font-family:monospace;background:#F3F4F6;padding:1px 5px;border-radius:4px">border-radius: 6px</code> creates the seamless look<br>
           · Dividers between dark segments: <code style="font-family:monospace;background:#F3F4F6;padding:1px 5px;border-radius:4px">1px solid rgba(255,255,255,0.12)</code><br>
           · Zero gap between segments — flex with no <code style="font-family:monospace;background:#F3F4F6;padding:1px 5px;border-radius:4px">gap</code> property
@@ -1661,9 +1676,9 @@
             <tr><td>Chart title</td><td>14px · weight 700 · <code>#111827</code></td></tr>
             <tr><td>Axis labels</td><td>11px · weight 400 · <code>#6B7280</code></td></tr>
             <tr><td>Grid lines</td><td>1px dashed · <code>#F3F4F6</code></td></tr>
-            <tr><td>Tooltip background</td><td><code>#1A1A2E</code> · 8px radius · 8px padding</td></tr>
-            <tr><td>Tooltip label</td><td>11px · <code>#D1D5DB</code></td></tr>
-            <tr><td>Tooltip value</td><td>14px · weight 700 · White</td></tr>
+            <tr><td>Tooltip background</td><td><code>#FFFFFF</code> · 8px radius · 10px 14px padding · 1px <code>#E5E7EB</code> border</td></tr>
+            <tr><td>Tooltip label</td><td>11px · <code>#9CA3AF</code></td></tr>
+            <tr><td>Tooltip value</td><td>14px · weight 700 · <code>#111827</code></td></tr>
             <tr><td>Data point dot</td><td>6px circle · series colour · 2px white border</td></tr>
             <tr><td>Legend dot</td><td>8px circle · series colour</td></tr>
             <tr><td>Legend text</td><td>12px · weight 400 · <code>#374151</code></td></tr>
@@ -1677,7 +1692,7 @@
       <div class="section-header">
         <div class="section-eyebrow">15 — Data Visualisation</div>
         <div class="section-title">Tooltips & Popovers</div>
-        <div class="section-desc">Dark background (#1A1A2E) for all tooltips. 400ms show delay, 100ms hide delay.</div>
+        <div class="section-desc">Light background (white) for chart tooltips. 1px solid #E5E7EB border, shadow-md. 400ms show delay, 100ms hide delay.</div>
       </div>
 
       <div class="card">
@@ -1685,33 +1700,34 @@
           <div>
             <div style="font-size:12px;font-weight:600;color:#6B7280;margin-bottom:32px;text-align:center">Standard Tooltip</div>
             <div class="tooltip-demo">
-              <div class="tooltip-box">Total Footfall: 15,234</div>
+              <div class="tooltip-box" style="color:#111827">Total Footfall: 15,234</div>
               <button class="btn btn-ghost btn-sm">Hover target</button>
             </div>
           </div>
           <div>
             <div style="font-size:12px;font-weight:600;color:#6B7280;margin-bottom:16px;text-align:center">Chart Tooltip</div>
-            <div style="background:#1A1A2E;border-radius:10px;padding:12px 14px;width:200px;box-shadow:0 8px 24px rgba(0,0,0,0.2)">
+            <div style="background:#fff;border-radius:10px;padding:10px 14px;width:200px;box-shadow:0 4px 12px rgba(0,0,0,0.08),0 2px 4px rgba(0,0,0,0.04);border:1px solid #E5E7EB">
               <div style="font-size:11px;color:#9CA3AF;margin-bottom:8px">Monday, 14 Apr 2026</div>
               <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
-                <span style="width:8px;height:8px;border-radius:50%;background:#655BD3;display:inline-block"></span>
-                <span style="font-size:12px;color:#D1D5DB;flex:1">Footfall</span>
-                <span style="font-size:14px;font-weight:700;color:#fff">4,281</span>
+                <span style="width:9px;height:9px;border-radius:2px;background:#655BD3;display:inline-block;flex-shrink:0"></span>
+                <span style="font-size:12px;color:#6B7280;flex:1">Footfall</span>
+                <span style="font-size:14px;font-weight:700;color:#111827">4,281</span>
               </div>
               <div style="display:flex;align-items:center;gap:8px">
-                <span style="width:8px;height:8px;border-radius:50%;background:#00CE9C;display:inline-block"></span>
-                <span style="font-size:12px;color:#D1D5DB;flex:1">Conversion</span>
-                <span style="font-size:14px;font-weight:700;color:#fff">12.4%</span>
+                <span style="width:9px;height:9px;border-radius:2px;background:#00CE9C;display:inline-block;flex-shrink:0"></span>
+                <span style="font-size:12px;color:#6B7280;flex:1">Conversion</span>
+                <span style="font-size:14px;font-weight:700;color:#111827">12.4%</span>
               </div>
             </div>
           </div>
           <div style="font-size:13px;color:#6B7280;line-height:1.9;align-self:center">
-            · Background: <code style="font-family:monospace;background:#F3F4F6;padding:1px 5px;border-radius:4px">#1A1A2E</code><br>
-            · Font size: 12px · Weight 400 · White<br>
-            · Padding: 6px 10px · Radius: 6px<br>
-            · Max-width: 240px<br>
-            · Arrow: 6px triangle, same bg<br>
-            · Z-index: 300
+            · Background: <code style="font-family:monospace;background:#F3F4F6;padding:1px 5px;border-radius:4px">#FFFFFF</code><br>
+            · Border: 1px solid <code style="font-family:monospace;background:#F3F4F6;padding:1px 5px;border-radius:4px">#E5E7EB</code><br>
+            · Label: 11px · <code style="font-family:monospace;background:#F3F4F6;padding:1px 5px;border-radius:4px">#9CA3AF</code><br>
+            · Series name: 12px · <code style="font-family:monospace;background:#F3F4F6;padding:1px 5px;border-radius:4px">#6B7280</code><br>
+            · Value: 14px · weight 700 · <code style="font-family:monospace;background:#F3F4F6;padding:1px 5px;border-radius:4px">#111827</code><br>
+            · Dot: 9px square · 2px radius · series colour<br>
+            · Padding: 10px 14px · Radius: 10px
           </div>
         </div>
       </div>
@@ -1889,17 +1905,13 @@
             <div style="display:flex;align-items:center;gap:10px;padding:11px 20px;border-top:none">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
               <div style="flex:1;min-width:0">
-                <div style="display:flex;align-items:center;gap:6px">
-                  <p style="font-size:12.5px;font-weight:500;color:#94A3B8;text-decoration:line-through;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Change mannequin display — Summer collection</p>
-                  <span style="font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;background:#F1F5F9;color:#64748B;flex-shrink:0">AUTO</span>
-                </div>
-                <div style="display:flex;align-items:center;gap:5px;margin-top:1px">
+                <p style="font-size:13px;font-weight:500;color:#94A3B8;text-decoration:line-through;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Change mannequin display</p>
+                <div style="display:flex;align-items:center;gap:5px;margin-top:2px">
                   <span style="font-size:11px;color:#64748B">Marina Bay Sands</span>
                   <span style="color:#CBD5E1;font-size:8px">●</span>
-                  <span style="font-size:11px;color:#655BD3">Sarah Tan</span>
+                  <span style="font-size:11px;color:#94A3B8">Today</span>
                 </div>
               </div>
-              <span style="font-size:11px;color:#64748B;flex-shrink:0">Today</span>
             </div>
             <div style="display:flex;align-items:center;gap:10px;padding:11px 20px;border-top:1px solid #F1F5F9">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><circle cx="12" cy="12" r="10"/></svg>
@@ -2229,6 +2241,122 @@
         </div>
 
         <div style="padding:12px 20px;font-size:12px;color:#9CA3AF;border-top:1px solid #F3F4F6">Showing 5 of 5 members</div>
+      </div>
+
+      <!-- What's New Carousel widget -->
+      <div style="margin-top:16px">
+        <div style="font-size:11px;font-weight:700;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:10px">What's New — Preview Carousel</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start">
+
+          <!-- Carousel card mock -->
+          <div class="card" style="padding:0;overflow:hidden">
+            <!-- Header row -->
+            <div style="padding:14px 20px 12px;border-bottom:1px solid #F1F5F9;display:flex;align-items:center;justify-content:space-between">
+              <span style="font-size:14px;font-weight:700;color:#0F172A">What's New</span>
+              <button style="font-size:12px;font-weight:600;color:#655BD3;background:transparent;border:none;cursor:pointer;display:flex;align-items:center;gap:3px">
+                View all
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
+            </div>
+            <!-- Preview area — heatmap slide -->
+            <div style="height:148px;background:#FAFBFF;border-bottom:1px solid #F1F5F9;padding:10px 14px 6px;overflow:hidden">
+              <!-- Mini 3-shade purple heatmap -->
+              <div style="display:flex;margin-left:38px;margin-bottom:4px;gap:0">
+                <div style="flex:1;font-size:8px;color:#94A3B8;text-align:center;font-weight:600">9am</div>
+                <div style="flex:1;font-size:8px;color:#94A3B8;text-align:center;font-weight:600">11am</div>
+                <div style="flex:1;font-size:8px;color:#94A3B8;text-align:center;font-weight:600">1pm</div>
+                <div style="flex:1;font-size:8px;color:#94A3B8;text-align:center;font-weight:600">3pm</div>
+                <div style="flex:1;font-size:8px;color:#94A3B8;text-align:center;font-weight:600">5pm</div>
+                <div style="flex:1;font-size:8px;color:#94A3B8;text-align:center;font-weight:600">7pm</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:4px;margin-bottom:3px">
+                <span style="width:34px;font-size:8.5px;color:#64748B;font-weight:600;flex-shrink:0">Zone A</span>
+                <div style="flex:1;height:18px;border-radius:3px;background:#EEE9FF"></div>
+                <div style="flex:1;height:18px;border-radius:3px;background:#9E8FE8"></div>
+                <div style="flex:1;height:18px;border-radius:3px;background:#655BD3"></div>
+                <div style="flex:1;height:18px;border-radius:3px;background:#655BD3"></div>
+                <div style="flex:1;height:18px;border-radius:3px;background:#9E8FE8"></div>
+                <div style="flex:1;height:18px;border-radius:3px;background:#EEE9FF"></div>
+              </div>
+              <div style="display:flex;align-items:center;gap:4px;margin-bottom:3px">
+                <span style="width:34px;font-size:8.5px;color:#64748B;font-weight:600;flex-shrink:0">Zone B</span>
+                <div style="flex:1;height:18px;border-radius:3px;background:#EEE9FF"></div>
+                <div style="flex:1;height:18px;border-radius:3px;background:#9E8FE8"></div>
+                <div style="flex:1;height:18px;border-radius:3px;background:#9E8FE8"></div>
+                <div style="flex:1;height:18px;border-radius:3px;background:#655BD3"></div>
+                <div style="flex:1;height:18px;border-radius:3px;background:#655BD3"></div>
+                <div style="flex:1;height:18px;border-radius:3px;background:#9E8FE8"></div>
+              </div>
+              <div style="display:flex;align-items:center;gap:4px;margin-bottom:3px">
+                <span style="width:34px;font-size:8.5px;color:#64748B;font-weight:600;flex-shrink:0">Zone C</span>
+                <div style="flex:1;height:18px;border-radius:3px;background:#9E8FE8"></div>
+                <div style="flex:1;height:18px;border-radius:3px;background:#655BD3"></div>
+                <div style="flex:1;height:18px;border-radius:3px;background:#655BD3"></div>
+                <div style="flex:1;height:18px;border-radius:3px;background:#655BD3"></div>
+                <div style="flex:1;height:18px;border-radius:3px;background:#655BD3"></div>
+                <div style="flex:1;height:18px;border-radius:3px;background:#9E8FE8"></div>
+              </div>
+              <div style="display:flex;align-items:center;gap:4px;margin-bottom:4px">
+                <span style="width:34px;font-size:8.5px;color:#64748B;font-weight:600;flex-shrink:0">Zone D</span>
+                <div style="flex:1;height:18px;border-radius:3px;background:#EEE9FF"></div>
+                <div style="flex:1;height:18px;border-radius:3px;background:#EEE9FF"></div>
+                <div style="flex:1;height:18px;border-radius:3px;background:#9E8FE8"></div>
+                <div style="flex:1;height:18px;border-radius:3px;background:#9E8FE8"></div>
+                <div style="flex:1;height:18px;border-radius:3px;background:#EEE9FF"></div>
+                <div style="flex:1;height:18px;border-radius:3px;background:#EEE9FF"></div>
+              </div>
+              <!-- Legend -->
+              <div style="display:flex;align-items:center;gap:3px;margin-left:38px">
+                <span style="font-size:8px;color:#94A3B8">Low</span>
+                <div style="flex:1;height:4px;border-radius:2px;background:#EEE9FF"></div>
+                <div style="flex:1;height:4px;border-radius:2px;background:#9E8FE8"></div>
+                <div style="flex:1;height:4px;border-radius:2px;background:#655BD3"></div>
+                <span style="font-size:8px;color:#94A3B8">High</span>
+              </div>
+            </div>
+            <!-- Info strip -->
+            <div style="padding:10px 14px 12px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px">
+                <div style="display:flex;align-items:center;gap:6px">
+                  <div style="width:20px;height:20px;border-radius:5px;background:#EEE9FF;display:flex;align-items:center;justify-content:center;color:#655BD3">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                  </div>
+                  <span style="font-size:12px;font-weight:700;color:#1E293B">Heatmap widget</span>
+                </div>
+                <span style="font-size:10px;color:#94A3B8">May 26</span>
+              </div>
+              <p style="font-size:10.5px;color:#64748B;line-height:1.5;margin-bottom:10px;padding-left:26px">Visualize foot traffic density across store zones using a clean single-tone heatmap.</p>
+              <!-- Dots -->
+              <div style="display:flex;align-items:center;gap:4px">
+                <div style="width:18px;height:6px;border-radius:3px;background:#655BD3"></div>
+                <div style="width:6px;height:6px;border-radius:3px;background:#655BD3;opacity:0.25"></div>
+                <div style="width:6px;height:6px;border-radius:3px;background:#655BD3;opacity:0.25"></div>
+                <div style="width:6px;height:6px;border-radius:3px;background:#655BD3;opacity:0.25"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Carousel spec -->
+          <div class="card">
+            <div class="card-title">What's New Carousel Spec</div>
+            <table class="token-table">
+              <thead><tr><th>Property</th><th>Value</th></tr></thead>
+              <tbody>
+                <tr><td>Header</td><td>14px · weight 700 · "What's New" left, "View all ›" right in <code>#655BD3</code></td></tr>
+                <tr><td>Preview area height</td><td><code>148px</code> fixed · all slides stacked, opacity fade transition</td></tr>
+                <tr><td>Preview background</td><td><code>#FAFBFF</code> with <code>1px solid #F1F5F9</code> bottom border</td></tr>
+                <tr><td>Slide transition</td><td><code>opacity 300ms ease</code> — all slides rendered, only active = opacity 1</td></tr>
+                <tr><td>Auto-rotation interval</td><td><code>12 000ms</code> · pauses on hover</td></tr>
+                <tr><td>Dot — active</td><td>width <code>18px</code> · height <code>6px</code> · radius <code>3px</code> · <code>#655BD3</code></td></tr>
+                <tr><td>Dot — inactive</td><td>width <code>6px</code> · height <code>6px</code> · same color · <code>opacity: 0.25</code></td></tr>
+                <tr><td>Slides</td><td>4: Heatmap widget · AI footfall predictions · Multi-store comparison · Dwell time analytics</td></tr>
+                <tr><td>Heatmap palette</td><td>3 shades only: <code>#EEE9FF</code> low · <code>#9E8FE8</code> mid · <code>#655BD3</code> high</td></tr>
+                <tr><td>"View all" modal</td><td>Fixed overlay · <code>rgba(15,23,42,0.55)</code> bg · 2×2 grid of feature cards · 110px compact previews</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+        </div>
       </div>
 
     </div>

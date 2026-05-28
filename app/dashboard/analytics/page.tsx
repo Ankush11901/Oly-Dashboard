@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from 'react';
 import {
   Plus, X, LayoutGrid, BarChart2, Users, Activity, Clock,
   Store, ChevronDown, GripVertical, Trash2, Settings,
-  TrendingUp, Info, Bell, Edit2, Download,
+  TrendingUp, Info, Bell, Edit2, Download, Eye,
 } from 'lucide-react';
 import { VisitorSnapshots } from '@/components/VisitorSnapshots';
 import {
@@ -2033,6 +2033,24 @@ function PlacedWidget({
           <p style={{ fontSize: 13, fontWeight: 700, color: '#111827' }}>{def.label}</p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          {!editMode && widgetId === 'footfall_trend' && (
+            <button
+              onClick={() => setShowSnapshots(true)}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 5,
+                padding: '4px 10px', height: 26, borderRadius: 6,
+                background: 'transparent', border: '1px solid #DDD6FE',
+                color: '#655BD3', cursor: 'pointer',
+                fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap',
+                transition: 'background 150ms, border-color 150ms',
+              }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#EEE9FF'; (e.currentTarget as HTMLElement).style.borderColor = '#655BD3'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.borderColor = '#DDD6FE'; }}
+            >
+              <Eye size={12} strokeWidth={1.5} />
+              View Snapshots
+            </button>
+          )}
           {editMode ? (
             <button
               onClick={onRemove}
@@ -2579,8 +2597,8 @@ const DEFAULT_TABS: AnalyticsTab[] = [
     label: 'Overview',
     widgets: [
       // Footfall & Traffic
-      'india_walkin_chart', 'region_compare_chart',
       'footfall_trend', 'passerby_trend',
+      'india_walkin_chart', 'region_compare_chart',
       'peak_hours', 'conversion_rate',
       'footfall_heatmap',
       // Queue
