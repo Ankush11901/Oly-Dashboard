@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from 'react';
 import {
   Plus, X, LayoutGrid, BarChart2, Users, Activity, Clock,
   Store, ChevronDown, GripVertical, Trash2, Settings,
-  TrendingUp, Info, Bell, Edit2, Download, Eye,
+  TrendingUp, Info, Bell, Edit2, Download, Eye, RefreshCw,
 } from 'lucide-react';
 import { VisitorSnapshots } from '@/components/VisitorSnapshots';
 import {
@@ -1085,6 +1085,48 @@ function PlacedWidget({
   // All hooks must be unconditional — early return comes AFTER
   const color = WIDGET_ACCENT[widgetId] ?? '#655BD3';
   const [showSnapshots, setShowSnapshots] = useState(false);
+  // Snapshot modal controls (lifted from VisitorSnapshots when modal is open)
+  const [snapEventFilter, setSnapEventFilter] = useState<'all' | 'entry' | 'exit' | 'passerby'>('all');
+  const [snapRefreshing, setSnapRefreshing] = useState(false);
+  const [snapShowInfo, setSnapShowInfo] = useState(false);
+  const handleSnapRefresh = () => {
+    if (snapRefreshing) return;
+    setSnapRefreshing(true);
+    setTimeout(() => setSnapRefreshing(false), 900);
+  };
+
+  // Smooth height animation for the snapshot content area (FLIP technique)
+  const snapBodyRef = useRef<HTMLDivElement>(null);
+  const isFirstSnapFilter = useRef(true);
+
+  // Reset "first render" flag each time the modal opens so no ghost animation on first open
+  useEffect(() => {
+    if (showSnapshots) isFirstSnapFilter.current = true;
+  }, [showSnapshots]);
+
+  // After React re-renders with the new filter's cards, animate from frozen → natural height
+  useEffect(() => {
+    if (isFirstSnapFilter.current) { isFirstSnapFilter.current = false; return; }
+    const el = snapBodyRef.current;
+    if (!el) return;
+    const frozenH = el.style.height; // set by changeSnapFilter before state update
+    el.style.transition = 'none';
+    el.style.height = 'auto';
+    const newH = el.scrollHeight;
+    el.style.height = frozenH;          // restore frozen — no visible jump
+    void el.offsetHeight;               // force reflow
+    el.style.transition = 'height 320ms cubic-bezier(0.4, 0, 0.2, 1)';
+    el.style.height = newH + 'px';
+    const t = setTimeout(() => { el.style.height = 'auto'; el.style.transition = ''; }, 320);
+    return () => clearTimeout(t);
+  }, [snapEventFilter]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Freeze current height right before the state update so the transition has a start point
+  const changeSnapFilter = (f: 'all' | 'entry' | 'exit' | 'passerby') => {
+    const el = snapBodyRef.current;
+    if (el) { el.style.transition = 'none'; el.style.height = el.scrollHeight + 'px'; }
+    setSnapEventFilter(f);
+  };
   const [genderFilter, setGenderFilter] = useState('All');
   const [agGenderFilter, setAgGenderFilter] = useState('All');
   const [ageGrpFilter, setAgeGrpFilter] = useState('All');
@@ -2084,8 +2126,8 @@ function PlacedWidget({
             position: 'fixed', inset: 0, zIndex: 9000,
             background: 'rgba(17,24,39,0.55)',
             backdropFilter: 'blur(4px)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            padding: 24,
+            display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
+            padding: '8vh 24px 24px',
           }}
         >
           <div
@@ -2102,39 +2144,179 @@ function PlacedWidget({
               overflow: 'hidden',
             }}
           >
-            {/* Modal header */}
+            {/* Row 1: title header — white bg, bottom border */}
             <div style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              padding: '16px 24px',
+              display: 'flex', alignItems: 'center', gap: 8,
+              padding: '14px 20px',
               background: 'white',
               borderBottom: '1px solid #E5E7EB',
               flexShrink: 0,
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <Bell size={15} strokeWidth={2} style={{ color: '#655BD3' }} />
-                <span style={{ fontSize: 14, fontWeight: 700, color: '#111827' }}>Visitor Snapshots</span>
-                <span style={{
-                  fontSize: 10.5, fontWeight: 600,
-                  padding: '2px 8px', borderRadius: 999,
-                  background: 'rgba(101,91,211,0.1)', color: '#655BD3',
-                }}>Live</span>
-              </div>
+              <Bell size={14} strokeWidth={2} style={{ color: '#655BD3', flexShrink: 0 }} />
+              <span style={{ fontSize: 13, fontWeight: 700, color: '#111827' }}>Visitor Snapshots</span>
+              <span style={{
+                fontSize: 10, fontWeight: 600,
+                padding: '2px 7px', borderRadius: 999,
+                background: 'rgba(101,91,211,0.1)', color: '#655BD3',
+              }}>Live</span>
+              <div style={{ flex: 1 }} />
               <button
                 onClick={() => setShowSnapshots(false)}
                 style={{
-                  width: 30, height: 30, borderRadius: 8,
+                  width: 28, height: 28, borderRadius: 7,
                   border: '1px solid #E5E7EB', background: 'white',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  cursor: 'pointer', color: '#6B7280',
+                  cursor: 'pointer', color: '#9CA3AF', flexShrink: 0,
+                  transition: 'background 150ms, border-color 150ms, color 150ms',
+                }}
+                onMouseEnter={e => {
+                  const el = e.currentTarget as HTMLElement;
+                  el.style.background = '#FEF2F2';
+                  el.style.borderColor = '#FECACA';
+                  el.style.color = '#DC2626';
+                }}
+                onMouseLeave={e => {
+                  const el = e.currentTarget as HTMLElement;
+                  el.style.background = 'white';
+                  el.style.borderColor = '#E5E7EB';
+                  el.style.color = '#9CA3AF';
                 }}
               >
-                <X size={15} strokeWidth={2} />
+                <X size={13} strokeWidth={2.5} />
               </button>
             </div>
 
+            {/* Row 2: filter pills (left) + refresh / divider / info (right) */}
+            <div style={{
+              display: 'flex', alignItems: 'center',
+              padding: '10px 20px',
+              background: '#FAFAFA',
+              flexShrink: 0,
+            }}>
+              {/* Filter pills — left-aligned */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                {(['all', 'entry', 'exit', 'passerby'] as const).map((f) => (
+                  <button
+                    key={f}
+                    onClick={() => changeSnapFilter(f)}
+                    style={{
+                      height: 28, paddingLeft: 12, paddingRight: 12,
+                      borderRadius: 999,
+                      border: snapEventFilter === f ? 'none' : '1px solid #E5E7EB',
+                      cursor: 'pointer',
+                      fontSize: 12, fontWeight: 500,
+                      background: snapEventFilter === f ? '#655BD3' : 'white',
+                      color: snapEventFilter === f ? 'white' : '#6B7280',
+                      flexShrink: 0,
+                      transition: 'background 150ms, color 150ms',
+                    }}
+                    onMouseEnter={e => {
+                      if (snapEventFilter !== f) {
+                        (e.currentTarget as HTMLElement).style.background = '#F9F7FF';
+                        (e.currentTarget as HTMLElement).style.color = '#655BD3';
+                      }
+                    }}
+                    onMouseLeave={e => {
+                      if (snapEventFilter !== f) {
+                        (e.currentTarget as HTMLElement).style.background = 'white';
+                        (e.currentTarget as HTMLElement).style.color = '#6B7280';
+                      }
+                    }}
+                  >
+                    {f === 'all' ? 'All Events' : f.charAt(0).toUpperCase() + f.slice(1)}
+                  </button>
+                ))}
+              </div>
+
+              {/* Spacer */}
+              <div style={{ flex: 1 }} />
+
+              {/* Right controls: Refresh + divider (equal margin) + Info */}
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                {/* Refresh button */}
+                <button
+                  onClick={handleSnapRefresh}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 5,
+                    height: 28, paddingLeft: 10, paddingRight: 10,
+                    borderRadius: 7, border: '1px solid #E5E7EB',
+                    background: '#fff',
+                    fontSize: 11, fontWeight: 500, color: '#6B7280',
+                    cursor: 'pointer', flexShrink: 0,
+                    transition: 'background 150ms',
+                  }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#F9F7FF'; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = '#fff'; }}
+                >
+                  <RefreshCw
+                    size={12} strokeWidth={2.2}
+                    style={{ color: '#655BD3', animation: snapRefreshing ? 'spin 0.9s linear infinite' : 'none' }}
+                  />
+                  Refresh
+                </button>
+
+                {/* Divider — equal 8px gap on both sides */}
+                <div style={{ width: 1, height: 16, background: '#E5E7EB', flexShrink: 0, margin: '0 8px' }} />
+
+                {/* Info button */}
+                <div style={{ position: 'relative', flexShrink: 0 }}>
+                  <button
+                    onMouseEnter={() => setSnapShowInfo(true)}
+                    onMouseLeave={() => setSnapShowInfo(false)}
+                    onFocus={() => setSnapShowInfo(true)}
+                    onBlur={() => setSnapShowInfo(false)}
+                    style={{
+                      background: 'none', border: 'none', cursor: 'pointer',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      width: 28, height: 28, color: '#9CA3AF',
+                      transition: 'color 150ms',
+                    }}
+                  >
+                    <Info size={14} strokeWidth={1.8} />
+                  </button>
+                  {snapShowInfo && (
+                    <div style={{
+                      position: 'absolute', right: 0, top: 'calc(100% + 8px)',
+                      width: 240, background: '#FFFFFF',
+                      border: '1px solid #E5E7EB', borderRadius: 10,
+                      padding: '12px 14px',
+                      boxShadow: '0 4px 20px rgba(0,0,0,0.10)',
+                      zIndex: 100,
+                    }}>
+                      <div style={{ position: 'absolute', top: -5, right: 10, width: 10, height: 10, background: '#FFFFFF', border: '1px solid #E5E7EB', borderBottom: 'none', borderRight: 'none', transform: 'rotate(45deg)', borderRadius: 2 }} />
+                      <p style={{ fontSize: 12, fontWeight: 700, color: '#111827', marginBottom: 4 }}>Live Visitor Snapshots</p>
+                      <p style={{ fontSize: 11, color: '#6B7280', lineHeight: 1.65 }}>
+                        Real-time frames captured by entrance cameras each time a visitor is detected. Shows event type, demographic match, and AI confidence score.
+                      </p>
+                      <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid #F3F4F6', display: 'flex', flexDirection: 'column', gap: 5 }}>
+                        {[
+                          { dot: '#16A34A', label: 'Entry — visitor walked in' },
+                          { dot: '#DC2626', label: 'Exit — visitor left' },
+                          { dot: '#D97706', label: 'Passerby — detected outside' },
+                        ].map(({ dot, label }) => (
+                          <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                            <span style={{ width: 6, height: 6, borderRadius: '50%', background: dot, flexShrink: 0 }} />
+                            <span style={{ fontSize: 11, color: '#374151' }}>{label}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
             {/* Scrollable snapshots content */}
-            <div style={{ overflowY: 'auto', padding: '24px 24px' }}>
-              <VisitorSnapshots />
+            <div ref={snapBodyRef} style={{ overflowY: 'auto', padding: '24px 24px' }}>
+              <VisitorSnapshots
+                hideHeader
+                eventFilter={snapEventFilter}
+                onEventFilterChange={setSnapEventFilter}
+                isRefreshing={snapRefreshing}
+                onRefresh={handleSnapRefresh}
+                showInfo={snapShowInfo}
+                onShowInfoChange={setSnapShowInfo}
+              />
             </div>
           </div>
         </div>
@@ -2646,6 +2828,13 @@ export default function AnalyticsPage() {
 
   const currentTab = tabs.find(t => t.id === activeTab) ?? null;
 
+  // "Add Widgets" is disabled on Overview when all default widgets are already present.
+  // As soon as any widget is removed (edit mode → save), the button re-enables.
+  const overviewDefaultWidgets = DEFAULT_TABS[0].widgets;
+  const addWidgetsDisabled =
+    activeTab === 'tab_overview' &&
+    overviewDefaultWidgets.every(w => currentTab?.widgets.includes(w) ?? false);
+
   const handleCreatePage = (label: string, widgets: string[]) => {
     const id = `tab_${Date.now()}`;
     const newTab: AnalyticsTab = { id, label, widgets };
@@ -2808,10 +2997,21 @@ export default function AnalyticsPage() {
               ) : (
                 <>
                   <button
-                    onClick={() => setShowAddWidgets(true)}
-                    style={{ display: 'flex', alignItems: 'center', gap: 6, height: 34, padding: '0 14px', borderRadius: 6, fontSize: 12.5, fontWeight: 600, background: '#655BD3', color: 'white', border: 'none', cursor: 'pointer' }}
-                    onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = '#5549C0'}
-                    onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = '#655BD3'}
+                    onClick={() => !addWidgetsDisabled && setShowAddWidgets(true)}
+                    disabled={addWidgetsDisabled}
+                    title={addWidgetsDisabled ? 'Remove a widget first to enable adding new ones' : undefined}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 6, height: 34, padding: '0 14px',
+                      borderRadius: 6, fontSize: 12.5, fontWeight: 600,
+                      background: addWidgetsDisabled ? '#E5E7EB' : '#655BD3',
+                      color: addWidgetsDisabled ? '#9CA3AF' : 'white',
+                      border: 'none',
+                      cursor: addWidgetsDisabled ? 'not-allowed' : 'pointer',
+                      opacity: addWidgetsDisabled ? 0.7 : 1,
+                      transition: 'background 150ms, opacity 150ms',
+                    }}
+                    onMouseEnter={e => { if (!addWidgetsDisabled) (e.currentTarget as HTMLElement).style.background = '#5549C0'; }}
+                    onMouseLeave={e => { if (!addWidgetsDisabled) (e.currentTarget as HTMLElement).style.background = '#655BD3'; }}
                   >
                     <Plus size={13} strokeWidth={2.5} />
                     Add Widgets

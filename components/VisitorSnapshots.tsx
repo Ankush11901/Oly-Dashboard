@@ -238,32 +238,35 @@ function Lightbox({
           </button>
         </div>
 
-        {/* Metadata strip */}
+        {/* Metadata strip — light mode */}
         <div
           style={{
             display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)',
-            padding: '16px 20px', gap: 0,
-            borderTop: '1px solid rgba(255,255,255,0.06)',
+            padding: '14px 20px', gap: 0,
+            background: 'white',
+            borderTop: '1px solid #E5E7EB',
           }}
         >
           {[
             { label: 'Visitor ID',  value: snap.visitorId },
             { label: 'Gender / Age', value: `${snap.gender.charAt(0).toUpperCase() + snap.gender.slice(1)} · ${snap.age}` },
-            { label: 'Confidence',  value: `${snap.confidence}%`, valueColor: snap.confidence >= 90 ? '#4ade80' : snap.confidence >= 80 ? '#fbbf24' : '#f87171' },
+            { label: 'Confidence',  value: `${snap.confidence}%`, valueColor: snap.confidence >= 90 ? '#16A34A' : snap.confidence >= 80 ? '#D97706' : '#DC2626' },
             { label: 'Captured',    value: `${snap.timestamp} · ${snap.timeAgo}` },
           ].map(({ label, value, valueColor }) => (
-            <div key={label} style={{ padding: '0 16px', borderRight: '1px solid rgba(255,255,255,0.06)' }}>
-              <div style={{ fontSize: 10, color: '#6B7280', marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.07em' }}>{label}</div>
-              <div style={{ fontSize: 13, fontWeight: 600, color: valueColor ?? '#F9FAFB' }}>{value}</div>
+            <div key={label} style={{ padding: '0 16px', borderRight: '1px solid #E5E7EB' }}>
+              <div style={{ fontSize: 10, color: '#9CA3AF', marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.07em' }}>{label}</div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: valueColor ?? '#111827' }}>{value}</div>
             </div>
           ))}
         </div>
 
-        {/* Thumbnail strip */}
+        {/* Thumbnail strip — light mode */}
         <div
           style={{
             display: 'flex', gap: 6, padding: '10px 20px 14px',
             overflowX: 'auto',
+            background: 'white',
+            borderTop: '1px solid #F3F4F6',
           }}
         >
           {allSnaps.map((s) => (
@@ -294,30 +297,68 @@ function Lightbox({
   );
 }
 
+// ── Controlled props (optional) ───────────────────────────────────────────────
+export interface VisitorSnapshotsProps {
+  /** When true, the internal header (Camera icon + title + controls) is hidden */
+  hideHeader?: boolean;
+  /** Controlled event filter — if provided, internal state is ignored */
+  eventFilter?: 'all' | Snapshot['event'];
+  onEventFilterChange?: (f: 'all' | Snapshot['event']) => void;
+  /** Controlled refresh state */
+  isRefreshing?: boolean;
+  onRefresh?: () => void;
+  /** Controlled info tooltip state */
+  showInfo?: boolean;
+  onShowInfoChange?: (v: boolean) => void;
+}
+
 // ── Main component ────────────────────────────────────────────────────────────
-export function VisitorSnapshots() {
-  const [eventFilter, setEventFilter] = useState<'all' | Snapshot['event']>('all');
+export function VisitorSnapshots({
+  hideHeader = false,
+  eventFilter: eventFilterProp,
+  onEventFilterChange,
+  isRefreshing: isRefreshingProp,
+  onRefresh,
+  showInfo: showInfoProp,
+  onShowInfoChange,
+}: VisitorSnapshotsProps = {}) {
+  const [eventFilterInternal, setEventFilterInternal] = useState<'all' | Snapshot['event']>('all');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [mergeTarget, setMergeTarget] = useState<string | null>(null);
-  const [showInfo, setShowInfo] = useState(false);
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [showInfoInternal, setShowInfoInternal] = useState(false);
+  const [isRefreshingInternal, setIsRefreshingInternal] = useState(false);
   const [refreshTick, setRefreshTick] = useState(0);
 
-  // Auto-refresh every 30 seconds
+  // Use controlled or internal state
+  const isControlled = eventFilterProp !== undefined;
+  const eventFilter = isControlled ? eventFilterProp : eventFilterInternal;
+  const setEventFilter = isControlled
+    ? (f: 'all' | Snapshot['event']) => onEventFilterChange?.(f)
+    : setEventFilterInternal;
+  const isRefreshing = isRefreshingProp !== undefined ? isRefreshingProp : isRefreshingInternal;
+  const showInfo = showInfoProp !== undefined ? showInfoProp : showInfoInternal;
+  const setShowInfo = onShowInfoChange ?? setShowInfoInternal;
+
+  // Auto-refresh every 30 seconds (only when uncontrolled)
   useEffect(() => {
+    if (isControlled) return;
     const interval = setInterval(() => {
-      setIsRefreshing(true);
-      setTimeout(() => setIsRefreshing(false), 900);
+      setIsRefreshingInternal(true);
+      setTimeout(() => setIsRefreshingInternal(false), 900);
       setRefreshTick(t => t + 1);
     }, 30000);
     return () => clearInterval(interval);
-  }, []);
+  }, [isControlled]);
 
   const handleManualRefresh = () => {
     if (isRefreshing) return;
-    setIsRefreshing(true);
-    setTimeout(() => setIsRefreshing(false), 900);
-    setRefreshTick(t => t + 1);
+    if (onRefresh) {
+      onRefresh();
+    } else {
+      setIsRefreshingInternal(true);
+      setTimeout(() => setIsRefreshingInternal(false), 900);
+      setRefreshTick(t => t + 1);
+    }
   };
 
   const filtered = eventFilter === 'all'
@@ -328,8 +369,8 @@ export function VisitorSnapshots() {
 
   return (
     <section>
-      {/* Header */}
-      <div className="flex items-center justify-between mb-5">
+      {/* Header — hidden when controlled externally */}
+      {!hideHeader && <div className="flex items-center justify-between mb-5">
         {/* Title only — no subtitle */}
         <div className="flex items-center gap-2">
           <Camera size={16} strokeWidth={1.5} style={{ color: '#655BD3' }} />
@@ -444,7 +485,7 @@ export function VisitorSnapshots() {
             )}
           </div>
         </div>
-      </div>
+      </div>}
 
       {/* Grid */}
       <div

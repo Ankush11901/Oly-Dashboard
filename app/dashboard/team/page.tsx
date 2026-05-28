@@ -472,10 +472,10 @@ function MemberModal({
                 </div>
               </div>
 
-              {/* Role — 2-column compact cards */}
+              {/* Role — 3-column compact cards */}
               <div>
                 <label style={{ display: 'block', fontSize: 11.5, fontWeight: 600, color: '#374151', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Role</label>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 7 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 7 }}>
                   {filteredRoles.map(r => {
                     const active = form.roleId === r.id;
                     return (
@@ -490,8 +490,7 @@ function MemberModal({
                           transition: 'all 150ms ease',
                         }}
                       >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 4 }}>
-                          <span style={{ width: 8, height: 8, borderRadius: '50%', background: r.color, flexShrink: 0 }} />
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
                           <span style={{ fontSize: 12.5, fontWeight: 700, color: active ? r.color : '#111827', flex: 1 }}>{r.name}</span>
                           {active && <Check size={12} strokeWidth={2.5} style={{ color: r.color, flexShrink: 0 }} />}
                         </div>
@@ -541,7 +540,7 @@ function MemberModal({
                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = '#655BD3'; (e.currentTarget as HTMLElement).style.background = '#F5F3FF'; (e.currentTarget as HTMLElement).style.color = '#655BD3'; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = '#E5E7EB'; (e.currentTarget as HTMLElement).style.background = '#FAFAFA'; (e.currentTarget as HTMLElement).style.color = '#374151'; }}
               >
-                <span>Configure module & store access</span>
+                <span>Configure module &amp; store access</span>
                 <ChevronRight size={15} strokeWidth={2} />
               </button>
             </div>
@@ -557,7 +556,6 @@ function MemberModal({
                 background: selectedRole.color + '0D',
                 border: `1.5px solid ${selectedRole.color}30`,
               }}>
-                <span style={{ width: 8, height: 8, borderRadius: '50%', background: selectedRole.color, flexShrink: 0 }} />
                 <span style={{ fontSize: 12.5, fontWeight: 600, color: selectedRole.color }}>
                   {selectedRole.name}
                 </span>
