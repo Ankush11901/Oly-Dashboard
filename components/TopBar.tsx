@@ -446,7 +446,6 @@ export function TopBar() {
                   display: 'flex', alignItems: 'center', gap: 5,
                   height: '100%', paddingLeft: 12, paddingRight: 10,
                   background: activeDropdown === 'camera' ? '#F5F3FF' : 'var(--color-surface)',
-                  borderRight: '1px solid var(--color-border)',
                   border: 'none', borderRight: '1px solid var(--color-border)',
                   cursor: 'pointer',
                   fontSize: 13, fontWeight: 500,
@@ -454,7 +453,7 @@ export function TopBar() {
                   whiteSpace: 'nowrap', borderRadius: '6px 0 0 6px',
                 }}
                 onMouseEnter={e => { if (activeDropdown !== 'camera') (e.currentTarget as HTMLElement).style.background = 'var(--color-surface-2)'; }}
-                onMouseLeave={e => { if (activeDropdown !== 'camera') (e.currentTarget as HTMLElement).style.background = activeDropdown === 'camera' ? '#F5F3FF' : 'var(--color-surface)'; }}
+                onMouseLeave={e => { if (activeDropdown !== 'camera') (e.currentTarget as HTMLElement).style.background = 'var(--color-surface)'; }}
               >
                 {selectedCamera.label}
                 <ChevronDown size={12} strokeWidth={2} style={{ color: 'var(--color-text-3)', transform: activeDropdown === 'camera' ? 'rotate(180deg)' : 'none', transition: 'transform 150ms' }} />

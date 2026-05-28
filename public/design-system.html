@@ -474,6 +474,10 @@
   .nm-user-email { font-size: 11px; color: #6B7280; }
   .nm-chevron { margin-left: auto; color: #6B7280; font-size: 12px; }
 
+  .nm-section { padding: 4px 10px 2px; }
+  .nm-label { font-size: 10px; font-weight: 600; color: #4B5563; text-transform: uppercase; letter-spacing: 0.08em; padding: 8px 12px 4px; }
+  .nm-dot { display: none; }
+
   /* ── Tooltip mock ── */
   .tooltip-demo { position: relative; display: inline-block; }
   .tooltip-box {
@@ -528,9 +532,9 @@
     border-radius: 12px; padding: 24px; font-size: 12px;
   }
   .layout-outer { display: flex; border: 1px solid var(--color-neutral-300); border-radius: 8px; overflow: hidden; height: 280px; }
-  .layout-sidebar { width: 80px; background: var(--color-ink); display: flex; flex-direction: column; padding: 10px 6px; gap: 6px; flex-shrink: 0; }
-  .layout-sidebar-item { height: 8px; background: rgba(255,255,255,0.2); border-radius: 4px; }
-  .layout-sidebar-item.active { background: rgba(101,91,211,0.6); }
+  .layout-sidebar { width: 80px; background: #EEE9FF; display: flex; flex-direction: column; padding: 10px 6px; gap: 6px; flex-shrink: 0; border-right: 1px solid #DDD6FE; }
+  .layout-sidebar-item { height: 8px; background: rgba(101,91,211,0.15); border-radius: 4px; }
+  .layout-sidebar-item.active { background: #655BD3; }
   .layout-main { flex: 1; display: flex; flex-direction: column; }
   .layout-topbar { height: 32px; background: #fff; border-bottom: 1px solid #E5E7EB; display: flex; align-items: center; padding: 0 12px; gap: 8px; flex-shrink: 0; }
   .layout-topbar-dot { width: 8px; height: 8px; border-radius: 50%; }
@@ -1144,69 +1148,6 @@
       </div>
     </div>
 
-    <!-- ══ CARDS ══ -->
-    <div class="section" id="cards">
-      <div class="section-header">
-        <div class="section-eyebrow">09 — Components</div>
-        <div class="section-title">Cards & Containers</div>
-        <div class="section-desc">Primary visual containers for content, metrics, and charts. Cards create visual hierarchy and group related information.</div>
-      </div>
-
-      <div class="grid-3" style="margin-bottom:16px">
-        <div class="metric-card">
-          <div class="metric-header">
-            <div>
-              <div style="font-size:12px;font-weight:500;color:#6B7280">Total Footfall</div>
-            </div>
-            <div class="metric-icon-wrap" style="background:#EEE9FF;color:#655BD3">👥</div>
-          </div>
-          <div class="metric-value">15,234</div>
-          <div class="metric-label">Visitors today across all stores</div>
-          <div class="metric-trend trend-up">↑ 12.4% vs yesterday</div>
-        </div>
-
-        <div class="metric-card">
-          <div class="metric-header">
-            <div>
-              <div style="font-size:12px;font-weight:500;color:#6B7280">Conversion Rate</div>
-            </div>
-            <div class="metric-icon-wrap" style="background:#CCFBF1;color:#00CE9C">📈</div>
-          </div>
-          <div class="metric-value" style="color:#00CE9C">12.4%</div>
-          <div class="metric-label">Passerby to entry conversion</div>
-          <div class="metric-trend trend-up">↑ 2.1% vs last week</div>
-        </div>
-
-        <div class="metric-card">
-          <div class="metric-header">
-            <div>
-              <div style="font-size:12px;font-weight:500;color:#6B7280">Queue Wait Time</div>
-            </div>
-            <div class="metric-icon-wrap" style="background:#FEF3C7;color:#D97706">⏱</div>
-          </div>
-          <div class="metric-value" style="color:#D97706">4.2 min</div>
-          <div class="metric-label">Average wait across checkouts</div>
-          <div class="metric-trend trend-down">↑ 0.8 min vs target</div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-title">Base Card Specification</div>
-        <table class="token-table">
-          <thead><tr><th>Property</th><th>Value</th></tr></thead>
-          <tbody>
-            <tr><td>Background</td><td><code>#FFFFFF</code></td></tr>
-            <tr><td>Border</td><td><code>1px solid #E5E7EB</code></td></tr>
-            <tr><td>Border Radius</td><td><code>10px</code></td></tr>
-            <tr><td>Padding</td><td><code>24px</code></td></tr>
-            <tr><td>Shadow (default)</td><td><code>0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)</code></td></tr>
-            <tr><td>Shadow (hover)</td><td><code>0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04)</code></td></tr>
-            <tr><td>Transition</td><td><code>box-shadow 200ms ease</code></td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
     <!-- ══ KPI CARDS ══ -->
     <div class="section" id="kpi">
       <div class="section-header">
@@ -1216,64 +1157,52 @@
       </div>
 
       <div class="grid-4" style="margin-bottom:16px">
-        <!-- Card 1: Total Footfall — brand violet (authority) -->
-        <div style="background:white;border-radius:10px;padding:16px 18px;box-shadow:0 2px 8px rgba(0,0,0,0.055),0 1px 2px rgba(0,0,0,0.035);border:1px solid rgba(101,91,211,0.13);border-top:3px solid #655BD3;position:relative;overflow:hidden">
-          <div style="position:absolute;top:-18px;right:-18px;width:72px;height:72px;border-radius:50%;background:rgba(101,91,211,0.06)"></div>
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:9px">
-            <div style="display:flex;align-items:center;gap:11px">
-              <div style="width:34px;height:34px;border-radius:8px;background:rgba(101,91,211,0.10);color:#655BD3;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-              </div>
-              <span style="font-size:26px;font-weight:700;color:#0F172A;line-height:1">15,234</span>
+        <!-- Card 1: Total Footfall -->
+        <div style="background:white;border-radius:12px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.06),0 1px 2px rgba(0,0,0,0.04);border:1px solid #E5E7EB">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px">
+            <div style="width:38px;height:38px;border-radius:10px;background:#EEE9FF;color:#655BD3;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
             </div>
-            <span style="display:inline-flex;align-items:center;gap:2px;padding:3px 7px;border-radius:9999px;font-size:11px;font-weight:700;background:#DCFCE7;color:#16A34A;flex-shrink:0;align-self:flex-start">↑ 8.2%</span>
+            <span style="display:inline-flex;align-items:center;gap:2px;padding:3px 7px;border-radius:9999px;font-size:11px;font-weight:600;background:#DCFCE7;color:#16A34A">↑ 8.2%</span>
           </div>
-          <p style="font-size:12px;font-weight:500;color:#94A3B8;line-height:1">Total Footfall</p>
+          <div style="font-size:28px;font-weight:700;color:#111827;line-height:1;margin-bottom:4px">15,234</div>
+          <div style="font-size:12px;font-weight:500;color:#6B7280">Total Footfall</div>
         </div>
 
-        <!-- Card 2: Passerby Count — sky blue (movement) -->
-        <div style="background:white;border-radius:10px;padding:16px 18px;box-shadow:0 2px 8px rgba(0,0,0,0.055),0 1px 2px rgba(0,0,0,0.035);border:1px solid rgba(14,165,233,0.13);border-top:3px solid #0EA5E9;position:relative;overflow:hidden">
-          <div style="position:absolute;top:-18px;right:-18px;width:72px;height:72px;border-radius:50%;background:rgba(14,165,233,0.06)"></div>
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:9px">
-            <div style="display:flex;align-items:center;gap:11px">
-              <div style="width:34px;height:34px;border-radius:8px;background:rgba(14,165,233,0.10);color:#0EA5E9;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-              </div>
-              <span style="font-size:26px;font-weight:700;color:#0F172A;line-height:1">45,621</span>
+        <!-- Card 2: Passerby Count -->
+        <div style="background:white;border-radius:12px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.06),0 1px 2px rgba(0,0,0,0.04);border:1px solid #E5E7EB">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px">
+            <div style="width:38px;height:38px;border-radius:10px;background:#DBEAFE;color:#2563EB;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
             </div>
-            <span style="display:inline-flex;align-items:center;gap:2px;padding:3px 7px;border-radius:9999px;font-size:11px;font-weight:700;background:#DCFCE7;color:#16A34A;flex-shrink:0;align-self:flex-start">↑ 3.1%</span>
+            <span style="display:inline-flex;align-items:center;gap:2px;padding:3px 7px;border-radius:9999px;font-size:11px;font-weight:600;background:#DCFCE7;color:#16A34A">↑ 3.1%</span>
           </div>
-          <p style="font-size:12px;font-weight:500;color:#94A3B8;line-height:1">Passerby Count</p>
+          <div style="font-size:28px;font-weight:700;color:#111827;line-height:1;margin-bottom:4px">45,621</div>
+          <div style="font-size:12px;font-weight:500;color:#6B7280">Passerby Count</div>
         </div>
 
-        <!-- Card 3: Avg Conversion — amber (urgency/caution) -->
-        <div style="background:white;border-radius:10px;padding:16px 18px;box-shadow:0 2px 8px rgba(0,0,0,0.055),0 1px 2px rgba(0,0,0,0.035);border:1px solid rgba(245,158,11,0.13);border-top:3px solid #F59E0B;position:relative;overflow:hidden">
-          <div style="position:absolute;top:-18px;right:-18px;width:72px;height:72px;border-radius:50%;background:rgba(245,158,11,0.06)"></div>
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:9px">
-            <div style="display:flex;align-items:center;gap:11px">
-              <div style="width:34px;height:34px;border-radius:8px;background:rgba(245,158,11,0.10);color:#F59E0B;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-              </div>
-              <span style="font-size:26px;font-weight:700;color:#0F172A;line-height:1">12.4%</span>
+        <!-- Card 3: Avg Conversion -->
+        <div style="background:white;border-radius:12px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.06),0 1px 2px rgba(0,0,0,0.04);border:1px solid #E5E7EB">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px">
+            <div style="width:38px;height:38px;border-radius:10px;background:#FEF3C7;color:#D97706;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
             </div>
-            <span style="display:inline-flex;align-items:center;gap:2px;padding:3px 7px;border-radius:9999px;font-size:11px;font-weight:700;background:#FEE2E2;color:#DC2626;flex-shrink:0;align-self:flex-start">↓ 1.2%</span>
+            <span style="display:inline-flex;align-items:center;gap:2px;padding:3px 7px;border-radius:9999px;font-size:11px;font-weight:600;background:#FEE2E2;color:#DC2626">↓ 1.2%</span>
           </div>
-          <p style="font-size:12px;font-weight:500;color:#94A3B8;line-height:1">Avg Conversion</p>
+          <div style="font-size:28px;font-weight:700;color:#111827;line-height:1;margin-bottom:4px">12.4%</div>
+          <div style="font-size:12px;font-weight:500;color:#6B7280">Avg Conversion</div>
         </div>
 
-        <!-- Card 4: Top Store Visitors — emerald (success) -->
-        <div style="background:white;border-radius:10px;padding:16px 18px;box-shadow:0 2px 8px rgba(0,0,0,0.055),0 1px 2px rgba(0,0,0,0.035);border:1px solid rgba(16,185,129,0.13);border-top:3px solid #10B981;position:relative;overflow:hidden">
-          <div style="position:absolute;top:-18px;right:-18px;width:72px;height:72px;border-radius:50%;background:rgba(16,185,129,0.06)"></div>
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:9px">
-            <div style="display:flex;align-items:center;gap:11px">
-              <div style="width:34px;height:34px;border-radius:8px;background:rgba(16,185,129,0.10);color:#10B981;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-              </div>
-              <span style="font-size:26px;font-weight:700;color:#0F172A;line-height:1">15,234</span>
+        <!-- Card 4: Top Store Visitors -->
+        <div style="background:white;border-radius:12px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.06),0 1px 2px rgba(0,0,0,0.04);border:1px solid #E5E7EB">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px">
+            <div style="width:38px;height:38px;border-radius:10px;background:#DCFCE7;color:#16A34A;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
             </div>
-            <span style="display:inline-flex;align-items:center;gap:2px;padding:3px 7px;border-radius:9999px;font-size:11px;font-weight:700;background:#DCFCE7;color:#16A34A;flex-shrink:0;align-self:flex-start">↑ 5.7%</span>
+            <span style="display:inline-flex;align-items:center;gap:2px;padding:3px 7px;border-radius:9999px;font-size:11px;font-weight:600;background:#DCFCE7;color:#16A34A">↑ 5.7%</span>
           </div>
-          <p style="font-size:12px;font-weight:500;color:#94A3B8;line-height:1">Top Store Visitors</p>
+          <div style="font-size:28px;font-weight:700;color:#111827;line-height:1;margin-bottom:4px">15,234</div>
+          <div style="font-size:12px;font-weight:500;color:#6B7280">Top Store Visitors</div>
         </div>
       </div>
 
@@ -1282,17 +1211,16 @@
         <table class="token-table">
           <thead><tr><th>Property</th><th>Value</th></tr></thead>
           <tbody>
-            <tr><td>Card border radius</td><td><code>10px</code></td></tr>
-            <tr><td>Card padding</td><td><code>16px 18px</code></td></tr>
-            <tr><td>Icon wrap size</td><td><code>34×34px</code> · border-radius <code>8px</code></td></tr>
-            <tr><td>Top border</td><td><code>3px solid</code> — card's semantic color (see below)</td></tr>
-            <tr><td>Icon wrap background</td><td>Card color at ~10% opacity — e.g. <code>rgba(101,91,211,0.10)</code></td></tr>
-            <tr><td>Icon colour</td><td>Matches card's semantic color (not fixed to brand violet)</td></tr>
-            <tr><td>Card colors</td><td>Footfall: <code>#655BD3</code> · Passerby: <code>#0EA5E9</code> · Conversion: <code>#F59E0B</code> · Store: <code>#10B981</code></td></tr>
-            <tr><td>Color psychology</td><td>Purple = authority/brand · Blue = movement · Amber = urgency · Green = success</td></tr>
-            <tr><td>Icon size</td><td><code>16px</code> · strokeWidth <code>1.5</code></td></tr>
-            <tr><td>Value font</td><td><code>26px</code> · weight <code>700</code> · letter-spacing <code>-0.5px</code></td></tr>
-            <tr><td>Label font</td><td><code>12px</code> · weight <code>500</code> · colour <code>#94A3B8</code></td></tr>
+            <tr><td>Card background</td><td><code>#FFFFFF</code></td></tr>
+            <tr><td>Card border</td><td><code>1px solid #E5E7EB</code></td></tr>
+            <tr><td>Card border radius</td><td><code>12px</code></td></tr>
+            <tr><td>Card padding</td><td><code>20px</code></td></tr>
+            <tr><td>Shadow (default)</td><td><code>0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)</code></td></tr>
+            <tr><td>Icon wrap size</td><td><code>38×38px</code> · border-radius <code>10px</code></td></tr>
+            <tr><td>Icon wrap bg</td><td>Semantic tint — Purple <code>#EEE9FF</code> · Blue <code>#DBEAFE</code> · Amber <code>#FEF3C7</code> · Green <code>#DCFCE7</code></td></tr>
+            <tr><td>Icon colour</td><td>Purple <code>#655BD3</code> · Blue <code>#2563EB</code> · Amber <code>#D97706</code> · Green <code>#16A34A</code></td></tr>
+            <tr><td>Value font</td><td><code>28px</code> · weight <code>700</code> · colour <code>#111827</code></td></tr>
+            <tr><td>Label font</td><td><code>12px</code> · weight <code>500</code> · colour <code>#6B7280</code></td></tr>
             <tr><td>% pill — positive</td><td>bg <code>#DCFCE7</code> · text <code>#16A34A</code> · ↑ prefix</td></tr>
             <tr><td>% pill — negative</td><td>bg <code>#FEE2E2</code> · text <code>#DC2626</code> · ↓ prefix</td></tr>
             <tr><td>% pill radius</td><td><code>9999px</code> (full-round pill)</td></tr>
@@ -1352,26 +1280,62 @@
         <div class="card">
           <div class="card-title">Side Navigation Mock</div>
           <div class="nav-mock">
-            <div class="nm-section">
+            <div class="nm-logo">OlyRetail</div>
+            <div class="nm-body">
               <div class="nm-label">Home</div>
-              <div class="nm-item"><span class="nm-dot"></span>Insights Dashboard</div>
-              <div class="nm-item"><span class="nm-dot"></span>Checklist & Tasks</div>
-              <div class="nm-item"><span class="nm-dot"></span>Forecast</div>
-            </div>
-            <div class="nm-section">
+              <a class="nm-item">
+                <span class="nm-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
+                Insights Dashboard
+              </a>
+              <a class="nm-item">
+                <span class="nm-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>
+                Checklist &amp; Tasks
+              </a>
+              <a class="nm-item">
+                <span class="nm-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>
+                Forecast
+              </a>
+
+              <div class="nm-label">Team Management</div>
+              <a class="nm-item">
+                <span class="nm-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+                Staff / Team
+              </a>
+              <a class="nm-item">
+                <span class="nm-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+                Permissions
+              </a>
+
               <div class="nm-label">Analytics</div>
-              <div class="nm-item active"><span class="nm-dot"></span>Traffic</div>
-              <div class="nm-item hover"><span class="nm-dot"></span>Queue Management</div>
-              <div class="nm-item"><span class="nm-dot"></span>Qualified Shopper</div>
-            </div>
-            <div class="nm-section">
+              <a class="nm-item active">
+                <span class="nm-icon active-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>
+                Traffic
+              </a>
+              <a class="nm-sub-item">Queue Management</a>
+              <a class="nm-sub-item">Qualified Shopper Insights</a>
+
               <div class="nm-label">Live Feed</div>
-              <div class="nm-item"><span class="nm-dot"></span>VMS Monitoring</div>
-            </div>
-            <div class="nm-section">
+              <a class="nm-item">
+                <span class="nm-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></span>
+                VMS Monitoring
+              </a>
+
               <div class="nm-label">Preferences</div>
-              <div class="nm-item"><span class="nm-dot"></span>Profile</div>
-              <div class="nm-item"><span class="nm-dot"></span>Notifications</div>
+              <a class="nm-item">
+                <span class="nm-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+                Profile
+              </a>
+              <a class="nm-item">
+                <span class="nm-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span>
+                Notification Settings
+              </a>
+            </div>
+            <div class="nm-footer">
+              <div class="nm-avatar">AK</div>
+              <div>
+                <div class="nm-user-name">Admin User</div>
+                <div class="nm-user-email">admin@olyretail.com</div>
+              </div>
             </div>
           </div>
         </div>
@@ -1750,7 +1714,7 @@
             <div class="layout-sidebar-item active"></div>
             <div class="layout-sidebar-item"></div>
             <div class="layout-sidebar-item"></div>
-            <div style="margin-top:auto"><div class="layout-sidebar-item" style="height:20px;border-radius:50%;width:20px;background:rgba(255,255,255,0.25)"></div></div>
+            <div style="margin-top:auto"><div class="layout-sidebar-item" style="height:20px;border-radius:50%;width:20px;background:rgba(101,91,211,0.3)"></div></div>
           </div>
           <div class="layout-main">
             <div class="layout-topbar">
@@ -1820,7 +1784,15 @@
       <div class="card">
         <div class="card-title">Empty State</div>
         <div style="text-align:center;padding:40px 20px">
-          <div style="font-size:48px;margin-bottom:12px">📊</div>
+          <div style="width:64px;height:64px;margin:0 auto 16px;color:#D1D5DB">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="width:100%;height:100%">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+              <line x1="3" y1="9" x2="21" y2="9"/>
+              <line x1="3" y1="15" x2="21" y2="15"/>
+              <line x1="9" y1="3" x2="9" y2="21"/>
+              <line x1="15" y1="3" x2="15" y2="21"/>
+            </svg>
+          </div>
           <div style="font-size:18px;font-weight:600;color:#374151;margin-bottom:6px">No data yet</div>
           <div style="font-size:14px;color:#6B7280;max-width:280px;margin:0 auto 20px">Add your first store to start seeing footfall analytics and insights.</div>
           <button class="btn btn-primary">+ Add Store</button>
@@ -2101,8 +2073,7 @@
               <img src="https://i.pravatar.cc/68?img=47" alt="Aditi Sharma" style="width:100%;height:100%;object-fit:cover;display:block">
             </div>
             <div>
-              <p style="font-size:13px;font-weight:600;color:#111827;margin:0 0 2px">Aditi Sharma</p>
-              <span style="font-size:11px;color:#16A34A;display:flex;align-items:center;gap:3px"><span style="width:5px;height:5px;border-radius:50%;background:#16A34A;display:inline-block;flex-shrink:0"></span>Active</span>
+              <p style="font-size:13px;font-weight:600;color:#111827;margin:0">Aditi Sharma</p>
             </div>
           </div>
           <div style="flex:1.2;padding:0 20px;text-align:center">
@@ -2130,8 +2101,7 @@
               <img src="https://i.pravatar.cc/68?img=12" alt="Jason Lee" style="width:100%;height:100%;object-fit:cover;display:block">
             </div>
             <div>
-              <p style="font-size:13px;font-weight:600;color:#111827;margin:0 0 2px">Jason Lee</p>
-              <span style="font-size:11px;color:#16A34A;display:flex;align-items:center;gap:3px"><span style="width:5px;height:5px;border-radius:50%;background:#16A34A;display:inline-block;flex-shrink:0"></span>Active</span>
+              <p style="font-size:13px;font-weight:600;color:#111827;margin:0">Jason Lee</p>
             </div>
           </div>
           <div style="flex:1.2;padding:0 20px;text-align:center">
@@ -2160,8 +2130,7 @@
               <img src="https://i.pravatar.cc/68?img=44" alt="Sarah Chen" style="width:100%;height:100%;object-fit:cover;display:block">
             </div>
             <div>
-              <p style="font-size:13px;font-weight:600;color:#111827;margin:0 0 2px">Sarah Chen</p>
-              <span style="font-size:11px;color:#D97706;display:flex;align-items:center;gap:3px"><span style="width:5px;height:5px;border-radius:50%;background:#D97706;display:inline-block;flex-shrink:0"></span>On Leave</span>
+              <p style="font-size:13px;font-weight:600;color:#111827;margin:0">Sarah Chen</p>
             </div>
           </div>
           <div style="flex:1.2;padding:0 20px;text-align:center">
@@ -2188,8 +2157,7 @@
               <img src="https://i.pravatar.cc/68?img=15" alt="Michael Tan" style="width:100%;height:100%;object-fit:cover;display:block">
             </div>
             <div>
-              <p style="font-size:13px;font-weight:600;color:#111827;margin:0 0 2px">Michael Tan</p>
-              <span style="font-size:11px;color:#16A34A;display:flex;align-items:center;gap:3px"><span style="width:5px;height:5px;border-radius:50%;background:#16A34A;display:inline-block;flex-shrink:0"></span>Active</span>
+              <p style="font-size:13px;font-weight:600;color:#111827;margin:0">Michael Tan</p>
             </div>
           </div>
           <div style="flex:1.2;padding:0 20px;text-align:center">
