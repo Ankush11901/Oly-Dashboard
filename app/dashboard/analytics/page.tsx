@@ -1122,6 +1122,47 @@ const FULL_WIDTH_IDS = new Set([
   'footfall_heatmap',
 ]);
 
+/**
+ * Ensures half-width widgets are never stranded alone in a row.
+ * When a half-width widget would sit alone before a full-width widget (or at the
+ * very end with nothing to pair it), the next available half-width is pulled
+ * forward to complete the pair.  Full-width widgets always occupy a full row and
+ * are unaffected.
+ */
+function balanceWidgetLayout(widgets: string[]): string[] {
+  const arr = [...widgets];
+  let col = 0; // 0 = start of row, 1 = first half-width placed in current row
+  let i = 0;
+
+  while (i < arr.length) {
+    const isFull = FULL_WIDTH_IDS.has(arr[i]);
+
+    if (isFull) {
+      if (col === 1) {
+        // arr[i-1] is a lone half-width — find the next half-width after i and pull it forward
+        let nextHalfIdx = -1;
+        for (let j = i + 1; j < arr.length; j++) {
+          if (!FULL_WIDTH_IDS.has(arr[j])) { nextHalfIdx = j; break; }
+        }
+        if (nextHalfIdx !== -1) {
+          const [item] = arr.splice(nextHalfIdx, 1);
+          arr.splice(i, 0, item); // insert before the full-width
+          col = 0;                // pair is now complete
+          i++;                    // advance past the newly-inserted half-width
+          continue;               // loop back — arr[i] is now the full-width
+        }
+        // No half-width available to pair — leave orphan at the end and continue
+      }
+      col = 0; // full-width always resets to start of a new row
+    } else {
+      col = col === 0 ? 1 : 0;
+    }
+    i++;
+  }
+
+  return arr;
+}
+
 // ── Widget renderer ───────────────────────────────────────────────────────────
 function PlacedWidget({
   widgetId,
@@ -2888,12 +2929,14 @@ const DEFAULT_TABS: AnalyticsTab[] = [
       'footfall_trend', 'passerby_trend',
       'india_walkin_chart', 'region_compare_chart',
       'peak_hours', 'conversion_rate',
+      'overall_footfall_trends',
       'footfall_heatmap',
       // Queue
       'queue_length', 'wait_time',
       // Demographics
       'demographics_donut', 'gender_trend',
-      'age_bar',
+      'footfall_age_groups', 'footfall_gender',
+      'age_bar', 'demographics_breakdown',
       'gender_by_hour', 'gender_by_region',
       'age_grp_hourly', 'age_grp_regional',
       'gender_breakdown_pie', 'age_breakdown_pie',
@@ -2901,6 +2944,7 @@ const DEFAULT_TABS: AnalyticsTab[] = [
       'top5_performers', 'bottom5_performers',
       'top_stores', 'store_conversion',
       'store_heatmap', 'store_demo_ranking',
+      'store_performance_footfall', 'store_performance_overall',
       'store_staff_assist',
     ],
   },
@@ -3232,7 +3276,7 @@ export default function AnalyticsPage() {
             <>
             <GlobalLegend />
             <div className="grid grid-cols-2 gap-4">
-              {(isEditMode ? draftWidgets : currentTab.widgets).map((widgetId, index) => (
+              {balanceWidgetLayout(isEditMode ? draftWidgets : currentTab.widgets).map((widgetId, index) => (
                 <div key={widgetId} style={{ gridColumn: FULL_WIDTH_IDS.has(widgetId) ? 'span 2' : 'span 1' }}>
                   <PlacedWidget
                     widgetId={widgetId}

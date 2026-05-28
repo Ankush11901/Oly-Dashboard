@@ -735,7 +735,7 @@ export default function VMSPage() {
                   width: '100%', padding: '6px 10px', borderRadius: 6, border: 'none',
                   background: selectedStores.size === 0 ? '#EEE9FF' : 'transparent',
                   color: selectedStores.size === 0 ? '#655BD3' : '#374151',
-                  fontSize: 12, fontWeight: selectedStores.size === 0 ? 600 : 400,
+                  fontSize: 12, fontWeight: 400,
                   cursor: 'pointer', textAlign: 'left',
                 }}
                 onMouseEnter={e => { if (selectedStores.size !== 0) e.currentTarget.style.background = '#F9F7FF'; }}
@@ -759,7 +759,7 @@ export default function VMSPage() {
                       width: '100%', padding: '6px 10px', borderRadius: 6, border: 'none',
                       background: checked ? '#EEE9FF' : 'transparent',
                       color: checked ? '#655BD3' : '#374151',
-                      fontSize: 12, fontWeight: checked ? 600 : 400,
+                      fontSize: 12, fontWeight: 400,
                       cursor: 'pointer', textAlign: 'left',
                     }}
                     onMouseEnter={e => { if (!checked) e.currentTarget.style.background = '#F9F7FF'; }}
