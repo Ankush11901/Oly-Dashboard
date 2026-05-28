@@ -487,10 +487,10 @@ export function VisitorSnapshots({
         </div>
       </div>}
 
-      {/* Grid */}
+      {/* Grid — fixed 4 columns so card width never changes between tabs */}
       <div
         className="grid gap-4"
-        style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))' }}
+        style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}
       >
         {filtered.map((snap) => {
           const ev = EVENT_CONFIG[snap.event];

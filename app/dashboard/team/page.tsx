@@ -4,7 +4,9 @@ import {
   Plus, Search, X, Edit2, Trash2, Check,
   LayoutDashboard, BarChart2, Video, UserCog, FileText,
   Store, Shield, ChevronRight, Users,
+  Activity, Download, Camera, KeyRound, ShieldCheck, LogIn,
 } from 'lucide-react';
+import { CustomSelect } from '@/components/CustomSelect';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type Status    = 'Active' | 'On Leave' | 'Inactive';
@@ -238,6 +240,234 @@ function AccessCell({ member }: { member: Member }) {
   );
 }
 
+// ── Activity Log ──────────────────────────────────────────────────────────────
+
+type LogType = 'profile' | 'password' | 'role' | 'store' | 'login';
+
+interface LogEvent {
+  id: number;
+  type: LogType;
+  description: string;
+  detail?: string;
+  timestamp: string;
+}
+
+const LOG_ICON: Record<LogType, React.ReactNode> = {
+  profile:  <Camera     size={13} strokeWidth={1.75} />,
+  password: <KeyRound   size={13} strokeWidth={1.75} />,
+  role:     <ShieldCheck size={13} strokeWidth={1.75} />,
+  store:    <Store      size={13} strokeWidth={1.75} />,
+  login:    <LogIn      size={13} strokeWidth={1.75} />,
+};
+
+const LOG_COLORS: Record<LogType, { bg: string; color: string; border: string }> = {
+  profile:  { bg: '#EEF2FF', color: '#4F46E5', border: '#C7D2FE' },
+  password: { bg: '#FFF7ED', color: '#D97706', border: '#FDE68A' },
+  role:     { bg: '#F0FDF4', color: '#16A34A', border: '#BBF7D0' },
+  store:    { bg: '#EFF6FF', color: '#2563EB', border: '#BFDBFE' },
+  login:    { bg: '#F5F3FF', color: '#655BD3', border: '#DDD6FE' },
+};
+
+function getMockLogs(member: Member): LogEvent[] {
+  const roleName = getRoleDef(member.roleId).name;
+  return [
+    { id: 1, type: 'login',    description: 'Logged in',                  detail: 'Successful login · Chrome · Singapore',           timestamp: '2026-05-28T08:01:00Z' },
+    { id: 2, type: 'profile',  description: 'Profile picture updated',    detail: 'Avatar image changed',                            timestamp: '2026-05-20T14:32:00Z' },
+    { id: 3, type: 'login',    description: 'Logged in',                  detail: 'Successful login · Safari · Singapore',           timestamp: '2026-05-15T17:45:00Z' },
+    { id: 4, type: 'password', description: 'Password changed',           detail: 'Password reset via email link',                   timestamp: '2026-05-15T09:18:00Z' },
+    { id: 5, type: 'role',     description: 'Role updated',               detail: `Role changed to ${roleName}`,                     timestamp: '2026-04-28T11:05:00Z' },
+    { id: 6, type: 'store',    description: 'Store access modified',      detail: `${member.storeAccess.length} store(s) assigned`,  timestamp: '2026-04-14T16:40:00Z' },
+    { id: 7, type: 'profile',  description: 'Profile picture updated',    detail: 'Avatar image changed',                            timestamp: '2026-03-12T13:22:00Z' },
+    { id: 8, type: 'store',    description: 'Store access modified',      detail: 'Access to Bugis Junction revoked',                timestamp: '2026-03-05T10:10:00Z' },
+  ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+}
+
+function fmtDateTime(iso: string): { date: string; time: string } {
+  const d = new Date(iso);
+  return {
+    date: d.toLocaleDateString('en-SG', { day: 'numeric', month: 'short', year: 'numeric' }),
+    time: d.toLocaleTimeString('en-SG', { hour: '2-digit', minute: '2-digit' }),
+  };
+}
+
+function ActivityLogModal({ member, onClose }: { member: Member; onClose: () => void }) {
+  const [search,     setSearch]     = useState('');
+  const [dateFilter, setDateFilter] = useState('all');
+
+  const allLogs = getMockLogs(member);
+  const now     = Date.now();
+
+  const DAY_MS = 86_400_000;
+  const filtered = allLogs.filter(log => {
+    const age = now - new Date(log.timestamp).getTime();
+    if (dateFilter === '7d'  && age > 7  * DAY_MS) return false;
+    if (dateFilter === '30d' && age > 30 * DAY_MS) return false;
+    if (dateFilter === '90d' && age > 90 * DAY_MS) return false;
+    if (search) {
+      const q = search.toLowerCase();
+      if (!log.description.toLowerCase().includes(q) && !log.detail?.toLowerCase().includes(q)) return false;
+    }
+    return true;
+  });
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center"
+      style={{ background: 'rgba(17,24,39,0.55)', backdropFilter: 'blur(3px)' }}
+      onClick={onClose}
+    >
+      <div
+        style={{
+          background: 'white', borderRadius: 20, width: '100%', maxWidth: 560,
+          maxHeight: '88vh', display: 'flex', flexDirection: 'column',
+          boxShadow: '0 24px 80px rgba(0,0,0,0.18)', overflow: 'hidden',
+        }}
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div style={{ padding: '20px 24px 16px', borderBottom: '1.5px solid #F3F4F6', flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 14 }}>
+            <div>
+              <h3 style={{ fontSize: 16, fontWeight: 700, color: '#111827', margin: 0, letterSpacing: '-0.01em' }}>
+                {member.name} Activity Log
+              </h3>
+              <p style={{ fontSize: 12.5, color: '#9CA3AF', margin: '3px 0 0' }}>
+                All recorded account activity
+              </p>
+            </div>
+            <button
+              onClick={onClose}
+              style={{
+                width: 32, height: 32, borderRadius: 8,
+                border: '1px solid #E5E7EB', background: '#FAFAFA',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer', color: '#6B7280', flexShrink: 0,
+                transition: 'all 150ms ease',
+              }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#F3F4F6'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = '#FAFAFA'; }}
+            >
+              <X size={14} strokeWidth={2} />
+            </button>
+          </div>
+
+          {/* Controls row */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ position: 'relative', flex: 1 }}>
+              <Search size={12} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#9CA3AF', pointerEvents: 'none' }} />
+              <input
+                type="text"
+                placeholder="Search activity..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                style={{
+                  width: '100%', paddingLeft: 30, paddingRight: 12, height: 34,
+                  border: '1.5px solid #E5E7EB', borderRadius: 8,
+                  fontSize: 12.5, color: '#111827', outline: 'none', boxSizing: 'border-box',
+                  transition: 'border-color 150ms ease',
+                }}
+                onFocus={e => (e.currentTarget.style.borderColor = '#655BD3')}
+                onBlur={e => (e.currentTarget.style.borderColor = '#E5E7EB')}
+              />
+            </div>
+
+            <div style={{ width: 130, flexShrink: 0 }}>
+              <CustomSelect
+                value={dateFilter}
+                onChange={setDateFilter}
+                options={[
+                  { value: 'all', label: 'All time' },
+                  { value: '7d',  label: 'Last 7 days' },
+                  { value: '30d', label: 'Last 30 days' },
+                  { value: '90d', label: 'Last 90 days' },
+                ]}
+                size="sm"
+                style={{ height: 34 }}
+              />
+            </div>
+
+            <button
+              style={{
+                display: 'flex', alignItems: 'center', gap: 5,
+                height: 34, paddingLeft: 12, paddingRight: 12,
+                borderRadius: 8, border: '1.5px solid #E5E7EB', background: 'white',
+                color: '#374151', fontSize: 12.5, fontWeight: 500, cursor: 'pointer',
+                whiteSpace: 'nowrap', transition: 'all 150ms ease', flexShrink: 0,
+              }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#F9FAFB'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'white'; }}
+            >
+              <Download size={12} strokeWidth={1.75} />
+              Export
+            </button>
+          </div>
+        </div>
+
+        {/* Timeline */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '4px 24px 24px' }}>
+          {filtered.length === 0 ? (
+            <div style={{ textAlign: 'center', color: '#9CA3AF', fontSize: 13, padding: '48px 0' }}>
+              No activity matches your filters.
+            </div>
+          ) : (
+            <div style={{ position: 'relative' }}>
+              {/* Connector line */}
+              <div style={{
+                position: 'absolute', left: 17, top: 30, bottom: 30,
+                width: 1.5, background: '#F0F0F0', zIndex: 0,
+              }} />
+
+              {filtered.map((log, i) => {
+                const { date, time } = fmtDateTime(log.timestamp);
+                const cfg = LOG_COLORS[log.type];
+                return (
+                  <div
+                    key={log.id}
+                    style={{
+                      display: 'flex', gap: 14, alignItems: 'flex-start',
+                      padding: '14px 0',
+                      borderBottom: i < filtered.length - 1 ? '1px solid #F9FAFB' : 'none',
+                      position: 'relative', zIndex: 1,
+                    }}
+                  >
+                    {/* Icon bubble */}
+                    <div style={{
+                      width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
+                      background: cfg.bg, border: `1.5px solid ${cfg.border}`,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      color: cfg.color,
+                    }}>
+                      {LOG_ICON[log.type]}
+                    </div>
+
+                    {/* Text */}
+                    <div style={{ flex: 1, minWidth: 0, paddingTop: 2 }}>
+                      <p style={{ fontSize: 13.5, fontWeight: 600, color: '#111827', margin: 0, lineHeight: 1.4 }}>
+                        {log.description}
+                      </p>
+                      {log.detail && (
+                        <p style={{ fontSize: 12, color: '#9CA3AF', margin: '3px 0 0', lineHeight: 1.4 }}>
+                          {log.detail}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Timestamp */}
+                    <div style={{ flexShrink: 0, textAlign: 'right', paddingTop: 2 }}>
+                      <p style={{ fontSize: 12, color: '#374151', fontWeight: 500, margin: 0 }}>{date}</p>
+                      <p style={{ fontSize: 11, color: '#9CA3AF', margin: '2px 0 0' }}>{time}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Module permission row for permissions tab ─────────────────────────────────
 function PermToggleRow({ module, icon, level, onChange }: {
   module: string;
@@ -408,7 +638,7 @@ function MemberModal({
         </div>
 
         {/* ── Body ── */}
-        <form onSubmit={handleSubmit} style={{ flex: 1, overflowY: 'auto', padding: '20px 24px 4px' }}>
+        <form onSubmit={handleSubmit} style={{ flex: 1, overflowY: 'auto', padding: '20px 24px 24px' }}>
 
           {tab === 'details' ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
@@ -505,44 +735,24 @@ function MemberModal({
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <div>
                   <label style={{ display: 'block', fontSize: 11.5, fontWeight: 600, color: '#374151', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Primary Location</label>
-                  <select
+                  <CustomSelect
                     value={form.location}
-                    onChange={e => setForm(f => ({ ...f, location: e.target.value }))}
-                    style={{ ...inputStyle, cursor: 'pointer' }}
-                  >
-                    {LOCATIONS.map(l => <option key={l}>{l}</option>)}
-                  </select>
+                    onChange={v => setForm(f => ({ ...f, location: v }))}
+                    options={LOCATIONS.map(l => ({ value: l, label: l }))}
+                    size="md"
+                  />
                 </div>
                 <div>
                   <label style={{ display: 'block', fontSize: 11.5, fontWeight: 600, color: '#374151', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Status</label>
-                  <select
+                  <CustomSelect
                     value={form.status}
-                    onChange={e => setForm(f => ({ ...f, status: e.target.value as Status }))}
-                    style={{ ...inputStyle, cursor: 'pointer' }}
-                  >
-                    {(['Active', 'On Leave', 'Inactive'] as Status[]).map(s => <option key={s}>{s}</option>)}
-                  </select>
+                    onChange={v => setForm(f => ({ ...f, status: v as Status }))}
+                    options={(['Active', 'On Leave', 'Inactive'] as Status[]).map(s => ({ value: s, label: s }))}
+                    size="md"
+                  />
                 </div>
               </div>
 
-              {/* Set Permissions link */}
-              <button
-                type="button"
-                onClick={() => setTab('permissions')}
-                style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  width: '100%', padding: '11px 14px', borderRadius: 9,
-                  border: '1.5px solid #E5E7EB',
-                  background: '#FAFAFA',
-                  color: '#374151', fontSize: 13, fontWeight: 500,
-                  cursor: 'pointer', transition: 'all 150ms ease',
-                }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = '#655BD3'; (e.currentTarget as HTMLElement).style.background = '#F5F3FF'; (e.currentTarget as HTMLElement).style.color = '#655BD3'; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = '#E5E7EB'; (e.currentTarget as HTMLElement).style.background = '#FAFAFA'; (e.currentTarget as HTMLElement).style.color = '#374151'; }}
-              >
-                <span>Configure module &amp; store access</span>
-                <ChevronRight size={15} strokeWidth={2} />
-              </button>
             </div>
 
           ) : (
@@ -641,12 +851,13 @@ function MemberModal({
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function TeamPage() {
-  const [members,    setMembers]    = useState<Member[]>(INITIAL_MEMBERS);
-  const [category,   setCategory]   = useState<UserCategory>('all');
-  const [search,     setSearch]     = useState('');
-  const [addOpen,    setAddOpen]    = useState(false);
-  const [editMember, setEditMember] = useState<Member | null>(null);
-  const [deleteId,   setDeleteId]   = useState<number | null>(null);
+  const [members,        setMembers]        = useState<Member[]>(INITIAL_MEMBERS);
+  const [category,       setCategory]       = useState<UserCategory>('all');
+  const [search,         setSearch]         = useState('');
+  const [addOpen,        setAddOpen]        = useState(false);
+  const [editMember,     setEditMember]     = useState<Member | null>(null);
+  const [deleteId,       setDeleteId]       = useState<number | null>(null);
+  const [activityMember, setActivityMember] = useState<Member | null>(null);
 
   const filtered = members.filter(m => {
     const matchesCategory =
@@ -770,7 +981,7 @@ export default function TeamPage() {
             <col style={{ width: '14%' }} />
             <col style={{ width: '22%' }} />
             <col style={{ width: 'auto' }} />
-            <col style={{ width: 96 }} />
+            <col style={{ width: 136 }} />
           </colgroup>
           <thead>
             <tr style={{ background: '#FAFAFA', borderBottom: '1.5px solid #F0F0F0' }}>
@@ -874,6 +1085,20 @@ export default function TeamPage() {
                         <Edit2 size={14} strokeWidth={1.75} />
                       </button>
                       <button
+                        onClick={() => setActivityMember(member)}
+                        title="View activity log"
+                        style={{
+                          width: 32, height: 32, borderRadius: 7,
+                          border: '1.5px solid #E5E7EB', background: 'white',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          cursor: 'pointer', color: '#00CE9C', transition: 'all 150ms ease',
+                        }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#F0FDF9'; (e.currentTarget as HTMLElement).style.borderColor = '#6EE7CF'; }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'white'; (e.currentTarget as HTMLElement).style.borderColor = '#E5E7EB'; }}
+                      >
+                        <Activity size={14} strokeWidth={1.75} />
+                      </button>
+                      <button
                         onClick={() => setDeleteId(member.id)}
                         title="Remove member"
                         style={{
@@ -921,6 +1146,11 @@ export default function TeamPage() {
           onClose={() => setEditMember(null)}
           onSave={handleEditSave}
         />
+      )}
+
+      {/* Activity Log Modal */}
+      {activityMember && (
+        <ActivityLogModal member={activityMember} onClose={() => setActivityMember(null)} />
       )}
 
       {/* Delete confirmation */}

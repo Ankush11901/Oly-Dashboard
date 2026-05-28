@@ -292,6 +292,8 @@ export function TopBar() {
   const [savedMax, setSavedMax] = useState(60);
   const [savedGenders, setSavedGenders] = useState<Set<string>>(new Set(['Male', 'Female']));
   const [savedExclude, setSavedExclude] = useState(true);
+  const [savedTitle, setSavedTitle]   = useState('');
+  const [draftTitle, setDraftTitle]   = useState('');
   const [draftMin, setDraftMin] = useState(13);
   const [draftMax, setDraftMax] = useState(60);
   const [draftGenders, setDraftGenders] = useState<Set<string>>(new Set(['Male', 'Female']));
@@ -335,6 +337,7 @@ export function TopBar() {
   };
 
   const openQsDropdown = () => {
+    setDraftTitle(savedTitle);
     setDraftMin(savedMin);
     setDraftMax(savedMax);
     setDraftGenders(new Set(savedGenders));
@@ -343,6 +346,7 @@ export function TopBar() {
   };
 
   const saveQs = () => {
+    setSavedTitle(draftTitle.trim());
     setSavedMin(draftMin);
     setSavedMax(draftMax);
     setSavedGenders(new Set(draftGenders));
@@ -405,11 +409,33 @@ export function TopBar() {
                     {qsEnabled && (
                       <div style={{ marginTop: 10, padding: '6px 10px', borderRadius: 6, background: '#F5F3FF', border: '1px solid #DDD6FE', display: 'flex', alignItems: 'center', gap: 6 }}>
                         <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#655BD3', flexShrink: 0 }} />
-                        <span style={{ fontSize: 11.5, fontWeight: 600, color: '#655BD3' }}>Active: Age {savedMin}–{savedMax} · {genderLabel}{savedExclude ? ' · Kids excl.' : ''}</span>
+                        <span style={{ fontSize: 11.5, fontWeight: 600, color: '#655BD3' }}>{savedTitle || 'Active'}: Age {savedMin}–{savedMax} · {genderLabel}{savedExclude ? ' · Kids excl.' : ''}</span>
                       </div>
                     )}
                   </div>
                   <div className="p-4 space-y-4">
+                    {/* Custom title */}
+                    <div>
+                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Filter Name</p>
+                      <input
+                        type="text"
+                        placeholder="e.g. High-Intent Adults"
+                        value={draftTitle}
+                        onChange={e => setDraftTitle(e.target.value)}
+                        style={{
+                          width: '100%', boxSizing: 'border-box',
+                          border: '1px solid #E5E7EB', borderRadius: 6,
+                          padding: '7px 10px', fontSize: 13,
+                          color: '#111827', outline: 'none',
+                          transition: 'border-color 150ms ease',
+                        }}
+                        onFocus={e => (e.currentTarget.style.borderColor = '#655BD3')}
+                        onBlur={e => (e.currentTarget.style.borderColor = '#E5E7EB')}
+                      />
+                      <p style={{ fontSize: 10.5, color: '#9CA3AF', marginTop: 4, lineHeight: 1.4 }}>
+                        Shown in place of "Active" once saved
+                      </p>
+                    </div>
                     <div>
                       <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Age Range</p>
                       <div className="flex items-center gap-3">
@@ -679,6 +705,19 @@ export function TopBar() {
               <Store size={14} strokeWidth={1.5} style={{ color: 'var(--color-text-3)' }} />
               <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text-1)' }}>8</span>
               <span style={{ fontSize: 12, color: 'var(--color-text-3)' }}>Stores</span>
+            </div>
+
+            {/* Total Alerts stat chip */}
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 7,
+              height: 34, paddingLeft: 12, paddingRight: 12,
+              borderRadius: 6, border: '1px solid var(--color-border)',
+              background: 'var(--color-surface)', flexShrink: 0,
+            }}>
+              <span style={{ fontSize: 12.5, fontWeight: 500, color: 'var(--color-text-3)', whiteSpace: 'nowrap' }}>Total Alerts</span>
+              <span style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--color-text-1)' }}>
+                {selectedCamera.offline}
+              </span>
             </div>
 
             {/* ── Camera selector + original stat boxes ── */}

@@ -1,9 +1,9 @@
 'use client';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import {
   Monitor, Play, Pause, Grid, ChevronLeft, ChevronRight,
   Wifi, WifiOff, Settings, X, Check, AlertCircle,
-  LogIn, LogOut, PersonStanding, Pencil, Scan,
+  LogIn, LogOut, PersonStanding, Pencil, Scan, ChevronDown,
 } from 'lucide-react';
 
 // ── Camera data ───────────────────────────────────────────────────────────────
@@ -350,7 +350,11 @@ export default function VMSPage() {
   const [carouselIndex, setCarouselIndex] = useState(0);
   const [interval, setIntervalVal] = useState(10);
   const [showSettings, setShowSettings] = useState(false);
-  const [storeFilter, setStoreFilter] = useState<string>('all');
+  const [selectedStores, setSelectedStores] = useState<Set<string>>(new Set());
+  const [storeDropOpen, setStoreDropOpen] = useState(false);
+  const storeDropTriggerRef = useRef<HTMLButtonElement>(null);
+  const storeDropPanelRef   = useRef<HTMLDivElement>(null);
+  const [storeDropStyle, setStoreDropStyle] = useState<React.CSSProperties>({});
   const [zoneFilter, setZoneFilter]   = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'online' | 'offline' | 'degraded'>('all');
   const [page, setPage] = useState(0);
@@ -362,15 +366,75 @@ export default function VMSPage() {
 
   const getZoneLabel = (zone: string) => zoneLabels[zone] ?? zone;
 
-  const STORES = ['all', ...Array.from(new Set(CAMERAS.map(c => c.store)))];
+  const STORE_NAMES = Array.from(new Set(CAMERAS.map(c => c.store)));
   const ZONES  = ['all', ...Array.from(new Set(CAMERAS.map(c => c.zone)))];
 
   const filteredCameras = CAMERAS.filter(c => {
-    if (storeFilter !== 'all' && c.store !== storeFilter) return false;
+    if (selectedStores.size > 0 && !selectedStores.has(c.store)) return false;
     if (zoneFilter  !== 'all' && c.zone  !== zoneFilter)  return false;
     if (statusFilter !== 'all' && c.status !== statusFilter) return false;
     return true;
   });
+
+  const closeStoreDrop = useCallback(() => setStoreDropOpen(false), []);
+
+  const openStoreDrop = () => {
+    const el = storeDropTriggerRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const estimatedH = Math.min(STORE_NAMES.length * 34 + 44, 280);
+    const spaceBelow = window.innerHeight - rect.bottom - 8;
+    const openUp = spaceBelow < estimatedH && rect.top > estimatedH;
+    setStoreDropStyle({
+      position: 'fixed',
+      left: rect.left,
+      width: Math.max(rect.width, 180),
+      zIndex: 99999,
+      ...(openUp ? { bottom: window.innerHeight - rect.top + 4 } : { top: rect.bottom + 4 }),
+    });
+    setStoreDropOpen(true);
+  };
+
+  const toggleStoreDrop = () => (storeDropOpen ? closeStoreDrop() : openStoreDrop());
+
+  const toggleStore = (store: string) => {
+    setSelectedStores(prev => {
+      const next = new Set(prev);
+      if (next.has(store)) { next.delete(store); } else { next.add(store); }
+      return next;
+    });
+  };
+
+  const storeLabel = selectedStores.size === 0
+    ? 'All Stores'
+    : selectedStores.size === 1
+      ? [...selectedStores][0]
+      : `${selectedStores.size} Stores`;
+
+  useEffect(() => {
+    if (!storeDropOpen) return;
+    const onDown = (e: MouseEvent) => {
+      const t = e.target as Node;
+      if (!storeDropTriggerRef.current?.contains(t) && !storeDropPanelRef.current?.contains(t)) closeStoreDrop();
+    };
+    document.addEventListener('mousedown', onDown);
+    return () => document.removeEventListener('mousedown', onDown);
+  }, [storeDropOpen, closeStoreDrop]);
+
+  useEffect(() => {
+    if (!storeDropOpen) return;
+    const handler = (e: Event) => { if (storeDropPanelRef.current?.contains(e.target as Node)) return; closeStoreDrop(); };
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') closeStoreDrop(); };
+    window.addEventListener('scroll', handler, true);
+    window.addEventListener('resize', closeStoreDrop);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('scroll', handler, true);
+      window.removeEventListener('resize', closeStoreDrop);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [storeDropOpen, closeStoreDrop]);
+
   const [selectMode, setSelectMode] = useState(false);
   const [pendingDeselect, setPendingDeselect] = useState<Camera | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -618,22 +682,106 @@ export default function VMSPage() {
 
           <div style={{ width: 1, height: 16, background: '#E5E7EB', flexShrink: 0 }} />
 
-          {/* STORE — compact dropdown */}
-          <select
-            value={storeFilter}
-            onChange={e => setStoreFilter(e.target.value)}
+          {/* STORE — multi-select dropdown */}
+          <button
+            ref={storeDropTriggerRef}
+            type="button"
+            onClick={toggleStoreDrop}
             style={{
-              fontSize: 11.5, padding: '4px 8px', borderRadius: 8,
-              border: '1px solid #E5E7EB', background: '#fff',
-              color: storeFilter === 'all' ? '#6B7280' : '#111827',
-              fontWeight: storeFilter === 'all' ? 400 : 600,
-              cursor: 'pointer', outline: 'none',
+              display: 'flex', alignItems: 'center', gap: 6,
+              height: 28, padding: '0 8px',
+              border: `1px solid ${storeDropOpen ? '#655BD3' : '#E5E7EB'}`,
+              borderRadius: 6, background: 'white',
+              color: '#111827', fontSize: 11.5, fontWeight: 400,
+              cursor: 'pointer', outline: 'none', flexShrink: 0, whiteSpace: 'nowrap',
+              minWidth: 120,
+              ...(storeDropOpen ? { boxShadow: '0 0 0 3px rgba(101,91,211,0.12)' } : {}),
             }}
+            onMouseEnter={e => { if (!storeDropOpen) e.currentTarget.style.borderColor = '#C4B5FD'; }}
+            onMouseLeave={e => { if (!storeDropOpen) e.currentTarget.style.borderColor = '#E5E7EB'; }}
           >
-            {STORES.map(s => (
-              <option key={s} value={s}>{s === 'all' ? 'All Stores' : s}</option>
-            ))}
-          </select>
+            <span style={{ flex: 1, textAlign: 'left', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {storeLabel}
+            </span>
+            <ChevronDown
+              size={11} strokeWidth={2.5}
+              style={{
+                color: '#9CA3AF', flexShrink: 0,
+                transform: storeDropOpen ? 'rotate(180deg)' : 'rotate(0)',
+                transition: 'transform 200ms ease',
+              }}
+            />
+          </button>
+
+          {storeDropOpen && (
+            <div
+              ref={storeDropPanelRef}
+              style={{
+                ...storeDropStyle,
+                background: 'white',
+                border: '1px solid #E5E7EB',
+                borderRadius: 10,
+                boxShadow: '0 8px 32px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06)',
+                padding: 4,
+                maxHeight: 280,
+                overflowY: 'auto',
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => { setSelectedStores(new Set()); closeStoreDrop(); }}
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  width: '100%', padding: '6px 10px', borderRadius: 6, border: 'none',
+                  background: selectedStores.size === 0 ? '#EEE9FF' : 'transparent',
+                  color: selectedStores.size === 0 ? '#655BD3' : '#374151',
+                  fontSize: 12, fontWeight: selectedStores.size === 0 ? 600 : 400,
+                  cursor: 'pointer', textAlign: 'left',
+                }}
+                onMouseEnter={e => { if (selectedStores.size !== 0) e.currentTarget.style.background = '#F9F7FF'; }}
+                onMouseLeave={e => { if (selectedStores.size !== 0) e.currentTarget.style.background = 'transparent'; }}
+              >
+                <span>All Stores</span>
+                {selectedStores.size === 0 && <Check size={12} strokeWidth={2.5} style={{ color: '#655BD3' }} />}
+              </button>
+
+              <div style={{ height: 1, background: '#F3F4F6', margin: '4px 0' }} />
+
+              {STORE_NAMES.map(store => {
+                const checked = selectedStores.has(store);
+                return (
+                  <button
+                    key={store}
+                    type="button"
+                    onClick={() => toggleStore(store)}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 8,
+                      width: '100%', padding: '6px 10px', borderRadius: 6, border: 'none',
+                      background: checked ? '#EEE9FF' : 'transparent',
+                      color: checked ? '#655BD3' : '#374151',
+                      fontSize: 12, fontWeight: checked ? 600 : 400,
+                      cursor: 'pointer', textAlign: 'left',
+                    }}
+                    onMouseEnter={e => { if (!checked) e.currentTarget.style.background = '#F9F7FF'; }}
+                    onMouseLeave={e => { if (!checked) e.currentTarget.style.background = 'transparent'; }}
+                  >
+                    <span style={{
+                      width: 14, height: 14, flexShrink: 0, borderRadius: 3,
+                      border: `1.5px solid ${checked ? '#655BD3' : '#D1D5DB'}`,
+                      background: checked ? '#655BD3' : 'white',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}>
+                      {checked && <Check size={9} strokeWidth={3} style={{ color: 'white' }} />}
+                    </span>
+                    <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {store}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
         </div>
 
         {/* Camera count — right anchor */}

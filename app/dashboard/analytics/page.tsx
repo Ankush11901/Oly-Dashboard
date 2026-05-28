@@ -815,6 +815,66 @@ const WIDGET_INFO: Record<string, { title: string; description: string; calculat
     description: 'Quick comparison of Top 5 and Bottom 5 performing stores by total visitor count for the selected period.',
     calculation: 'Entry events per store location sorted highest (top 5) and lowest (bottom 5). Progress bars are relative to the top performer.',
   },
+  india_walkin_chart: {
+    title: 'Pan India Walk-in Traffic',
+    description: 'Compares hourly walk-in counts for the current period against the equivalent previous period. Useful for spotting day-over-day or week-over-week shifts in traffic momentum.',
+    calculation: 'Entry events aggregated into hourly buckets across all active entrance cameras. The comparison line uses the same hour range from the prior equivalent period.',
+  },
+  region_compare_chart: {
+    title: 'Region Walk-in Comparison',
+    description: 'Side-by-side view of total walk-in volume per region for this year versus last year. Highlights which regions are growing, flat, or declining.',
+    calculation: 'Total entry events per geographic region for the current year vs the same period in the prior year. Values are sourced from camera clusters assigned to each region.',
+  },
+  age_grp_hourly: {
+    title: 'Age Groups by Hour',
+    description: 'Stacked bar chart showing how different age segments (Kids, Teens, Youths, Mature) contribute to foot traffic across each hour of the day.',
+    calculation: 'AI age classification per entry event, grouped into 4 bands and aggregated into 1-hour buckets. Each stack segment represents one age group\'s share of that hour\'s total.',
+  },
+  age_grp_regional: {
+    title: 'Age Groups by Region',
+    description: 'Stacked bars comparing the age-group composition of visitors across different store regions. Reveals demographic differences between locations.',
+    calculation: 'AI age classification per entry event, aggregated by geographic region. Each segment shows the count or share of that age group within the region\'s total footfall.',
+  },
+  gender_by_hour: {
+    title: 'Gender Traffic by Hour',
+    description: 'Male vs female visitor volumes charted hour by hour. Helps identify whether gender balance shifts at certain times of day.',
+    calculation: 'Gender inferred by the AI vision model per entry event. Counts are aggregated into 1-hour buckets and plotted as grouped bars for direct comparison.',
+  },
+  gender_by_region: {
+    title: 'Gender Traffic by Region',
+    description: 'Compares male and female visitor volumes across store regions. Use this to understand gender-driven differences in location-level footfall.',
+    calculation: 'Gender inference from the AI model per entry event, summed by geographic region. Grouped bars show absolute visitor counts for each gender per region.',
+  },
+  gender_breakdown_pie: {
+    title: 'Gender Distribution',
+    description: 'Donut chart showing the overall share of male vs female visitors across all stores for the selected period. A quick read on your audience gender split.',
+    calculation: 'Total gender-classified entry events divided by overall visitor count, expressed as a percentage. AI confidence threshold of ≥85% applied before classification is counted.',
+  },
+  age_breakdown_pie: {
+    title: 'Age Range Distribution',
+    description: 'Donut chart breaking down visitors into age ranges (0–12, 13–21, 22–35, 35+). Shows which age segments make up your core customer base.',
+    calculation: 'Total age-classified entry events per bracket divided by overall visitor count. AI confidence threshold of ≥85% applied. Unclassified events are excluded from the total.',
+  },
+  store_demo_ranking: {
+    title: 'Store Demographic Footfall',
+    description: 'Ranks store locations by total footfall, with each bar segmented by demographic group. Reveals which stores attract diverse versus concentrated customer segments.',
+    calculation: 'Entry events per store, broken down by AI-inferred demographic segment. Segment widths within each bar are proportional to that segment\'s share of the store\'s total visitors.',
+  },
+  store_staff_assist: {
+    title: 'Staff Assist by Store',
+    description: 'Tracks staff engagement effectiveness per store using assist duration buckets (brief, moderate, extended). Higher extended-assist shares indicate deeper customer interactions.',
+    calculation: 'Assist events are classified by engagement duration captured via staff interaction sensors. Buckets: Brief (<2 min), Moderate (2–5 min), Extended (>5 min). Bars show count per store.',
+  },
+  top5_performers: {
+    title: 'Top 5 Performing Stores',
+    description: 'Highlights the five highest-traffic stores for the selected period. Use this to identify best-practice locations and benchmarks for the wider network.',
+    calculation: 'Total entry events per store location sorted descending. The top 5 are displayed with progress bars scaled relative to the highest-performing store in the dataset.',
+  },
+  bottom5_performers: {
+    title: 'Bottom 5 Performing Stores',
+    description: 'Surfaces the five lowest-traffic stores for the selected period. Useful for identifying underperforming locations that may need operational or marketing attention.',
+    calculation: 'Total entry events per store location sorted ascending. The bottom 5 are displayed with progress bars scaled relative to the top performer for proportional context.',
+  },
 };
 
 const CustomTooltip = ({ active, payload, label }: any) => {
@@ -1106,10 +1166,18 @@ function PlacedWidget({
 
   // After React re-renders with the new filter's cards, animate from frozen → natural height
   useEffect(() => {
-    if (isFirstSnapFilter.current) { isFirstSnapFilter.current = false; return; }
+    if (isFirstSnapFilter.current) {
+      isFirstSnapFilter.current = false;
+      // changeSnapFilter may have already frozen the height before this first render;
+      // release it immediately so content is never clipped on the first switch after reopen
+      const el = snapBodyRef.current;
+      if (el) { el.style.height = 'auto'; el.style.overflow = ''; el.style.transition = ''; }
+      return;
+    }
     const el = snapBodyRef.current;
     if (!el) return;
     const frozenH = el.style.height; // set by changeSnapFilter before state update
+    el.style.overflow = 'hidden';     // prevent scrollbar flash during resize
     el.style.transition = 'none';
     el.style.height = 'auto';
     const newH = el.scrollHeight;
@@ -1117,7 +1185,11 @@ function PlacedWidget({
     void el.offsetHeight;               // force reflow
     el.style.transition = 'height 320ms cubic-bezier(0.4, 0, 0.2, 1)';
     el.style.height = newH + 'px';
-    const t = setTimeout(() => { el.style.height = 'auto'; el.style.transition = ''; }, 320);
+    const t = setTimeout(() => {
+      el.style.height = 'auto';
+      el.style.transition = '';
+      el.style.overflow = '';           // restore overflow-y: auto from JSX style
+    }, 320);
     return () => clearTimeout(t);
   }, [snapEventFilter]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -2333,11 +2405,20 @@ interface AnalyticsTab {
 }
 
 // ── Add Widgets Modal ─────────────────────────────────────────────────────────
-function AddWidgetsModal({ onClose, onAdd }: { onClose: () => void; onAdd: (ids: string[]) => void }) {
+function AddWidgetsModal({
+  onClose,
+  onAdd,
+  currentWidgets = [],
+}: {
+  onClose: () => void;
+  onAdd: (ids: string[]) => void;
+  currentWidgets?: string[];
+}) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const groups = Array.from(new Set(ALL_WIDGETS.map(w => w.group)));
 
   const toggleWidget = (id: string) => {
+    if (currentWidgets.includes(id)) return; // already in layout — not toggleable
     setSelected(prev => {
       const next = new Set(prev);
       next.has(id) ? next.delete(id) : next.add(id);
@@ -2346,7 +2427,7 @@ function AddWidgetsModal({ onClose, onAdd }: { onClose: () => void; onAdd: (ids:
   };
 
   const handleAdd = () => {
-    onAdd(Array.from(selected));
+    onAdd(Array.from(selected).filter(id => !currentWidgets.includes(id)));
     onClose();
   };
 
@@ -2380,6 +2461,7 @@ function AddWidgetsModal({ onClose, onAdd }: { onClose: () => void; onAdd: (ids:
                 <p className="text-xs font-bold uppercase mb-2.5" style={{ color: '#9CA3AF', letterSpacing: '0.07em' }}>{group}</p>
                 <div className="grid grid-cols-2 gap-3">
                   {ALL_WIDGETS.filter(w => w.group === group).map(widget => {
+                    const isAdded = currentWidgets.includes(widget.id);
                     const isSelected = selected.has(widget.id);
                     return (
                       <button
@@ -2387,21 +2469,45 @@ function AddWidgetsModal({ onClose, onAdd }: { onClose: () => void; onAdd: (ids:
                         onClick={() => toggleWidget(widget.id)}
                         className="text-left rounded-xl overflow-hidden transition-all"
                         style={{
-                          border: `1.5px solid ${isSelected ? '#655BD3' : '#E5E7EB'}`,
-                          background: 'white',
-                          boxShadow: isSelected ? '0 0 0 3px #EEE9FF' : 'none',
+                          border: `1.5px solid ${isAdded ? '#D1FAE5' : isSelected ? '#655BD3' : '#E5E7EB'}`,
+                          background: isAdded ? '#F9FAFB' : 'white',
+                          boxShadow: isSelected && !isAdded ? '0 0 0 3px #EEE9FF' : 'none',
+                          cursor: isAdded ? 'default' : 'pointer',
                         }}
                       >
                         <div style={{
-                          background: '#F8F7FF',
-                          borderBottom: `1px solid ${isSelected ? '#DDD6FE' : '#F3F4F6'}`,
+                          background: isAdded ? '#F3F4F6' : '#F8F7FF',
+                          borderBottom: `1px solid ${isAdded ? '#E5E7EB' : isSelected ? '#DDD6FE' : '#F3F4F6'}`,
                           padding: '12px 12px 8px',
                           pointerEvents: 'none',
+                          position: 'relative',
                         }}>
                           {widget.preview}
+                          {isAdded && (
+                            <div style={{
+                              position: 'absolute',
+                              top: 8,
+                              right: 8,
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 3,
+                              background: '#DCFCE7',
+                              color: '#16A34A',
+                              fontSize: 10,
+                              fontWeight: 700,
+                              padding: '2px 7px',
+                              borderRadius: 99,
+                              letterSpacing: '0.02em',
+                            }}>
+                              <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
+                                <path d="M1.5 4L3.2 5.7L6.5 2.5" stroke="#16A34A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                              </svg>
+                              Added
+                            </div>
+                          )}
                         </div>
                         <div style={{ padding: '8px 10px 9px' }}>
-                          <p style={{ fontSize: 11.5, fontWeight: 600, color: isSelected ? '#655BD3' : '#111827' }}>{widget.label}</p>
+                          <p style={{ fontSize: 11.5, fontWeight: 600, color: isAdded ? '#9CA3AF' : isSelected ? '#655BD3' : '#111827' }}>{widget.label}</p>
                           <p style={{ fontSize: 10.5, color: '#9CA3AF', marginTop: 2 }}>{widget.description}</p>
                         </div>
                       </button>
@@ -3157,6 +3263,7 @@ export default function AnalyticsPage() {
         <AddWidgetsModal
           onClose={() => setShowAddWidgets(false)}
           onAdd={addWidgets}
+          currentWidgets={currentTab?.widgets ?? []}
         />
       )}
       {showCreatePage && (
