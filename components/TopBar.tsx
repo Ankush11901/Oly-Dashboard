@@ -42,8 +42,6 @@ const STORES_PERF = [
 ];
 
 function InsightsModal({ onClose }: { onClose: () => void }) {
-  const [period, setPeriod] = useState<'D'|'W'|'M'|'Y'>('D');
-
   useEffect(() => {
     const esc = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     document.addEventListener('keydown', esc);
@@ -181,26 +179,14 @@ function InsightsModal({ onClose }: { onClose: () => void }) {
                 <p style={{ fontSize: 13, fontWeight: 700, color: '#111827' }}>Hourly Traffic Trends</p>
                 <p style={{ fontSize: 11, color: '#6B7280', marginTop: 1 }}>Footfall vs. Passerby — all stores combined</p>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                {/* Legend */}
-                <div style={{ display: 'flex', gap: 12 }}>
-                  {[{ c: PURPLE, l: 'Footfall' }, { c: '#00CE9C', l: 'Passerby' }].map(({ c, l }) => (
-                    <div key={l} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                      <div style={{ width: 12, height: 3, borderRadius: 2, background: c }} />
-                      <span style={{ fontSize: 10.5, color: '#6B7280' }}>{l}</span>
-                    </div>
-                  ))}
-                </div>
-                {/* Period toggle */}
-                <div style={{ display: 'flex', border: '1px solid #E5E7EB', borderRadius: 6, overflow: 'hidden' }}>
-                  {(['D','W','M','Y'] as const).map(p => (
-                    <button key={p} onClick={() => setPeriod(p)} style={{
-                      width: 28, height: 24, fontSize: 10.5, fontWeight: 600, border: 'none',
-                      cursor: 'pointer', background: period === p ? PURPLE : 'transparent',
-                      color: period === p ? 'white' : '#374151', transition: 'all 120ms',
-                    }}>{p}</button>
-                  ))}
-                </div>
+              {/* Legend */}
+              <div style={{ display: 'flex', gap: 12 }}>
+                {[{ c: PURPLE, l: 'Footfall' }, { c: '#00CE9C', l: 'Passerby' }].map(({ c, l }) => (
+                  <div key={l} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                    <div style={{ width: 12, height: 3, borderRadius: 2, background: c }} />
+                    <span style={{ fontSize: 10.5, color: '#6B7280' }}>{l}</span>
+                  </div>
+                ))}
               </div>
             </div>
             <svg viewBox={`0 0 ${TW} ${TH + 18}`} style={{ width: '100%', height: TH + 18, overflow: 'visible' }}>

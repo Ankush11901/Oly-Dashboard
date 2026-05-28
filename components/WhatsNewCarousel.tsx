@@ -178,7 +178,7 @@ const SLIDES = [
   },
 ];
 
-const INTERVAL = 12000;
+const INTERVAL = 7000;
 
 // ── "View All" modal ───────────────────────────────────────────────────────────
 function ViewAllModal({ onClose }: { onClose: () => void }) {
@@ -334,23 +334,42 @@ export function WhatsNewCarousel() {
             {slide.desc}
           </p>
 
-          {/* Dots — single brand colour, pill for active */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            {SLIDES.map((s, i) => (
-              <button
-                key={s.id}
-                onClick={() => navigate(i)}
-                style={{
-                  padding: 0, border: 'none', cursor: 'pointer',
-                  width: i === current ? 18 : 6, height: 6,
-                  borderRadius: 3,
-                  background: PURPLE,
-                  opacity: i === current ? 1 : 0.25,
-                  transition: 'all 300ms ease',
-                  flexShrink: 0,
-                } as React.CSSProperties}
-              />
-            ))}
+          {/* Dots + Next — same row */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            {/* Dots */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              {SLIDES.map((s, i) => (
+                <button
+                  key={s.id}
+                  onClick={() => navigate(i)}
+                  style={{
+                    padding: 0, border: 'none', cursor: 'pointer',
+                    width: i === current ? 18 : 6, height: 6,
+                    borderRadius: 3,
+                    background: PURPLE,
+                    opacity: i === current ? 1 : 0.25,
+                    transition: 'all 300ms ease',
+                    flexShrink: 0,
+                  } as React.CSSProperties}
+                />
+              ))}
+            </div>
+
+            {/* Next button */}
+            <button
+              onClick={() => navigate((current + 1) % SLIDES.length)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 3,
+                padding: 0, border: 'none', background: 'transparent',
+                cursor: 'pointer', color: '#94A3B8',
+                fontSize: 11, fontWeight: 500,
+                transition: 'color 150ms',
+              }}
+              onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = PURPLE}
+              onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = '#94A3B8'}
+            >
+              Next <ChevronRight size={11} strokeWidth={2} />
+            </button>
           </div>
         </div>
       </div>
