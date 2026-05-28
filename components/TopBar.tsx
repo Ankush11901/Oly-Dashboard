@@ -1,6 +1,6 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
-import { Bell, ChevronDown, Calendar, Store, RefreshCw, Settings, LogOut, UserCircle, TrendingUp, SlidersHorizontal, Video, Check, X } from 'lucide-react';
+import { Bell, ChevronDown, Calendar, Store, RefreshCw, Settings, LogOut, UserCircle, TrendingUp, SlidersHorizontal, Video, Check, X, Lightbulb, ArrowUpRight, ArrowDownRight, Users, Target, Clock } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { useDashboardContext } from '@/components/DashboardProvider';
 
@@ -23,12 +23,268 @@ const FILTER_OPTIONS = {
 };
 type FilterKey = keyof typeof FILTER_OPTIONS;
 
+// ── Insights of the Day Modal ─────────────────────────────────────────────────
+const PURPLE = '#655BD3';
+
+const HOURLY = [
+  { h: '9am',  v: 210 }, { h: '10am', v: 380 }, { h: '11am', v: 520 },
+  { h: '12pm', v: 680 }, { h: '1pm',  v: 750 }, { h: '2pm',  v: 710 },
+  { h: '3pm',  v: 640 }, { h: '4pm',  v: 590 }, { h: '5pm',  v: 480 },
+  { h: '6pm',  v: 320 }, { h: '7pm',  v: 190 },
+];
+
+const STORES_PERF = [
+  { name: 'Marina Bay Sands', visitors: 15234, conv: 18.2, trend: 'up'   },
+  { name: 'VivoCity',         visitors: 12800, conv: 15.3, trend: 'up'   },
+  { name: 'Orchard Central',  visitors: 10900, conv: 14.1, trend: 'down' },
+  { name: 'Bugis Junction',   visitors:  9450, conv: 12.7, trend: 'up'   },
+  { name: 'Tampines Mall',    visitors: 11200, conv: 13.8, trend: 'down' },
+];
+
+function InsightsModal({ onClose }: { onClose: () => void }) {
+  const [period, setPeriod] = useState<'D'|'W'|'M'|'Y'>('D');
+
+  useEffect(() => {
+    const esc = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', esc);
+    return () => document.removeEventListener('keydown', esc);
+  }, [onClose]);
+
+  const storeColors = [PURPLE, '#00CE9C', '#3B82F6', '#F59E0B', '#EC4899'];
+  const maxStore = Math.max(...STORES_PERF.map(s => s.visitors));
+  const maxConv  = 22;
+
+  // Traffic chart — two lines: Footfall (purple) + Passerby (teal), analytics style
+  const TRAFFIC = [
+    { h: '9am',  footfall: 210, passerby: 1050 },
+    { h: '10am', footfall: 380, passerby: 1820 },
+    { h: '11am', footfall: 520, passerby: 2240 },
+    { h: '12pm', footfall: 680, passerby: 2900 },
+    { h: '1pm',  footfall: 750, passerby: 3200 },
+    { h: '2pm',  footfall: 710, passerby: 2980 },
+    { h: '3pm',  footfall: 640, passerby: 2650 },
+    { h: '4pm',  footfall: 590, passerby: 2400 },
+    { h: '5pm',  footfall: 480, passerby: 1920 },
+    { h: '6pm',  footfall: 320, passerby: 1380 },
+    { h: '7pm',  footfall: 190, passerby:  820 },
+  ];
+  const TW = 820, TH = 96;
+  const maxT = Math.max(...TRAFFIC.map(d => d.passerby));
+  const tx = (i: number) => 8 + (i / (TRAFFIC.length - 1)) * (TW - 16);
+  const ty = (v: number) => TH - 4 - ((v / maxT) * (TH - 12));
+  const footfallPts  = TRAFFIC.map((d, i) => `${tx(i)},${ty(d.footfall)}`).join(' ');
+  const passerbyPts  = TRAFFIC.map((d, i) => `${tx(i)},${ty(d.passerby)}`).join(' ');
+  const footfallArea = `M${tx(0)},${TH} ` + TRAFFIC.map((d, i) => `L${tx(i)},${ty(d.footfall)}`).join(' ') + ` L${tx(TRAFFIC.length - 1)},${TH}Z`;
+
+  const insights = [
+    { icon: <TrendingUp size={13} strokeWidth={1.5} />, color: PURPLE,    bg: '#EEE9FF', text: 'Peak at 1 PM — deploy extra staff 12:30–2:30 PM across all stores.' },
+    { icon: <Users     size={13} strokeWidth={1.5} />, color: '#00CE9C',  bg: '#CCFBF1', text: 'Marina Bay leads at 18.2% conversion — replicate its zone layout system-wide.' },
+    { icon: <Clock     size={13} strokeWidth={1.5} />, color: '#F59E0B',  bg: '#FEF3C7', text: 'Zone D dwell time 11.4 min — highest engagement. Prioritise premium inventory here.' },
+    { icon: <Target    size={13} strokeWidth={1.5} />, color: '#3B82F6',  bg: '#DBEAFE', text: 'Orchard & Tampines declining — review queue times and checkout throughput.' },
+  ];
+
+  const recommendations = [
+    { title: 'Staff reallocation',          body: 'Shift 2–3 floor associates to 12–3 PM peak windows across all 5 stores.',                             priority: 'High'   },
+    { title: 'Zone A promotion push',        body: "Zone A dwell is 4.2 min — add interactive displays to lift engagement.",                               priority: 'Medium' },
+    { title: 'Replicate top-performer layout', body: "Apply Marina Bay's aisle-width and signage pattern to VivoCity for conversion lift.",               priority: 'High'   },
+  ];
+
+  const priorityColor: Record<string, { bg: string; color: string }> = {
+    High:   { bg: '#FEE2E2', color: '#DC2626' },
+    Medium: { bg: '#FEF3C7', color: '#D97706' },
+  };
+
+  return (
+    <div
+      style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(15,23,42,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div style={{ background: '#F9FAFB', borderRadius: 16, width: '100%', maxWidth: 940, maxHeight: '94vh', display: 'flex', flexDirection: 'column', boxShadow: '0 32px 80px rgba(0,0,0,0.22)', overflow: 'hidden' }}>
+
+        {/* ── Header ── */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid #E5E7EB', flexShrink: 0, background: 'white' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ width: 34, height: 34, borderRadius: 9, background: '#EEE9FF', display: 'flex', alignItems: 'center', justifyContent: 'center', color: PURPLE }}>
+              <Lightbulb size={16} strokeWidth={1.5} />
+            </div>
+            <div>
+              <p style={{ fontSize: 15, fontWeight: 700, color: '#0F172A' }}>Insights of the Day</p>
+              <p style={{ fontSize: 11, color: '#94A3B8', marginTop: 1 }}>AI-powered analysis · Updated 3 min ago</p>
+            </div>
+          </div>
+          <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: 7, border: '1px solid #E5E7EB', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#64748B' }}
+            onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = '#F8FAFC'}
+            onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'white'}>
+            <X size={13} strokeWidth={1.5} />
+          </button>
+        </div>
+
+        {/* ── Body ── */}
+        <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 14, overflowY: 'auto' }}>
+
+          {/* ── Row 1: Store Performance — two charts side by side ── */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+
+            {/* Left: Visitor Count — horizontal progress bars (analytics style) */}
+            <div style={{ background: 'white', border: '1px solid #E5E7EB', borderRadius: 12, padding: '16px 18px' }}>
+              <p style={{ fontSize: 13, fontWeight: 700, color: '#111827', marginBottom: 2 }}>Visitor Count by Store</p>
+              <p style={{ fontSize: 11, color: '#6B7280', marginBottom: 14 }}>Today's footfall per location</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {STORES_PERF.map((s, i) => (
+                  <div key={s.name} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span style={{ width: 82, fontSize: 11, fontWeight: 500, color: '#374151', flexShrink: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {s.name.split(' ').slice(0, 2).join(' ')}
+                    </span>
+                    <div style={{ flex: 1, height: 9, background: '#F3F4F6', borderRadius: 4, overflow: 'hidden' }}>
+                      <div style={{ width: `${(s.visitors / maxStore) * 100}%`, height: '100%', background: storeColors[i], borderRadius: 4 }} />
+                    </div>
+                    <span style={{ width: 38, fontSize: 11, fontWeight: 600, color: '#374151', textAlign: 'right', flexShrink: 0 }}>
+                      {(s.visitors / 1000).toFixed(1)}K
+                    </span>
+                    <span style={{ fontSize: 10.5, fontWeight: 600, color: s.trend === 'up' ? '#16A34A' : '#DC2626', flexShrink: 0, width: 36, textAlign: 'right' }}>
+                      {s.trend === 'up' ? '↑' : '↓'} {s.conv}%
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Right: Conversion Rate — vertical bar chart (analytics style) */}
+            <div style={{ background: 'white', border: '1px solid #E5E7EB', borderRadius: 12, padding: '16px 18px' }}>
+              <p style={{ fontSize: 13, fontWeight: 700, color: '#111827', marginBottom: 2 }}>Conversion Rate by Store</p>
+              <p style={{ fontSize: 11, color: '#6B7280', marginBottom: 10 }}>Passerby-to-entry conversion %</p>
+              <div style={{ display: 'flex', gap: 6, alignItems: 'flex-end', height: 100 }}>
+                {STORES_PERF.map((s, i) => {
+                  const barPx = Math.round((s.conv / maxConv) * 82);
+                  return (
+                    <div key={s.name} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+                      <span style={{ fontSize: 8.5, fontWeight: 700, color: storeColors[i] }}>{s.conv}%</span>
+                      <div style={{ width: '78%', height: barPx, background: storeColors[i], borderRadius: '4px 4px 0 0', opacity: 0.88 }} />
+                    </div>
+                  );
+                })}
+              </div>
+              <div style={{ display: 'flex', gap: 6, borderTop: '1px solid #F3F4F6', paddingTop: 6 }}>
+                {STORES_PERF.map(s => (
+                  <div key={s.name} style={{ flex: 1, fontSize: 7.5, color: '#9CA3AF', textAlign: 'center', fontWeight: 500 }}>
+                    {s.name.split(' ')[0]}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* ── Row 2: Hourly Traffic Trends — analytics-style dual-line chart ── */}
+          <div style={{ background: 'white', border: '1px solid #E5E7EB', borderRadius: 12, padding: '16px 18px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <div>
+                <p style={{ fontSize: 13, fontWeight: 700, color: '#111827' }}>Hourly Traffic Trends</p>
+                <p style={{ fontSize: 11, color: '#6B7280', marginTop: 1 }}>Footfall vs. Passerby — all stores combined</p>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                {/* Legend */}
+                <div style={{ display: 'flex', gap: 12 }}>
+                  {[{ c: PURPLE, l: 'Footfall' }, { c: '#00CE9C', l: 'Passerby' }].map(({ c, l }) => (
+                    <div key={l} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                      <div style={{ width: 12, height: 3, borderRadius: 2, background: c }} />
+                      <span style={{ fontSize: 10.5, color: '#6B7280' }}>{l}</span>
+                    </div>
+                  ))}
+                </div>
+                {/* Period toggle */}
+                <div style={{ display: 'flex', border: '1px solid #E5E7EB', borderRadius: 6, overflow: 'hidden' }}>
+                  {(['D','W','M','Y'] as const).map(p => (
+                    <button key={p} onClick={() => setPeriod(p)} style={{
+                      width: 28, height: 24, fontSize: 10.5, fontWeight: 600, border: 'none',
+                      cursor: 'pointer', background: period === p ? PURPLE : 'transparent',
+                      color: period === p ? 'white' : '#374151', transition: 'all 120ms',
+                    }}>{p}</button>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <svg viewBox={`0 0 ${TW} ${TH + 18}`} style={{ width: '100%', height: TH + 18, overflow: 'visible' }}>
+              <defs>
+                <linearGradient id="ins-fg" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={PURPLE} stopOpacity="0.14" />
+                  <stop offset="100%" stopColor={PURPLE} stopOpacity="0.01" />
+                </linearGradient>
+              </defs>
+              {/* Dashed gridlines — analytics style */}
+              {[0.25, 0.5, 0.75, 1].map(p => (
+                <line key={p} x1={0} y1={TH - 4 - p * (TH - 12)} x2={TW} y2={TH - 4 - p * (TH - 12)}
+                  stroke="#F3F4F6" strokeWidth="1" strokeDasharray="4,3" />
+              ))}
+              {/* Area fill under footfall */}
+              <path d={footfallArea} fill="url(#ins-fg)" />
+              {/* Passerby line */}
+              <polyline points={passerbyPts} fill="none" stroke="#00CE9C" strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round" />
+              {/* Footfall line */}
+              <polyline points={footfallPts} fill="none" stroke={PURPLE} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+              {/* Footfall dots */}
+              {TRAFFIC.map((d, i) => (
+                <circle key={i} cx={tx(i)} cy={ty(d.footfall)} r="2.5" fill="white" stroke={PURPLE} strokeWidth="1.5" />
+              ))}
+              {/* X axis labels */}
+              {TRAFFIC.map((d, i) => (
+                <text key={i} x={tx(i)} y={TH + 14} textAnchor="middle" fontSize="9" fill="#9CA3AF">{d.h}</text>
+              ))}
+            </svg>
+          </div>
+
+          {/* ── Row 3: Key Insights + Recommendations — side by side ── */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+
+            {/* Key Insights */}
+            <div style={{ background: 'white', border: '1px solid #E5E7EB', borderRadius: 12, padding: '16px 18px' }}>
+              <p style={{ fontSize: 13, fontWeight: 700, color: '#111827', marginBottom: 12 }}>Key Insights</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {insights.map((ins, i) => (
+                  <div key={i} style={{ display: 'flex', gap: 10, padding: '9px 12px', background: '#FAFAFA', borderRadius: 8, border: '1px solid #F3F4F6' }}>
+                    <div style={{ width: 24, height: 24, borderRadius: 7, background: ins.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: ins.color, flexShrink: 0 }}>
+                      {ins.icon}
+                    </div>
+                    <p style={{ fontSize: 11.5, color: '#374151', lineHeight: 1.55, margin: 0 }}>{ins.text}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Actionable Recommendations */}
+            <div style={{ background: 'white', border: '1px solid #E5E7EB', borderRadius: 12, padding: '16px 18px' }}>
+              <p style={{ fontSize: 13, fontWeight: 700, color: '#111827', marginBottom: 12 }}>Actionable Recommendations</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {recommendations.map((r, i) => (
+                  <div key={i} style={{ display: 'flex', gap: 12, padding: '11px 14px', border: '1px solid #E5E7EB', borderRadius: 9 }}>
+                    <div style={{ width: 22, height: 22, borderRadius: 6, background: '#EEE9FF', display: 'flex', alignItems: 'center', justifyContent: 'center', color: PURPLE, fontSize: 11, fontWeight: 700, flexShrink: 0 }}>
+                      {i + 1}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 4 }}>
+                        <p style={{ fontSize: 12, fontWeight: 600, color: '#111827', margin: 0 }}>{r.title}</p>
+                        <span style={{ padding: '2px 6px', borderRadius: 9999, fontSize: 9.5, fontWeight: 600, background: priorityColor[r.priority].bg, color: priorityColor[r.priority].color }}>{r.priority}</span>
+                      </div>
+                      <p style={{ fontSize: 11.5, color: '#6B7280', lineHeight: 1.55, margin: 0 }}>{r.body}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function TopBar() {
   const { triggerRefresh } = useDashboardContext();
   const pathname = usePathname();
   const showQualifiedShopper = pathname?.startsWith('/dashboard/analytics') ?? false;
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<DropdownType>(null);
+  const [showInsights, setShowInsights] = useState(false);
 
   // Camera selection
   const [selectedCameraIdx, setSelectedCameraIdx] = useState(0);
@@ -128,6 +384,7 @@ export function TopBar() {
   const genderLabel  = savedGenders.size === 2 ? 'All genders' : savedGenders.size === 1 ? Array.from(savedGenders)[0] : 'No gender';
 
   return (
+  <>
     <header className="flex-shrink-0" style={{ background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)', transition: 'background 200ms ease, border-color 200ms ease' }}>
 
       {/* ── Main top row ── */}
@@ -140,6 +397,7 @@ export function TopBar() {
 
           {/* Insights of the Day */}
           <button className="flex items-center gap-2 border transition-colors" style={{ height: 34, paddingLeft: 14, paddingRight: 14, borderRadius: 6, borderColor: '#DDD6FE', color: '#655BD3', background: '#F5F3FF', fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap', cursor: 'pointer' }}
+            onClick={() => setShowInsights(true)}
             onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#EDE9FE'; }}
             onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = '#F5F3FF'; }}>
             <TrendingUp size={14} strokeWidth={1.5} />
@@ -517,5 +775,9 @@ export function TopBar() {
         </div>
       </div>
     </header>
+
+    {/* Insights of the Day modal — rendered outside <header> to escape stacking context */}
+    {showInsights && <InsightsModal onClose={() => setShowInsights(false)} />}
+  </>
   );
 }

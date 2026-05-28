@@ -92,26 +92,26 @@ function ForecastPreview({ compact = false }: { compact?: boolean }) {
 
 /** Grouped bar chart — multi-store comparison */
 function ComparisonPreview({ compact = false }: { compact?: boolean }) {
-  const stores = ['Marina Bay', 'VivoCity', 'Orchard', 'Bugis'];
-  const vals   = [15234, 12800, 10900, 9450];
-  const conv   = [18.2, 15.3, 14.1, 12.7];
+  const stores = ['Marina Bay', 'VivoCity', 'Orchard', 'Bugis', 'Tampines'];
+  const vals   = [15234, 12800, 10900, 9450, 11200];
+  const conv   = [18.2, 15.3, 14.1, 12.7, 13.8];
   const maxV   = 16000;
-  const colors = [PURPLE, '#00CE9C', '#3B82F6', '#F59E0B'];
-  const barH   = compact ? 56 : 72;
+  const colors = [PURPLE, '#00CE9C', '#3B82F6', '#F59E0B', '#EC4899'];
+  const barH   = compact ? 68 : 108;
 
   return (
-    <div style={{ padding: compact ? '8px 12px 4px' : '10px 14px 4px' }}>
-      <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end', height: barH }}>
+    <div style={{ padding: compact ? '8px 10px 4px' : '10px 14px 4px' }}>
+      <div style={{ display: 'flex', gap: compact ? 5 : 7, alignItems: 'flex-end', height: barH }}>
         {stores.map((s, i) => (
           <div key={s} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-            <span style={{ fontSize: 8, fontWeight: 700, color: colors[i] }}>{conv[i]}%</span>
-            <div style={{ width: '100%', borderRadius: '3px 3px 0 0', height: Math.round((vals[i] / maxV) * (barH - 14)), background: colors[i], opacity: 0.85 }} />
+            <span style={{ fontSize: 7.5, fontWeight: 700, color: colors[i] }}>{conv[i]}%</span>
+            <div style={{ width: '100%', borderRadius: '4px 4px 0 0', height: Math.round((vals[i] / maxV) * (barH - 18)), background: colors[i], opacity: 0.88 }} />
           </div>
         ))}
       </div>
-      <div style={{ display: 'flex', gap: 8, borderTop: '1px solid #F1F5F9', paddingTop: 4 }}>
+      <div style={{ display: 'flex', gap: compact ? 5 : 7, borderTop: '1px solid #F1F5F9', paddingTop: 5 }}>
         {stores.map((s, i) => (
-          <div key={s} style={{ flex: 1, textAlign: 'center', fontSize: 8, color: '#94A3B8', fontWeight: 500 }}>{s}</div>
+          <div key={s} style={{ flex: 1, textAlign: 'center', fontSize: 7.5, color: '#94A3B8', fontWeight: 500 }}>{s}</div>
         ))}
       </div>
     </div>
@@ -121,21 +121,25 @@ function ComparisonPreview({ compact = false }: { compact?: boolean }) {
 /** Horizontal bar chart — dwell time by zone */
 function DwellTimePreview({ compact = false }: { compact?: boolean }) {
   const zones = [
-    { label: 'Zone A', avg: 4.2,  color: PURPLE },
-    { label: 'Zone B', avg: 8.7,  color: '#00CE9C' },
-    { label: 'Zone C', avg: 3.1,  color: '#F59E0B' },
-    { label: 'Zone D', avg: 11.4, color: '#3B82F6' },
+    { label: 'Entrance',  avg: 2.4,  color: PURPLE },
+    { label: 'Zone A',    avg: 4.2,  color: '#00CE9C' },
+    { label: 'Zone B',    avg: 8.7,  color: '#3B82F6' },
+    { label: 'Zone C',    avg: 3.1,  color: '#F59E0B' },
+    { label: 'Zone D',    avg: 11.4, color: '#EC4899' },
+    { label: 'Checkout',  avg: 6.8,  color: '#8B5CF6' },
   ];
   const max = 13;
+  const barH = compact ? 10 : 13;
+  const gap  = compact ? 6 : 9;
   return (
-    <div style={{ padding: compact ? '8px 12px 4px' : '10px 14px 4px', display: 'flex', flexDirection: 'column', gap: compact ? 7 : 9 }}>
+    <div style={{ padding: compact ? '8px 12px 4px' : '10px 14px 6px', display: 'flex', flexDirection: 'column', gap }}>
       {zones.map(z => (
         <div key={z.label} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ width: 36, fontSize: 8.5, color: '#64748B', fontWeight: 600, flexShrink: 0 }}>{z.label}</span>
-          <div style={{ flex: 1, height: 13, background: '#F1F5F9', borderRadius: 3, overflow: 'hidden' }}>
+          <span style={{ width: 42, fontSize: 8, color: '#64748B', fontWeight: 600, flexShrink: 0 }}>{z.label}</span>
+          <div style={{ flex: 1, height: barH, background: '#F1F5F9', borderRadius: 3, overflow: 'hidden' }}>
             <div style={{ width: `${(z.avg / max) * 100}%`, height: '100%', background: z.color, borderRadius: 3 }} />
           </div>
-          <span style={{ width: 28, fontSize: 8.5, fontWeight: 700, color: '#374151', textAlign: 'right' }}>{z.avg}m</span>
+          <span style={{ width: 26, fontSize: 8, fontWeight: 700, color: '#374151', textAlign: 'right' }}>{z.avg}m</span>
         </div>
       ))}
     </div>

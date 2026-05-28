@@ -430,52 +430,51 @@
 
   /* ── Nav mock ── */
   .nav-mock {
-    background: #1A1A2E; border-radius: 12px;
-    width: 220px; border: 1px solid rgba(255,255,255,0.08);
-    overflow: hidden;
+    background: #fff; border-radius: 12px;
+    width: 240px; border: 1px solid #E5E7EB;
+    overflow: hidden; display: flex; flex-direction: column;
   }
   .nm-logo {
-    height: 52px; padding: 0 16px;
+    height: 60px; padding: 0 20px;
     display: flex; align-items: center;
-    border-bottom: 1px solid rgba(255,255,255,0.08);
-    font-size: 15px; font-weight: 700; color: #655BD3; letter-spacing: -0.3px;
+    border-bottom: 1px solid #F1F5F9;
+    font-size: 18px; font-weight: 800; color: #111827; letter-spacing: -0.5px;
   }
-  .nm-body { padding: 8px 10px; display: flex; flex-direction: column; gap: 2px; }
+  .nm-body { padding: 8px 12px; display: flex; flex-direction: column; gap: 2px; flex: 1; }
   .nm-item {
-    display: flex; align-items: center; gap: 9px;
-    height: 40px; padding: 0 12px; border-radius: 8px;
-    font-size: 13.5px; font-weight: 500; color: #D1D5DB;
+    display: flex; align-items: center; gap: 12px;
+    height: 48px; padding: 0 12px; border-radius: 10px;
+    font-size: 14px; font-weight: 600; color: #374151;
     cursor: pointer; transition: all 120ms; text-decoration: none;
-    border-left: 2px solid transparent;
+    border-left: 3px solid transparent;
   }
-  .nm-item:hover { background: rgba(255,255,255,0.06); }
-  .nm-item.active { background: rgba(101,91,211,0.25); color: #fff; font-weight: 600; border-left: 2px solid #655BD3; }
+  .nm-item:hover { background: #F9FAFB; color: #111827; }
+  .nm-item.active { background: #EEE9FF; color: #655BD3; border-left: 3px solid #655BD3; }
   .nm-icon { color: #6B7280; flex-shrink: 0; display: flex; }
-  .nm-icon.active-icon { color: #fff; }
+  .nm-icon.active-icon { color: #655BD3; }
   .nm-sub-item {
     display: flex; align-items: center;
-    height: 32px; padding: 0 12px; padding-left: 38px; border-radius: 8px;
-    font-size: 12.5px; font-weight: 400; color: #6B7280;
+    height: 36px; padding: 0 12px; padding-left: 42px; border-radius: 8px;
+    font-size: 13px; font-weight: 500; color: #6B7280;
     cursor: pointer; text-decoration: none;
-    border-left: 2px solid transparent;
   }
-  .nm-sub-item:hover { background: rgba(255,255,255,0.06); color: #D1D5DB; }
-  .nm-sub-item.active { color: #fff; background: rgba(101,91,211,0.25); border-left: 2px solid #655BD3; font-weight: 500; }
+  .nm-sub-item:hover { background: #F9FAFB; color: #374151; }
+  .nm-sub-item.active { color: #655BD3; background: #EEE9FF; font-weight: 600; }
   .nm-footer {
-    padding: 12px 16px; border-top: 1px solid rgba(255,255,255,0.08);
+    padding: 14px 16px; border-top: 1px solid #F1F5F9;
     display: flex; align-items: center; gap: 10px;
   }
   .nm-avatar {
-    width: 30px; height: 30px; border-radius: 50%;
-    background: #655BD3; color: #fff; font-size: 11px; font-weight: 600;
+    width: 36px; height: 36px; border-radius: 50%;
+    background: #655BD3; color: #fff; font-size: 12px; font-weight: 700;
     display: flex; align-items: center; justify-content: center; flex-shrink: 0;
   }
-  .nm-user-name { font-size: 13px; font-weight: 600; color: #F9FAFB; }
+  .nm-user-name { font-size: 13px; font-weight: 700; color: #111827; }
   .nm-user-email { font-size: 11px; color: #6B7280; }
-  .nm-chevron { margin-left: auto; color: #6B7280; font-size: 12px; }
+  .nm-chevron { margin-left: auto; color: #9CA3AF; display: flex; }
 
   .nm-section { padding: 4px 10px 2px; }
-  .nm-label { font-size: 10px; font-weight: 600; color: #4B5563; text-transform: uppercase; letter-spacing: 0.08em; padding: 8px 12px 4px; }
+  .nm-label { font-size: 10px; font-weight: 600; color: #9CA3AF; text-transform: uppercase; letter-spacing: 0.08em; padding: 8px 12px 4px; }
   .nm-dot { display: none; }
 
   /* ── Tooltip mock ── */
@@ -1273,7 +1272,7 @@
       <div class="section-header">
         <div class="section-eyebrow">11 — Components</div>
         <div class="section-title">Navigation</div>
-        <div class="section-desc">Side navigation is default (240px, Ink background). Top navigation is an alternative configurable in Preferences > Device Settings.</div>
+        <div class="section-desc">Side navigation is default (240px, white background). Collapsible section groups with top-level labels. Top navigation is an alternative configurable in Preferences > Device Settings.</div>
       </div>
 
       <div class="grid-2">
@@ -1282,60 +1281,40 @@
           <div class="nav-mock">
             <div class="nm-logo">OlyRetail</div>
             <div class="nm-body">
-              <div class="nm-label">Home</div>
-              <a class="nm-item">
-                <span class="nm-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
-                Insights Dashboard
-              </a>
-              <a class="nm-item">
-                <span class="nm-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>
-                Checklist &amp; Tasks
-              </a>
-              <a class="nm-item">
-                <span class="nm-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>
-                Forecast
-              </a>
-
-              <div class="nm-label">Team Management</div>
-              <a class="nm-item">
-                <span class="nm-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
-                Staff / Team
-              </a>
-              <a class="nm-item">
-                <span class="nm-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
-                Permissions
-              </a>
-
-              <div class="nm-label">Analytics</div>
+              <!-- Home — active state -->
               <a class="nm-item active">
-                <span class="nm-icon active-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>
-                Traffic
+                <span class="nm-icon active-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
+                Home
               </a>
-              <a class="nm-sub-item">Queue Management</a>
-              <a class="nm-sub-item">Qualified Shopper Insights</a>
-
-              <div class="nm-label">Live Feed</div>
+              <!-- Team Management -->
               <a class="nm-item">
-                <span class="nm-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></span>
-                VMS Monitoring
+                <span class="nm-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+                Team Management
               </a>
-
-              <div class="nm-label">Preferences</div>
+              <!-- Analytics -->
               <a class="nm-item">
-                <span class="nm-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
-                Profile
+                <span class="nm-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>
+                Analytics
               </a>
+              <!-- Live Feed -->
               <a class="nm-item">
-                <span class="nm-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span>
-                Notification Settings
+                <span class="nm-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></span>
+                Live Feed
+              </a>
+              <!-- Preferences — with chevron -->
+              <a class="nm-item">
+                <span class="nm-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
+                Preferences
+                <span class="nm-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
               </a>
             </div>
             <div class="nm-footer">
-              <div class="nm-avatar">AK</div>
-              <div>
-                <div class="nm-user-name">Admin User</div>
+              <div class="nm-avatar">AM</div>
+              <div style="flex:1;min-width:0">
+                <div class="nm-user-name">Admin Manager</div>
                 <div class="nm-user-email">admin@olyretail.com</div>
               </div>
+              <span style="color:#9CA3AF;display:flex;flex-shrink:0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
             </div>
           </div>
         </div>
@@ -1346,17 +1325,20 @@
             <thead><tr><th>Property</th><th>Value</th></tr></thead>
             <tbody>
               <tr><td>Width</td><td>240px</td></tr>
-              <tr><td>Background</td><td><code>#1A1A2E</code></td></tr>
-              <tr><td>Section label</td><td>10px · 600 · <code>#6B7280</code> · UPPERCASE</td></tr>
-              <tr><td>Item height</td><td>40px · padding 10px 16px</td></tr>
-              <tr><td>Item font</td><td>14px · weight 500</td></tr>
-              <tr><td>Inactive colour</td><td><code>#D1D5DB</code></td></tr>
-              <tr><td>Active colour</td><td><code>#FFFFFF</code></td></tr>
-              <tr><td>Active bg</td><td><code>rgba(101,91,211,0.25)</code></td></tr>
-              <tr><td>Active accent</td><td>3px solid <code>#655BD3</code> (left)</td></tr>
-              <tr><td>Hover bg</td><td><code>rgba(255,255,255,0.06)</code></td></tr>
-              <tr><td>Sub-item indent</td><td>36px</td></tr>
-              <tr><td>Sub-item size</td><td>13px · <code>#9CA3AF</code></td></tr>
+              <tr><td>Background</td><td><code>#FFFFFF</code></td></tr>
+              <tr><td>Border</td><td><code>1px solid #E5E7EB</code></td></tr>
+              <tr><td>Logo</td><td>18px · weight 800 · <code>#111827</code></td></tr>
+              <tr><td>Item height</td><td>48px · padding 0 12px · border-radius 10px</td></tr>
+              <tr><td>Item font</td><td>14px · weight 600</td></tr>
+              <tr><td>Inactive colour</td><td><code>#374151</code></td></tr>
+              <tr><td>Inactive icon</td><td><code>#6B7280</code></td></tr>
+              <tr><td>Hover bg</td><td><code>#F9FAFB</code></td></tr>
+              <tr><td>Active colour</td><td><code>#655BD3</code></td></tr>
+              <tr><td>Active bg</td><td><code>#EEE9FF</code></td></tr>
+              <tr><td>Active accent</td><td>3px solid <code>#655BD3</code> (left border)</td></tr>
+              <tr><td>Footer border</td><td><code>1px solid #F1F5F9</code></td></tr>
+              <tr><td>Avatar size</td><td>36×36px · border-radius 50% · bg <code>#655BD3</code></td></tr>
+              <tr><td>Chevron icon</td><td>Right side of expandable items · <code>#9CA3AF</code></td></tr>
             </tbody>
           </table>
         </div>
