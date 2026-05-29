@@ -4,6 +4,7 @@ import { FileSpreadsheet, FileText } from 'lucide-react';
 import { ReportFilterDropdown } from '@/components/reports/ReportFilterDropdown';
 import { DateRangePicker } from '@/components/reports/DateRangePicker';
 import { ReportOverallPreview, ReportHourlyPreview } from '@/components/reports/ReportPreview';
+import { ReportDocument } from '@/components/reports/ReportDocument';
 
 type AnalysisType = 'overall' | 'hourly';
 
@@ -269,7 +270,7 @@ export default function ReportsPage() {
             </div>
 
             <div
-              className="reports-preview-scroll"
+              className="reports-preview-scroll reports-preview-body"
               style={{ flex: 1, minHeight: 0, overflowY: 'auto', overflowX: 'hidden' }}
             >
               {!generated ? (
@@ -286,10 +287,14 @@ export default function ReportsPage() {
                 >
                   Preview Not Available
                 </div>
-              ) : analysisType === 'overall' ? (
-                <ReportOverallPreview key="overall-preview" />
               ) : (
-                <ReportHourlyPreview key="hourly-preview" />
+                <ReportDocument>
+                  {analysisType === 'overall' ? (
+                    <ReportOverallPreview key="overall-preview" />
+                  ) : (
+                    <ReportHourlyPreview key="hourly-preview" />
+                  )}
+                </ReportDocument>
               )}
             </div>
           </div>

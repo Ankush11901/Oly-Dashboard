@@ -2,6 +2,7 @@
 import type { ApexOptions } from 'apexcharts';
 import { ApexWrapper } from './ApexWrapper';
 import { mergeApexOptions } from '@/lib/theme';
+import { REPORT_LIGHT } from '@/lib/reportLightTheme';
 import { AGE_GENDER_COLORS, AGE_GENDER_LABELS, FOOTFALL_BREAKDOWN } from '@/types/dashboard';
 
 interface Props {
@@ -10,6 +11,8 @@ interface Props {
   /** Override center display (e.g. "12.4%") */
   centerValue?: string;
   height?: number;
+  /** Force light Apex tooltip (report preview document). */
+  documentLight?: boolean;
 }
 
 export function VisitorDemographicsDonut({
@@ -17,15 +20,20 @@ export function VisitorDemographicsDonut({
   totalLabel = 'Total Visitors',
   centerValue,
   height = 310,
+  documentLight = false,
 }: Props) {
   const displayValue = centerValue ?? total.toLocaleString();
   const scaledSeries = FOOTFALL_BREAKDOWN.map(p => Math.round((p / 100) * total));
+  const labelColor = documentLight ? REPORT_LIGHT.text3 : 'var(--color-text-3)';
+  const valueColor = documentLight ? REPORT_LIGHT.text1 : 'var(--color-text-1)';
+  const strokeColor = documentLight ? REPORT_LIGHT.surface : 'var(--color-surface)';
 
   const options = mergeApexOptions({
     chart: {
       type: 'donut',
       height,
       toolbar: { show: false },
+      ...(documentLight ? { foreColor: REPORT_LIGHT.chartLabel } : {}),
       animations: {
         enabled: true,
         speed: 680,
@@ -43,14 +51,14 @@ export function VisitorDemographicsDonut({
             name: {
               show: true,
               fontSize: '11px',
-              color: 'var(--color-text-3)',
+              color: labelColor,
               offsetY: 18,
             },
             value: {
               show: true,
               fontSize: height > 250 ? '26px' : '18px',
               fontWeight: 700,
-              color: 'var(--color-text-1)',
+              color: valueColor,
               offsetY: -10,
               formatter: () => displayValue,
             },
@@ -58,7 +66,7 @@ export function VisitorDemographicsDonut({
               show: true,
               label: totalLabel,
               fontSize: '11px',
-              color: 'var(--color-text-3)',
+              color: labelColor,
               formatter: () => displayValue,
             },
           },
@@ -67,7 +75,7 @@ export function VisitorDemographicsDonut({
     },
     dataLabels: { enabled: false },
     legend: { show: false },
-    stroke: { width: 3, colors: ['var(--color-surface)'] },
+    stroke: { width: 3, colors: [strokeColor] },
     states: {
       hover: { filter: { type: 'lighten' } },
       active: { filter: { type: 'none' } },
@@ -80,7 +88,15 @@ export function VisitorDemographicsDonut({
         },
       },
     },
-  });
+  }, documentLight ? { theme: 'light' } : undefined);
 
-  return <ApexWrapper options={options} series={scaledSeries} type="donut" height={height} />;
+  return (
+    <ApexWrapper
+      options={options}
+      series={scaledSeries}
+      type="donut"
+      height={height}
+      chartKey={documentLight ? 'report-light' : undefined}
+    />
+  );
 }

@@ -1,5 +1,4 @@
 'use client';
-import { useState } from 'react';
 import { BarChart2, Table2 } from 'lucide-react';
 import { OlyRetailLogo } from '@/components/OlyRetailLogo';
 import { VisitorDemographicsDonut } from '@/components/charts/VisitorDemographicsDonut';
@@ -34,49 +33,11 @@ const FEMALE_LEGEND = [
   { label: 'Adults (35+ yrs)',   value: '900',    color: AGE_GENDER_COLORS[9] },
 ];
 
-type PreviewTab = 'overview' | 'detailed';
-
-function PreviewTabBar({ value, onChange }: { value: PreviewTab; onChange: (tab: PreviewTab) => void }) {
-  const tabs: { id: PreviewTab; label: string }[] = [
-    { id: 'overview', label: 'Overview' },
-    { id: 'detailed', label: 'Detailed Insights' },
-  ];
-
-  return (
-    <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid var(--color-border)', marginBottom: 18 }}>
-      {tabs.map(tab => {
-        const active = value === tab.id;
-        return (
-          <button
-            key={tab.id}
-            type="button"
-            onClick={() => onChange(tab.id)}
-            style={{
-              padding: '10px 16px',
-              fontSize: 13,
-              fontWeight: active ? 600 : 500,
-              color: active ? 'var(--color-primary)' : 'var(--color-text-3)',
-              background: 'transparent',
-              border: 'none',
-              borderBottom: active ? '2px solid var(--color-primary)' : '2px solid transparent',
-              marginBottom: -1,
-              cursor: 'pointer',
-              transition: 'color 150ms',
-            }}
-          >
-            {tab.label}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
 function ReportPreviewHeader({ title, subtitle }: { title: string; subtitle: string }) {
   return (
     <>
       <div style={{ marginBottom: 16 }}>
-        <OlyRetailLogo height={34} />
+        <OlyRetailLogo height={34} variant="light" />
       </div>
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 4 }}>
         <BarChart2 size={16} strokeWidth={1.75} style={{ color: 'var(--color-primary)', marginTop: 2, flexShrink: 0 }} />
@@ -89,6 +50,21 @@ function ReportPreviewHeader({ title, subtitle }: { title: string; subtitle: str
   );
 }
 
+function ReportDetailedSection({ heading }: { heading: string }) {
+  return (
+    <div style={{ paddingTop: 24, marginTop: 24, borderTop: '1px solid var(--color-border-subtle)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+        <Table2 size={15} strokeWidth={1.75} style={{ color: 'var(--color-primary)' }} />
+        <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-1)', margin: 0 }}>{heading}</p>
+      </div>
+      <ReportDetailedDataTable />
+      <div style={{ marginTop: 20 }}>
+        <ReportKpiSummary />
+      </div>
+    </div>
+  );
+}
+
 function ReportOverallOverviewCharts() {
   return (
     <>
@@ -96,7 +72,6 @@ function ReportOverallOverviewCharts() {
         Overall Walk-Ins and Demographics for the Selected Date
       </p>
 
-      {/* Row 1 — Donut + Passerby / Footfall trend */}
       <div
         style={{
           display: 'grid',
@@ -108,7 +83,7 @@ function ReportOverallOverviewCharts() {
       >
         <div style={{ minHeight: CHART_HEIGHT + 80 }}>
           <div style={{ height: CHART_HEIGHT, width: '100%' }}>
-            <VisitorDemographicsDonut total={REPORT_TOTAL} totalLabel="Total Footfall" height={CHART_HEIGHT} />
+            <VisitorDemographicsDonut total={REPORT_TOTAL} totalLabel="Total Footfall" height={CHART_HEIGHT} documentLight />
           </div>
           <div style={{ display: 'flex', justifyContent: 'center', gap: 20, marginTop: 4 }}>
             <div style={{ textAlign: 'center' }}>
@@ -147,7 +122,6 @@ function ReportOverallOverviewCharts() {
         </div>
       </div>
 
-      {/* Row 2 — Gender trend over time */}
       <div style={{ marginBottom: 20, paddingTop: 16, borderTop: '1px solid var(--color-border-subtle)' }}>
         <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text-1)', margin: '0 0 10px' }}>
           Gender Trend Over Time
@@ -157,7 +131,6 @@ function ReportOverallOverviewCharts() {
         </div>
       </div>
 
-      {/* Row 3 — Male / Female age breakdown */}
       <div
         style={{
           display: 'grid',
@@ -230,61 +203,27 @@ function ReportHourlyOverviewCharts() {
 }
 
 export function ReportOverallPreview() {
-  const [activeTab, setActiveTab] = useState<PreviewTab>('overview');
-
   return (
-    <div style={{ padding: '20px 22px' }}>
+    <div style={{ padding: '20px 22px', background: '#FFFFFF', color: '#0F172A' }}>
       <ReportPreviewHeader
         title="Footfall Analytics Overview"
         subtitle="Overall breakdown for the selected date period."
       />
-
-      <PreviewTabBar value={activeTab} onChange={setActiveTab} />
-
-      {activeTab === 'overview' ? (
-        <ReportOverallOverviewCharts />
-      ) : (
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-            <Table2 size={15} strokeWidth={1.75} style={{ color: 'var(--color-primary)' }} />
-            <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-1)', margin: 0 }}>Store-Level Breakdown</p>
-          </div>
-          <ReportDetailedDataTable />
-          <div style={{ marginTop: 20 }}>
-            <ReportKpiSummary />
-          </div>
-        </div>
-      )}
+      <ReportOverallOverviewCharts />
+      <ReportDetailedSection heading="Store-Level Breakdown" />
     </div>
   );
 }
 
 export function ReportHourlyPreview() {
-  const [activeTab, setActiveTab] = useState<PreviewTab>('overview');
-
   return (
-    <div style={{ padding: '20px 22px' }}>
+    <div style={{ padding: '20px 22px', background: '#FFFFFF', color: '#0F172A' }}>
       <ReportPreviewHeader
         title="Hourly Footfall Report"
         subtitle="Hour-by-hour breakdown for the selected date period."
       />
-
-      <PreviewTabBar value={activeTab} onChange={setActiveTab} />
-
-      {activeTab === 'overview' ? (
-        <ReportHourlyOverviewCharts />
-      ) : (
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-            <Table2 size={15} strokeWidth={1.75} style={{ color: 'var(--color-primary)' }} />
-            <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-1)', margin: 0 }}>Hourly Data</p>
-          </div>
-          <ReportDetailedDataTable />
-          <div style={{ marginTop: 20 }}>
-            <ReportKpiSummary />
-          </div>
-        </div>
-      )}
+      <ReportHourlyOverviewCharts />
+      <ReportDetailedSection heading="Hourly Data" />
     </div>
   );
 }

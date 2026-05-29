@@ -523,6 +523,93 @@ button:focus-visible {
   scrollbar-gutter: stable;
 }
 
+/* Report body inside preview — always light (export/PDF style), even when app is dark */
+.report-document,
+[data-theme="dark"] .report-document,
+.report-document[data-theme="light"] {
+  color-scheme: light;
+  background-color: #ffffff;
+  color: #0f172a;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08), 0 4px 16px rgba(15, 23, 42, 0.06);
+  overflow: hidden;
+
+  --color-primary:          #655bd3;
+  --color-primary-hover:    #5549c0;
+  --color-primary-emphasis: #655bd3;
+  --color-primary-emphasis-hover: #5549c0;
+  --color-on-primary:       #ffffff;
+  --color-primary-light:    #eee9ff;
+
+  --color-page-bg:          #f4f6f9;
+  --color-surface:          #ffffff;
+  --color-surface-2:        #f8fafc;
+  --color-surface-3:        #f1f5f9;
+  --color-surface-elevated: #ffffff;
+  --color-border:           #e2e8f0;
+  --color-border-subtle:    #eef2f6;
+  --color-text-1:           #0f172a;
+  --color-text-2:           #334155;
+  --color-text-3:           #64748b;
+  --color-text-4:           #94a3b8;
+
+  --color-accent-bg:        #f5f3ff;
+  --color-accent-bg-hover:  #ede9fe;
+  --color-accent-border:    #ddd6fe;
+  --color-accent-muted:     #c4b5fd;
+
+  --color-neutral-50:       #f9fafb;
+  --color-neutral-100:      #f3f4f6;
+  --color-neutral-300:      #d1d5db;
+  --color-neutral-500:      #6b7280;
+  --color-neutral-700:      #374151;
+  --color-neutral-900:      #111827;
+  --color-white:            #ffffff;
+
+  --chart-1: #655bd3;
+  --chart-2: #00ce9c;
+  --chart-3: #f59e0b;
+  --chart-4: #3b82f6;
+  --chart-5: #ec4899;
+  --chart-6: #8b5cf6;
+
+  --color-chart-grid:       #e8ecf1;
+  --color-chart-label:      #94a3b8;
+  --color-tooltip-bg:       #1a1a2e;
+  --color-tooltip-border:   rgba(255, 255, 255, 0.08);
+  --color-tooltip-muted:    #9ca3af;
+
+  --shadow-card:            0 1px 2px rgba(15, 23, 42, 0.04), 0 2px 8px rgba(15, 23, 42, 0.06);
+  --shadow-md:              0 4px 14px rgba(15, 23, 42, 0.1), 0 2px 4px rgba(15, 23, 42, 0.04);
+}
+
+/* Recharts / Apex — force light chart chrome inside report document */
+.report-document .recharts-cartesian-grid line {
+  stroke: #e8ecf1;
+}
+
+.report-document .recharts-cartesian-axis-tick text,
+.report-document .recharts-legend-item-text {
+  fill: #94a3b8;
+  color: #64748b;
+}
+
+.report-document .apexcharts-text,
+.report-document .apexcharts-datalabel,
+.report-document .apexcharts-datalabel-label,
+.report-document .apexcharts-datalabel-value {
+  fill: #64748b;
+}
+
+.report-document .apexcharts-datalabel-value {
+  fill: #0f172a;
+}
+
+/* Padding around light document when preview panel is in dark mode */
+.reports-preview-body {
+  padding: 16px 18px 20px;
+}
+
 /* ── Team role pills ───────────────────────────────────────────────────── */
 .role-pill {
   display: inline-block;

@@ -23,7 +23,8 @@ export function rechartsTooltipStyle(): CSSProperties {
 }
 
 /** Base ApexCharts options merged with caller options */
-export function apexThemeBase(): ApexOptions {
+export function apexThemeBase(theme?: 'light' | 'dark'): ApexOptions {
+  const resolved = theme ?? (isDarkTheme() ? 'dark' : 'light');
   return {
     chart: {
       background: 'transparent',
@@ -45,17 +46,25 @@ export function apexThemeBase(): ApexOptions {
     legend: {
       labels: { colors: 'var(--color-text-2)' },
     },
-    tooltip: { theme: isDarkTheme() ? 'dark' : 'light' },
+    tooltip: { theme: resolved },
   };
 }
 
-export function mergeApexOptions(overrides: ApexOptions): ApexOptions {
-  const base = apexThemeBase();
+export function mergeApexOptions(overrides: ApexOptions, opts?: { theme?: 'light' | 'dark' }): ApexOptions {
+  const resolvedTheme = opts?.theme ?? (isDarkTheme() ? 'dark' : 'light');
+  const base = apexThemeBase(resolvedTheme);
+  const overrideTooltip = overrides.tooltip;
+
   return {
     ...base,
     ...overrides,
     chart: { ...base.chart, ...overrides.chart },
     grid: { ...base.grid, ...overrides.grid },
+    tooltip: {
+      ...base.tooltip,
+      ...overrideTooltip,
+      theme: overrideTooltip?.theme ?? resolvedTheme,
+    },
   };
 }
 

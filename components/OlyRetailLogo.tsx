@@ -4,11 +4,16 @@ import { useTheme } from '@/components/ThemeProvider';
 interface OlyRetailLogoProps {
   height?: number;
   className?: string;
+  /** Force logo ink color regardless of app theme (e.g. report document). */
+  variant?: 'auto' | 'light' | 'dark';
 }
 
-export function OlyRetailLogo({ height = 26, className }: OlyRetailLogoProps) {
+export function OlyRetailLogo({ height = 26, className, variant = 'auto' }: OlyRetailLogoProps) {
   const { theme } = useTheme();
-  const fill = theme === 'dark' ? '#FFFFFF' : '#000000';
+  const fill =
+    variant === 'light' ? '#000000'
+    : variant === 'dark' ? '#FFFFFF'
+    : theme === 'dark' ? '#FFFFFF' : '#000000';
 
   return (
     <svg

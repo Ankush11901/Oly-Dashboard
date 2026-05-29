@@ -621,6 +621,7 @@ export function TopBar() {
               : pathname?.startsWith('/dashboard/analytics') ? 'Analytics'
               : pathname?.startsWith('/dashboard/team') ? 'Team Management'
               : pathname?.startsWith('/dashboard/live') ? 'Live Feed'
+              : pathname?.startsWith('/dashboard/reports') ? 'Reports'
               : pathname?.startsWith('/dashboard/preferences') ? 'Preferences'
               : 'Dashboard'}
           </p>
