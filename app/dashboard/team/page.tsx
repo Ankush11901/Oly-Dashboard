@@ -76,14 +76,14 @@ const LOCATIONS = [
 ];
 
 const STATUS_CFG: Record<Status, { dot: string; color: string }> = {
-  Active:     { dot: '#16A34A', color: '#16A34A' },
-  'On Leave': { dot: '#D97706', color: '#D97706' },
-  Inactive:   { dot: '#9CA3AF', color: '#9CA3AF' },
+  Active:     { dot: 'var(--status-active-dot)', color: 'var(--status-active-text)' },
+  'On Leave': { dot: 'var(--status-leave-dot)', color: 'var(--status-leave-text)' },
+  Inactive:   { dot: 'var(--status-inactive-dot)', color: 'var(--status-inactive-text)' },
 };
 
 const PERM_CFG: Record<PermLevel, { label: string; bg: string; color: string; border: string }> = {
-  full: { label: 'Full',      bg: '#F0FDF4', color: '#16A34A', border: '#BBF7D0' },
-  view: { label: 'View',      bg: '#EFF6FF', color: '#2563EB', border: '#BFDBFE' },
+  full: { label: 'Full',      bg: 'var(--perm-full-bg)', color: 'var(--perm-full-text)', border: 'var(--perm-full-border)' },
+  view: { label: 'View',      bg: 'var(--perm-view-bg)', color: 'var(--perm-view-text)', border: 'var(--perm-view-border)' },
   none: { label: 'No Access', bg: 'var(--color-surface-2)', color: 'var(--color-text-4)', border: 'var(--color-border)' },
 };
 
@@ -315,15 +315,16 @@ function ActivityLogModal({ member, onClose }: { member: Member; onClose: () => 
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
-      style={{ background: 'rgba(17,24,39,0.55)', backdropFilter: 'blur(3px)' }}
+      className="fixed inset-0 z-50 flex items-center justify-center theme-overlay"
+      style={{ backdropFilter: 'blur(3px)' }}
       onClick={onClose}
     >
       <div
+        className="modal-panel"
         style={{
-          background: 'var(--color-surface)', borderRadius: 20, width: '100%', maxWidth: 560,
+          borderRadius: 20, width: '100%', maxWidth: 560,
           maxHeight: '88vh', display: 'flex', flexDirection: 'column',
-          boxShadow: '0 24px 80px rgba(0,0,0,0.18)', overflow: 'hidden',
+          overflow: 'hidden',
         }}
         onClick={e => e.stopPropagation()}
       >
@@ -569,20 +570,19 @@ function MemberModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
-      style={{ background: 'rgba(17,24,39,0.55)', backdropFilter: 'blur(3px)' }}
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center theme-overlay"
+      style={{ backdropFilter: 'blur(3px)' }}
       onClick={onClose}
     >
       <div
+        className="modal-panel"
         style={{
-          background: 'var(--color-surface)',
           borderRadius: 20,
           width: '100%',
           maxWidth: 580,
           maxHeight: '92vh',
           display: 'flex',
           flexDirection: 'column',
-          boxShadow: '0 24px 80px rgba(0,0,0,0.18)',
           overflow: 'hidden',
         }}
         onClick={e => e.stopPropagation()}
@@ -718,15 +718,15 @@ function MemberModal({
                         onClick={() => handleRoleChange(r.id)}
                         style={{
                           padding: '10px 12px', borderRadius: 9,
-                          border: `1.5px solid ${active ? r.color + '80' : 'var(--color-border)'}`,
-                          background: active ? r.color + '0D' : 'var(--color-surface)',
+                          border: `1.5px solid ${active ? 'var(--color-primary)' : 'var(--color-border)'}`,
+                          background: active ? 'var(--color-primary-light)' : 'var(--color-surface)',
                           textAlign: 'left', cursor: 'pointer',
                           transition: 'all 150ms ease',
                         }}
                       >
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                          <span style={{ fontSize: 12.5, fontWeight: 700, color: active ? r.color : 'var(--color-text-1)', flex: 1 }}>{r.name}</span>
-                          {active && <Check size={12} strokeWidth={2.5} style={{ color: r.color, flexShrink: 0 }} />}
+                          <span style={{ fontSize: 12.5, fontWeight: 700, color: active ? 'var(--color-primary)' : 'var(--color-text-1)', flex: 1 }}>{r.name}</span>
+                          {active && <Check size={12} strokeWidth={2.5} style={{ color: 'var(--color-primary)', flexShrink: 0 }} />}
                         </div>
                         <p style={{ fontSize: 11, color: 'var(--color-text-4)', margin: 0, lineHeight: 1.4 }}>{r.description}</p>
                       </button>
@@ -991,7 +991,7 @@ function TeamPageContent() {
 
       {/* Table */}
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
+        <table className="table-surface" style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
           <colgroup>
             <col style={{ width: '24%' }} />
             <col style={{ width: '14%' }} />
@@ -1099,7 +1099,7 @@ function TeamPageContent() {
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                           cursor: 'pointer', color: '#00CE9C', transition: 'all 150ms ease',
                         }}
-                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#F0FDF9'; (e.currentTarget as HTMLElement).style.borderColor = '#6EE7CF'; }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--color-accent-bg-hover)'; (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-accent-border)'; }}
                         onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'var(--color-surface)'; (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-border)'; }}
                       >
                         <Activity size={14} strokeWidth={1.75} />
@@ -1113,7 +1113,7 @@ function TeamPageContent() {
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                           cursor: 'pointer', color: '#EF4444', transition: 'all 150ms ease',
                         }}
-                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#FEF2F2'; (e.currentTarget as HTMLElement).style.borderColor = '#FECACA'; }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--color-error-light)'; (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-error)'; }}
                         onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'var(--color-surface)'; (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-border)'; }}
                       >
                         <Trash2 size={14} strokeWidth={1.75} />
@@ -1162,17 +1162,18 @@ function TeamPageContent() {
       {/* Delete confirmation */}
       {deleteId !== null && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center"
-          style={{ background: 'rgba(17,24,39,0.55)', backdropFilter: 'blur(2px)' }}
+          className="fixed inset-0 z-50 flex items-center justify-center theme-overlay"
+          style={{ backdropFilter: 'blur(2px)' }}
           onClick={() => setDeleteId(null)}
         >
           <div
-            style={{ background: 'var(--color-surface)', borderRadius: 16, width: 360, padding: '28px', boxShadow: '0 24px 64px rgba(0,0,0,0.16)' }}
+            className="modal-panel"
+            style={{ borderRadius: 16, width: 360, padding: '28px' }}
             onClick={e => e.stopPropagation()}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
-              <div style={{ width: 42, height: 42, borderRadius: 12, background: '#FEF2F2', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <Trash2 size={18} style={{ color: '#EF4444' }} strokeWidth={1.75} />
+              <div style={{ width: 42, height: 42, borderRadius: 12, background: 'var(--color-error-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Trash2 size={18} style={{ color: 'var(--color-error)' }} strokeWidth={1.75} />
               </div>
               <div>
                 <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-text-1)', margin: 0 }}>Remove Member</p>

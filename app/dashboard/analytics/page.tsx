@@ -998,23 +998,15 @@ function InfoTooltip({ widgetId }: { widgetId: string }) {
   return (
     <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
       <button
+        type="button"
+        className="info-icon-btn"
         onMouseEnter={() => setShow(true)}
         onMouseLeave={() => setShow(false)}
         onFocus={() => setShow(true)}
         onBlur={() => setShow(false)}
-        style={{
-          width: 22, height: 22, borderRadius: '50%',
-          background: 'var(--color-text-3)',
-          border: 'none',
-          cursor: 'pointer', display: 'flex', alignItems: 'center',
-          justifyContent: 'center', color: '#fff', flexShrink: 0,
-          transition: 'background 150ms',
-          padding: 0,
-        }}
-        onMouseOver={e => { (e.currentTarget as HTMLElement).style.background = 'var(--color-primary-emphasis)'; }}
-        onMouseOut={e => { (e.currentTarget as HTMLElement).style.background = 'var(--color-text-3)'; }}
+        aria-label="Widget information"
       >
-        <Info size={12} strokeWidth={2} />
+        <Info size={12} strokeWidth={2.25} />
       </button>
       {show && (
         <div style={{
@@ -2202,16 +2194,16 @@ function PlacedWidget({
       {/* Snapshots modal — footfall_trend only */}
       {widgetId === 'footfall_trend' && showSnapshots && (
         <div
+          className="theme-overlay"
           onClick={() => setShowSnapshots(false)}
           style={{
             position: 'fixed', inset: 0, zIndex: 9000,
-            background: 'rgba(17,24,39,0.55)',
-            backdropFilter: 'blur(4px)',
             display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
             padding: '8vh 24px 24px',
           }}
         >
           <div
+            className="modal-panel"
             onClick={e => e.stopPropagation()}
             style={{
               background: 'var(--color-page-bg)',
@@ -2221,7 +2213,6 @@ function PlacedWidget({
               maxHeight: '90vh',
               display: 'flex',
               flexDirection: 'column',
-              boxShadow: '0 32px 80px rgba(0,0,0,0.22)',
               overflow: 'hidden',
             }}
           >
@@ -2242,26 +2233,11 @@ function PlacedWidget({
               }}>Live</span>
               <div style={{ flex: 1 }} />
               <button
+                type="button"
+                className="modal-close-btn"
                 onClick={() => setShowSnapshots(false)}
-                style={{
-                  width: 28, height: 28, borderRadius: 7,
-                  border: '1px solid var(--color-border)', background: 'var(--color-surface)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  cursor: 'pointer', color: 'var(--color-text-4)', flexShrink: 0,
-                  transition: 'background 150ms, border-color 150ms, color 150ms',
-                }}
-                onMouseEnter={e => {
-                  const el = e.currentTarget as HTMLElement;
-                  el.style.background = '#FEF2F2';
-                  el.style.borderColor = '#FECACA';
-                  el.style.color = '#DC2626';
-                }}
-                onMouseLeave={e => {
-                  const el = e.currentTarget as HTMLElement;
-                  el.style.background = 'var(--color-surface)';
-                  el.style.borderColor = 'var(--color-border)';
-                  el.style.color = 'var(--color-text-4)';
-                }}
+                style={{ width: 28, height: 28, borderRadius: 7, flexShrink: 0 }}
+                aria-label="Close snapshots"
               >
                 <X size={13} strokeWidth={2.5} />
               </button>
@@ -2279,30 +2255,9 @@ function PlacedWidget({
                 {(['all', 'entry', 'exit', 'passerby'] as const).map((f) => (
                   <button
                     key={f}
+                    type="button"
                     onClick={() => changeSnapFilter(f)}
-                    style={{
-                      height: 28, paddingLeft: 12, paddingRight: 12,
-                      borderRadius: 999,
-                      border: snapEventFilter === f ? 'none' : '1px solid #E5E7EB',
-                      cursor: 'pointer',
-                      fontSize: 12, fontWeight: 500,
-                      background: snapEventFilter === f ? 'var(--color-primary)' : 'var(--color-surface)',
-                      color: snapEventFilter === f ? 'white' : 'var(--color-text-3)',
-                      flexShrink: 0,
-                      transition: 'background 150ms, color 150ms',
-                    }}
-                    onMouseEnter={e => {
-                      if (snapEventFilter !== f) {
-                        (e.currentTarget as HTMLElement).style.background = '#F9F7FF';
-                        (e.currentTarget as HTMLElement).style.color = 'var(--color-primary)';
-                      }
-                    }}
-                    onMouseLeave={e => {
-                      if (snapEventFilter !== f) {
-                        (e.currentTarget as HTMLElement).style.background = 'var(--color-surface)';
-                        (e.currentTarget as HTMLElement).style.color = 'var(--color-text-3)';
-                      }
-                    }}
+                    className={`filter-pill${snapEventFilter === f ? ' filter-pill--active' : ''}`}
                   >
                     {f === 'all' ? 'All Events' : f.charAt(0).toUpperCase() + f.slice(1)}
                   </button>
@@ -2326,8 +2281,8 @@ function PlacedWidget({
                     cursor: 'pointer', flexShrink: 0,
                     transition: 'background 150ms',
                   }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#F9F7FF'; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = '#fff'; }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--color-accent-bg)'; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'var(--color-surface)'; }}
                 >
                   <RefreshCw
                     size={12} strokeWidth={2.2}
@@ -2342,18 +2297,15 @@ function PlacedWidget({
                 {/* Info button */}
                 <div style={{ position: 'relative', flexShrink: 0 }}>
                   <button
+                    type="button"
+                    className="info-icon-btn info-icon-btn--sm"
                     onMouseEnter={() => setSnapShowInfo(true)}
                     onMouseLeave={() => setSnapShowInfo(false)}
                     onFocus={() => setSnapShowInfo(true)}
                     onBlur={() => setSnapShowInfo(false)}
-                    style={{
-                      background: 'none', border: 'none', cursor: 'pointer',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      width: 28, height: 28, color: 'var(--color-text-4)',
-                      transition: 'color 150ms',
-                    }}
+                    aria-label="Snapshots information"
                   >
-                    <Info size={14} strokeWidth={1.8} />
+                    <Info size={14} strokeWidth={2.25} />
                   </button>
                   {snapShowInfo && (
                     <div style={{
@@ -2442,12 +2394,11 @@ function AddWidgetsModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
-      style={{ background: 'rgba(17,24,39,0.6)' }}
+      className="fixed inset-0 z-50 flex items-center justify-center theme-overlay"
       onClick={onClose}
     >
       <div
-        className="bg-white shadow-2xl flex flex-col"
+        className="modal-panel flex flex-col"
         style={{ borderRadius: 16, width: 640, maxHeight: '80vh' }}
         onClick={e => e.stopPropagation()}
       >
@@ -2732,12 +2683,11 @@ function CreatePageModal({ onClose, onCreate }: { onClose: () => void; onCreate:
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
-      style={{ background: 'rgba(17,24,39,0.6)' }}
+      className="fixed inset-0 z-50 flex items-center justify-center theme-overlay"
       onClick={onClose}
     >
       <div
-        className="bg-white shadow-2xl flex flex-col"
+        className="modal-panel flex flex-col"
         style={{ borderRadius: 16, width: 600, maxHeight: '80vh' }}
         onClick={e => e.stopPropagation()}
       >

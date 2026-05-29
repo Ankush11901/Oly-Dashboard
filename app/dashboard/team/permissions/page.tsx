@@ -582,8 +582,8 @@ export default function PermissionsPage() {
 
       {/* ── Create Role Modal ──────────────────────────────────────────────── */}
       {createOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(17,24,39,0.6)' }} onClick={() => setCreateOpen(false)}>
-          <div onClick={e => e.stopPropagation()} style={{ background: 'var(--color-surface)', borderRadius: 16, boxShadow: '0 20px 60px rgba(0,0,0,0.3)', width: '100%', maxWidth: 448, padding: 28 }}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center theme-overlay" onClick={() => setCreateOpen(false)}>
+          <div onClick={e => e.stopPropagation()} className="modal-panel" style={{ borderRadius: 16, width: '100%', maxWidth: 448, padding: 28 }}>
             <div className="flex items-center justify-between mb-5">
               <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-text-1)' }}>Create New Role</h3>
               <button onClick={() => setCreateOpen(false)} style={{ padding: 6, borderRadius: 8, border: 'none', background: 'var(--color-surface-2)', color: 'var(--color-text-4)', cursor: 'pointer' }}><X size={16} /></button>
@@ -617,8 +617,8 @@ export default function PermissionsPage() {
 
       {/* ── Edit Role Modal ────────────────────────────────────────────────── */}
       {editRole && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(17,24,39,0.6)' }} onClick={() => setEditRole(null)}>
-          <div onClick={e => e.stopPropagation()} style={{ background: 'var(--color-surface)', borderRadius: 16, boxShadow: '0 20px 60px rgba(0,0,0,0.3)', width: '100%', maxWidth: 448, padding: 28 }}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center theme-overlay" onClick={() => setEditRole(null)}>
+          <div onClick={e => e.stopPropagation()} className="modal-panel" style={{ borderRadius: 16, width: '100%', maxWidth: 448, padding: 28 }}>
             <div className="flex items-center justify-between mb-5">
               <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-text-1)' }}>Edit Role</h3>
               <button onClick={() => setEditRole(null)} style={{ padding: 6, borderRadius: 8, border: 'none', background: 'var(--color-surface-2)', color: 'var(--color-text-4)', cursor: 'pointer' }}><X size={16} /></button>
@@ -651,8 +651,8 @@ export default function PermissionsPage() {
 
       {/* ── Delete Role Confirmation ───────────────────────────────────────── */}
       {deleteRoleId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(17,24,39,0.6)' }} onClick={() => setDeleteRoleId(null)}>
-          <div onClick={e => e.stopPropagation()} style={{ background: 'var(--color-surface)', borderRadius: 16, boxShadow: '0 20px 60px rgba(0,0,0,0.3)', width: '100%', maxWidth: 384, padding: 28 }}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center theme-overlay" onClick={() => setDeleteRoleId(null)}>
+          <div onClick={e => e.stopPropagation()} className="modal-panel" style={{ borderRadius: 16, width: '100%', maxWidth: 384, padding: 28 }}>
             <div className="flex items-center gap-3 mb-3">
               <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'var(--color-error-light)' }}>
                 <Trash2 size={16} style={{ color: '#DC2626' }} />

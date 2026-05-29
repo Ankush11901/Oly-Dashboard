@@ -73,10 +73,10 @@ function NotificationsTab() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Alert types */}
-      <div className="card">
-        <div className="flex items-center gap-2 mb-4">
+      <div className="card" style={{ padding: '16px 20px' }}>
+        <div className="flex items-center gap-2 mb-3">
           <AlertCircle size={15} strokeWidth={1.5} style={{ color: 'var(--color-primary)' }} />
           <h2 style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-1)' }}>Alert Types</h2>
         </div>
@@ -99,8 +99,8 @@ function NotificationsTab() {
       </div>
 
       {/* Delivery channels */}
-      <div className="card">
-        <div className="flex items-center gap-2 mb-4">
+      <div className="card" style={{ padding: '16px 20px' }}>
+        <div className="flex items-center gap-2 mb-3">
           <MessageSquare size={15} strokeWidth={1.5} style={{ color: 'var(--color-primary)' }} />
           <h2 style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-1)' }}>Delivery Channels</h2>
         </div>
@@ -122,63 +122,64 @@ function NotificationsTab() {
         </div>
       </div>
 
-      {/* Quiet Hours */}
-      <div className="card">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <Bell size={15} strokeWidth={1.5} style={{ color: 'var(--color-primary)' }} />
-            <h2 style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-1)' }}>Quiet Hours</h2>
+      {/* Quiet hours + store rules — side by side */}
+      <div className="prefs-compact-grid-2">
+        <div className="card" style={{ padding: '16px 20px' }}>
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <Bell size={15} strokeWidth={1.5} style={{ color: 'var(--color-primary)' }} />
+              <h2 style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-1)' }}>Quiet Hours</h2>
+            </div>
+            <Toggle on={quietEnabled} onChange={() => setQuietEnabled(q => !q)} />
           </div>
-          <Toggle on={quietEnabled} onChange={() => setQuietEnabled(q => !q)} />
+          <p style={{ fontSize: 12, color: 'var(--color-text-3)', marginBottom: 10 }}>
+            No notifications during these hours.
+          </p>
+          <div className={`flex items-center gap-3 transition-opacity ${!quietEnabled ? 'opacity-40 pointer-events-none' : ''}`}>
+            <div className="flex-1">
+              <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--color-text-2)' }}>From</label>
+              <select value={quietStart} onChange={e => setQuietStart(e.target.value)} className="w-full text-sm rounded-lg px-3 py-2 outline-none" style={{ border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: 'var(--color-text-1)' }}>
+                {HOURS.map(h => <option key={h}>{h}</option>)}
+              </select>
+            </div>
+            <span style={{ color: 'var(--color-text-3)', fontSize: 13, marginTop: 18 }}>to</span>
+            <div className="flex-1">
+              <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--color-text-2)' }}>Until</label>
+              <select value={quietEnd} onChange={e => setQuietEnd(e.target.value)} className="w-full text-sm rounded-lg px-3 py-2 outline-none" style={{ border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: 'var(--color-text-1)' }}>
+                {HOURS.map(h => <option key={h}>{h}</option>)}
+              </select>
+            </div>
+          </div>
         </div>
-        <p style={{ fontSize: 12, color: 'var(--color-text-3)', marginBottom: 14 }}>
-          No notifications will be sent during these hours.
-        </p>
-        <div className={`flex items-center gap-4 transition-opacity ${!quietEnabled ? 'opacity-40 pointer-events-none' : ''}`}>
-          <div className="flex-1">
-            <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--color-text-2)' }}>From</label>
-            <select value={quietStart} onChange={e => setQuietStart(e.target.value)} className="w-full text-sm rounded-lg px-3 py-2 outline-none" style={{ border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: 'var(--color-text-1)' }}>
-              {HOURS.map(h => <option key={h}>{h}</option>)}
-            </select>
-          </div>
-          <span style={{ color: 'var(--color-text-3)', fontSize: 13, marginTop: 18 }}>to</span>
-          <div className="flex-1">
-            <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--color-text-2)' }}>Until</label>
-            <select value={quietEnd} onChange={e => setQuietEnd(e.target.value)} className="w-full text-sm rounded-lg px-3 py-2 outline-none" style={{ border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: 'var(--color-text-1)' }}>
-              {HOURS.map(h => <option key={h}>{h}</option>)}
-            </select>
-          </div>
-        </div>
-      </div>
 
-      {/* Store-specific rules */}
-      <div className="card">
-        <div className="flex items-center gap-2 mb-3">
-          <Bell size={15} strokeWidth={1.5} style={{ color: 'var(--color-primary)' }} />
-          <h2 style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-1)' }}>Store-Specific Rules</h2>
-        </div>
-        <p style={{ fontSize: 12, color: 'var(--color-text-3)', marginBottom: 12 }}>
-          Receive notifications only for specific stores.
-        </p>
-        <div className="flex flex-wrap gap-2">
-          {STORES.map(store => {
-            const active = storeRule === store;
-            return (
-              <button
-                key={store}
-                onClick={() => setStoreRule(store)}
-                style={{
-                  padding: '6px 14px', borderRadius: 99, fontSize: 12, fontWeight: 600,
-                  border: `1.5px solid ${active ? 'var(--color-primary)' : 'var(--color-border)'}`,
-                  background: active ? 'var(--color-primary-light)' : 'var(--color-surface)',
-                  color: active ? 'var(--color-primary)' : 'var(--color-text-2)',
-                  cursor: 'pointer', transition: 'all 150ms',
-                }}
-              >
-                {store}
-              </button>
-            );
-          })}
+        <div className="card" style={{ padding: '16px 20px' }}>
+          <div className="flex items-center gap-2 mb-2">
+            <Bell size={15} strokeWidth={1.5} style={{ color: 'var(--color-primary)' }} />
+            <h2 style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-1)' }}>Store-Specific Rules</h2>
+          </div>
+          <p style={{ fontSize: 12, color: 'var(--color-text-3)', marginBottom: 10 }}>
+            Limit alerts to selected stores.
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {STORES.map(store => {
+              const active = storeRule === store;
+              return (
+                <button
+                  key={store}
+                  onClick={() => setStoreRule(store)}
+                  style={{
+                    padding: '5px 12px', borderRadius: 99, fontSize: 11.5, fontWeight: 600,
+                    border: `1.5px solid ${active ? 'var(--color-primary)' : 'var(--color-border)'}`,
+                    background: active ? 'var(--color-primary-light)' : 'var(--color-surface)',
+                    color: active ? 'var(--color-primary)' : 'var(--color-text-2)',
+                    cursor: 'pointer', transition: 'all 150ms',
+                  }}
+                >
+                  {store}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
@@ -201,7 +202,7 @@ function NotificationsTab() {
 // ── Display & Navigation tab ──────────────────────────────────────────────────
 function SettingCard({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 12, padding: '20px 24px', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
+    <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 12, padding: '16px 20px', boxShadow: 'var(--shadow-card)' }}>
       {children}
     </div>
   );
@@ -209,7 +210,7 @@ function SettingCard({ children }: { children: React.ReactNode }) {
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-text-4)', letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: 16 }}>
+    <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-text-4)', letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: 12 }}>
       {children}
     </p>
   );
@@ -258,7 +259,7 @@ function DisplayTab() {
   ];
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       {/* Navigation Style */}
       <SettingCard>
         <SectionLabel>Navigation Layout</SectionLabel>
@@ -273,7 +274,7 @@ function DisplayTab() {
                   flex: 1, display: 'flex', flexDirection: 'column', gap: 12,
                   padding: '16px 16px 14px', borderRadius: 10,
                   border: isActive ? '2px solid var(--color-primary)' : '1.5px solid var(--color-border)',
-                  background: isActive ? '#F9F7FF' : 'var(--color-surface-2)',
+                  background: isActive ? 'var(--color-primary-light)' : 'var(--color-surface-2)',
                   cursor: 'pointer', textAlign: 'left',
                   transition: 'border 150ms ease, background 150ms ease',
                   position: 'relative',
@@ -363,16 +364,16 @@ export default function NotificationsAndDisplayPage() {
   const [active, setActive] = useState<'notifications' | 'display'>('notifications');
 
   return (
-    <div className="p-8">
+    <div className="prefs-compact-page">
       {/* Page header */}
-      <div className="flex items-center gap-3 mb-6">
+      <div className="flex items-center gap-3 mb-4">
         <Bell size={24} style={{ color: 'var(--color-primary)' }} strokeWidth={1.5} />
         <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--color-text-1)' }}>Alerts &amp; Display</h1>
       </div>
 
       {/* Inner tab bar */}
       <div
-        className="flex mb-6"
+        className="flex mb-4"
         style={{ borderBottom: '1px solid var(--color-border)', gap: 0 }}
       >
         {TABS.map(tab => {

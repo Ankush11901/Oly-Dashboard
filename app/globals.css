@@ -211,62 +211,90 @@
   --role-standard-bg:              var(--color-surface-2);
   --role-standard-text:            var(--color-text-2);
   --role-standard-border:          var(--color-border);
+
+  /* Status & permission badges */
+  --status-active-text:            #15803D;
+  --status-active-dot:             #16A34A;
+  --status-leave-text:             #B45309;
+  --status-leave-dot:              #D97706;
+  --status-inactive-text:          #64748B;
+  --status-inactive-dot:           #94A3B8;
+
+  --perm-full-bg:                  #F0FDF4;
+  --perm-full-text:                #15803D;
+  --perm-full-border:              #BBF7D0;
+  --perm-view-bg:                  #EFF6FF;
+  --perm-view-text:                #1D4ED8;
+  --perm-view-border:              #BFDBFE;
+
+  --ticket-cat-accuracy-bg:        var(--color-warning-light);
+  --ticket-cat-accuracy-text:      #B45309;
+  --ticket-cat-requirement-bg:     var(--color-secondary-light);
+  --ticket-cat-requirement-text:   #0F766E;
+  --ticket-cat-technical-bg:       var(--color-info-light);
+  --ticket-cat-technical-text:     #1D4ED8;
+
+  --color-modal-border:            var(--color-border);
 }
 
-/* ── Dark mode — layered charcoal + muted lavender accents (WCAG AA) ──── */
+/* ── Dark mode — layered surfaces, restrained accents, WCAG AA ─────────── */
 [data-theme="dark"] {
   color-scheme: dark;
 
-  --color-page-bg:          #0B0D10;
-  --color-surface:          #13161B;
-  --color-surface-2:        #1A1E26;
-  --color-surface-3:        #222830;
-  --color-surface-elevated: #1E232C;
+  /* Surface hierarchy (foreground layers get progressively brighter) */
+  --color-page-bg:          #0C0E13;
+  --color-surface:          #141820;
+  --color-surface-2:        #1A2030;
+  --color-surface-3:        #212836;
+  --color-surface-elevated: #282F3D;
+  --color-surface-hover:    #1E2533;
+  --color-surface-active:   #252D3C;
 
-  --color-border:           #303845;
-  --color-border-subtle:    #232A35;
-  /* Text: ≥4.5:1 on --color-surface (#13161B) */
-  --color-text-1:           #F4F4F5;
-  --color-text-2:           #D4DAE4;
-  --color-text-3:           #A8B3C2;
-  --color-text-4:           #7B8798;
+  --color-border:           #353F50;
+  --color-border-subtle:    #262E3C;
+  --color-border-strong:    #465063;
 
-  /*
-   * Brand (dark): desaturated lavender for links/icons; deeper emphasis for fills.
-   * --color-primary on #13161B ≈ 7.2:1 | --color-on-primary on emphasis ≈ 5.8:1
-   */
-  --color-primary:                 #A3B0F0;
-  --color-primary-hover:           #B8C4FF;
-  --color-primary-emphasis:        #5C64D6;
-  --color-primary-emphasis-hover:    #6D75E3;
+  /* Text — ≥4.5:1 on --color-surface (#141820) */
+  --color-text-1:           #F5F6F8;
+  --color-text-2:           #DFE3EB;
+  --color-text-3:           #ABB4C5;
+  --color-text-4:           #8B95A8;
+  --color-text-disabled:    #636D7E;
+
+  /* Brand — muted lavender links; deeper fills for buttons */
+  --color-primary:                 #B4BFFD;
+  --color-primary-hover:           #C8D0FF;
+  --color-primary-emphasis:        #6366E8;
+  --color-primary-emphasis-hover:  #7578ED;
   --color-on-primary:              #F8FAFF;
 
-  --color-primary-light:           rgba(163, 176, 240, 0.10);
-  --color-primary-light-rgb:       163, 176, 240;
+  --color-primary-light:           rgba(155, 168, 245, 0.12);
+  --color-primary-light-rgb:       155, 168, 245;
 
-  --color-accent-bg:               rgba(163, 176, 240, 0.08);
-  --color-accent-bg-hover:         rgba(163, 176, 240, 0.14);
-  --color-accent-border:           rgba(163, 176, 240, 0.24);
-  --color-accent-muted:            rgba(184, 196, 255, 0.48);
+  --color-accent-bg:               rgba(155, 168, 245, 0.09);
+  --color-accent-bg-hover:         rgba(155, 168, 245, 0.15);
+  --color-accent-border:           rgba(155, 168, 245, 0.26);
+  --color-accent-muted:            rgba(184, 196, 255, 0.42);
 
   --color-secondary:               #5DBFA3;
   --color-secondary-hover:         #6ECFB2;
   --color-secondary-light:         rgba(93, 191, 163, 0.12);
 
-  --color-overlay:                 rgba(0, 0, 0, 0.62);
-  --color-overlay-heavy:           rgba(0, 0, 0, 0.78);
+  --color-overlay:                 rgba(0, 0, 0, 0.65);
+  --color-overlay-heavy:           rgba(0, 0, 0, 0.80);
 
-  --color-focus-ring:              rgba(163, 176, 240, 0.36);
-  --color-kpi-emphasis-bg:         #1A1F28;
-  --color-kpi-emphasis-label:      #8B95A8;
+  --color-focus-ring:              rgba(155, 168, 245, 0.40);
 
-  --color-neutral-50:              #0B0D10;
-  --color-neutral-100:             #13161B;
-  --color-neutral-300:             #303845;
-  --color-neutral-500:             #A8B3C2;
-  --color-neutral-700:             #D4DAE4;
-  --color-neutral-900:             #F4F4F5;
-  --color-white:                   #13161B;
+  --color-kpi-emphasis-bg:         #1C2230;
+  --color-kpi-emphasis-label:      #9AA5B8;
+
+  --color-neutral-50:              #0C0E13;
+  --color-neutral-100:             #141820;
+  --color-neutral-300:             #353F50;
+  --color-neutral-500:             #ABB4C5;
+  --color-neutral-700:             #DFE3EB;
+  --color-neutral-900:             #F5F6F8;
+  --color-white:                   #141820;
 
   --color-success:                 #4ADE80;
   --color-success-light:           rgba(74, 222, 128, 0.12);
@@ -277,50 +305,77 @@
   --color-info:                    #60A5FA;
   --color-info-light:              rgba(96, 165, 250, 0.12);
 
-  --chart-1: #9BAFEF;
+  /* Charts — readable on charcoal without neon saturation */
+  --chart-1: #A3B4F4;
   --chart-2: #5DBFA3;
   --chart-3: #E5B567;
   --chart-4: #6BA3F7;
   --chart-5: #E88BB8;
   --chart-6: #B09AE8;
 
-  --color-chart-grid:              #2C3440;
-  --color-chart-label:             #8B97A8;
-  --color-tooltip-bg:              #1A1F28;
-  --color-tooltip-border:          #303845;
-  --color-tooltip-muted:           #A8B3C2;
+  --color-chart-grid:              #2A3344;
+  --color-chart-label:             #9AA5B8;
+  --color-tooltip-bg:              #252B38;
+  --color-tooltip-border:          #3A4558;
+  --color-tooltip-muted:           #ABB4C5;
 
-  --color-heatmap-low:             rgba(163, 176, 240, 0.10);
-  --color-heatmap-mid:               rgba(140, 155, 220, 0.32);
-  --color-heatmap-high:              #8B9AE8;
-  --color-widget-preview-bg:       #1A1F28;
+  --color-heatmap-low:             rgba(155, 168, 245, 0.10);
+  --color-heatmap-mid:             rgba(140, 155, 220, 0.30);
+  --color-heatmap-high:            #8B9AE8;
+  --color-widget-preview-bg:       #1C2230;
 
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.35);
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.45), 0 1px 2px rgba(0, 0, 0, 0.28);
-  --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.5), 0 2px 4px rgba(0, 0, 0, 0.28);
-  --shadow-lg: 0 8px 28px rgba(0, 0, 0, 0.55), 0 4px 10px rgba(0, 0, 0, 0.32);
-  --shadow-xl: 0 24px 56px rgba(0, 0, 0, 0.62);
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.32);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.40), 0 1px 2px rgba(0, 0, 0, 0.24);
+  --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.45), 0 2px 4px rgba(0, 0, 0, 0.24);
+  --shadow-lg: 0 8px 28px rgba(0, 0, 0, 0.50), 0 4px 10px rgba(0, 0, 0, 0.28);
+  --shadow-xl: 0 24px 56px rgba(0, 0, 0, 0.58);
 
-  --shadow-card:                   0 1px 0 rgba(255, 255, 255, 0.04), 0 4px 16px rgba(0, 0, 0, 0.35);
-  --shadow-card-hover:             0 6px 20px rgba(0, 0, 0, 0.45);
-  --shadow-dropdown:               0 12px 32px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.04);
-  --shadow-modal:                  0 32px 80px rgba(0, 0, 0, 0.65);
+  --shadow-card:                   0 0 0 1px rgba(255, 255, 255, 0.05), 0 2px 10px rgba(0, 0, 0, 0.32);
+  --shadow-card-hover:             0 0 0 1px rgba(255, 255, 255, 0.06), 0 8px 22px rgba(0, 0, 0, 0.40);
+  --shadow-dropdown:               0 16px 40px rgba(0, 0, 0, 0.52), 0 0 0 1px rgba(255, 255, 255, 0.06);
+  --shadow-modal:                  0 32px 72px rgba(0, 0, 0, 0.62), 0 0 0 1px rgba(255, 255, 255, 0.05);
 
-  --color-insights-strip:          linear-gradient(135deg, rgba(163, 176, 240, 0.06) 0%, rgba(130, 140, 180, 0.04) 100%);
+  --color-insights-strip:          linear-gradient(135deg, rgba(155, 168, 245, 0.08) 0%, rgba(110, 120, 150, 0.05) 100%);
   --color-insights-chip:           var(--color-surface-2);
 
-  /* Team role pill tokens (dark) — elevated contrast on charcoal surfaces */
-  --role-super-admin-bg:           rgba(163, 176, 240, 0.16);
+  /* Team role pills (dark) */
+  --role-super-admin-bg:           rgba(155, 168, 245, 0.16);
   --role-super-admin-text:         #D4DCFF;
-  --role-super-admin-border:       rgba(163, 176, 240, 0.38);
+  --role-super-admin-border:       rgba(155, 168, 245, 0.36);
 
   --role-regional-director-bg:     rgba(93, 191, 163, 0.14);
   --role-regional-director-text:   #8AE0C8;
-  --role-regional-director-border: rgba(93, 191, 163, 0.34);
+  --role-regional-director-border: rgba(93, 191, 163, 0.32);
 
   --role-standard-bg:              var(--color-surface-2);
   --role-standard-text:            var(--color-text-2);
   --role-standard-border:          var(--color-border);
+
+  /* Status & permission badges (dark) */
+  --status-active-text:            #4ADE80;
+  --status-active-dot:             #4ADE80;
+  --status-leave-text:             #FBBF24;
+  --status-leave-dot:              #FBBF24;
+  --status-inactive-text:          #8B95A8;
+  --status-inactive-dot:           #636D7E;
+
+  --perm-full-bg:                  rgba(74, 222, 128, 0.12);
+  --perm-full-text:                #4ADE80;
+  --perm-full-border:              rgba(74, 222, 128, 0.28);
+  --perm-view-bg:                  rgba(96, 165, 250, 0.12);
+  --perm-view-text:                #60A5FA;
+  --perm-view-border:              rgba(96, 165, 250, 0.28);
+
+  /* Ticket category badges (dark) */
+  --ticket-cat-accuracy-bg:        rgba(251, 191, 36, 0.12);
+  --ticket-cat-accuracy-text:      #FBBF24;
+  --ticket-cat-requirement-bg:     rgba(93, 191, 163, 0.12);
+  --ticket-cat-requirement-text:   #5DBFA3;
+  --ticket-cat-technical-bg:       rgba(96, 165, 250, 0.12);
+  --ticket-cat-technical-text:     #60A5FA;
+
+  /* Elevated modal border — subtle separation on dark surfaces */
+  --color-modal-border:            rgba(255, 255, 255, 0.09);
 }
 
 /* ── Base ───────────────────────────────────────────────────────────────── */
@@ -350,6 +405,26 @@ body {
   box-shadow: var(--shadow-card-hover);
 }
 
+/* Tables — row separation & hover in both themes */
+.table-surface thead tr {
+  background: var(--color-surface-2);
+  border-bottom: 1px solid var(--color-border);
+}
+.table-surface tbody tr {
+  border-bottom: 1px solid var(--color-border-subtle);
+  transition: background 120ms ease;
+}
+.table-surface tbody tr:hover {
+  background: var(--color-surface-hover);
+}
+
+/* Insights strip — chips read clearly on tinted background */
+.insights-chip {
+  background: var(--color-insights-chip);
+  border: 1px solid var(--color-border-subtle);
+  box-shadow: var(--shadow-xs);
+}
+
 .insights-strip {
   background: var(--color-insights-strip);
   border-color: var(--color-border) !important;
@@ -367,7 +442,7 @@ body {
   background: transparent;
   color: var(--color-text-2);
 }
-.period-btn:hover { background: var(--color-surface-2); }
+.period-btn:hover { background: var(--color-surface-hover); }
 .period-btn.active {
   background: var(--color-primary-emphasis);
   color: var(--color-on-primary);
@@ -398,6 +473,10 @@ body {
   font-size: 11px !important;
 }
 .apexcharts-tooltip-text { color: var(--color-text-1) !important; }
+.apexcharts-tooltip .apexcharts-tooltip-text-y-value,
+.apexcharts-tooltip .apexcharts-tooltip-text-y-label {
+  color: var(--color-text-2) !important;
+}
 .apexcharts-xaxis-label text,
 .apexcharts-yaxis-label text {
   fill: var(--color-chart-label) !important;
@@ -412,6 +491,54 @@ body {
 }
 .apexcharts-legend-text {
   color: var(--color-text-2) !important;
+}
+
+/* Donut segment tooltip — consistent white panel, swatch for segment color */
+.apex-donut-tooltip {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.12) !important;
+  padding: 10px 12px !important;
+  min-width: 148px;
+}
+.apex-donut-tooltip-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.apex-donut-tooltip-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+.apex-donut-tooltip-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #0f172a;
+  line-height: 1.3;
+}
+.apex-donut-tooltip-value {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0f172a;
+  padding-left: 18px;
+  line-height: 1.2;
+}
+.apex-donut-tooltip-pct {
+  margin-left: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+}
+.report-document .apexcharts-tooltip.apexcharts-theme-light,
+.report-document .apexcharts-tooltip {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
 }
 
 /* Theme transition on key surfaces (not global * to avoid chart jank) */
@@ -473,10 +600,12 @@ select option {
   border-color: var(--color-accent-muted);
 }
 
-/* Nav / tab active states */
+/* Nav active — clearer selected state in dark mode */
+[data-theme="dark"] .nav-link-active,
 [data-theme="dark"] .nav-item-active {
   color: var(--color-primary) !important;
   border-left-color: var(--color-primary) !important;
+  background: var(--color-primary-light) !important;
 }
 
 input:focus-visible,
@@ -490,6 +619,109 @@ button:focus-visible {
 /* Modal overlay */
 .theme-overlay {
   background: var(--color-overlay);
+}
+
+[data-theme="dark"] .theme-overlay {
+  backdrop-filter: blur(4px);
+}
+
+/* Modal / dialog panels */
+.modal-panel {
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-modal-border);
+  box-shadow: var(--shadow-modal);
+}
+
+/* Modal icon close control */
+.modal-close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-4);
+  cursor: pointer;
+  transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
+}
+.modal-close-btn:hover {
+  background: var(--color-error-light);
+  border-color: var(--color-error);
+  color: var(--color-error);
+}
+
+/* Segmented filter pills (snapshots, event filters) */
+.filter-pill {
+  height: 28px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  background: var(--color-surface);
+  color: var(--color-text-2);
+  flex-shrink: 0;
+  transition: background 150ms ease, color 150ms ease, border-color 150ms ease;
+}
+.filter-pill:hover:not(.filter-pill--active) {
+  background: var(--color-accent-bg);
+  color: var(--color-primary);
+  border-color: var(--color-accent-border);
+}
+.filter-pill--active {
+  background: var(--color-primary-emphasis);
+  color: var(--color-on-primary);
+  border-color: transparent;
+  font-weight: 600;
+}
+
+/* Analytics widget info trigger */
+.info-icon-btn {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-3);
+  color: var(--color-text-2);
+  cursor: pointer;
+  padding: 0;
+  transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
+}
+.info-icon-btn:hover,
+.info-icon-btn:focus-visible {
+  background: var(--color-accent-bg);
+  border-color: var(--color-accent-border);
+  color: var(--color-primary);
+}
+.info-icon-btn--sm {
+  width: 28px;
+  height: 28px;
+}
+
+/* Live feed camera tile chrome */
+.vms-camera-tile {
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-3);
+}
+
+/* Compact preferences layout helper */
+.prefs-compact-page {
+  padding: 24px 28px;
+}
+.prefs-compact-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .prefs-compact-grid-2 {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Sidebar logo — invert for dark backgrounds when logo is dark ink */

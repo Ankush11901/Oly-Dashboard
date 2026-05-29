@@ -25,9 +25,8 @@ const NAV_NODES: NavNode[] = [
   {
     type: 'section', label: 'Preferences', icon: <Settings size={14} strokeWidth={1.5} />,
     items: [
-      { label: 'Profile', href: '/dashboard/preferences/profile' },
+      { label: 'Profile & Security', href: '/dashboard/preferences/profile' },
       { label: 'Notification Settings', href: '/dashboard/preferences/notifications' },
-      { label: 'Password & Access', href: '/dashboard/preferences/password' },
       { label: 'Device Settings', href: '/dashboard/preferences/devices' },
     ],
   },

@@ -2,420 +2,29 @@
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  Users, Zap,
   ArrowUpRight, ArrowDownRight,
-  Clock, AlertCircle,
+  AlertCircle,
   CheckCircle2, Circle, Upload, Plus, ChevronDown, ChevronUp,
-  Activity, ShoppingBag, UserCircle,
-  BarChart2, Video, UserPlus, LayoutGrid,
-  WifiOff, TrendingDown, Flame,
+  UserPlus, LayoutGrid,
+  Video,
   FileText, Download, ChevronRight,
-  Search, TrendingUp, Sparkles,
+  Search, Sparkles,
 } from 'lucide-react';
-import { AnimatedNumber } from '@/components/AnimatedNumber';
 import { useDashboardContext } from '@/components/DashboardProvider';
 import { WhatsNewCarousel } from '@/components/WhatsNewCarousel';
 import { dashboardCardStyle } from '@/lib/theme';
-import { useTheme } from '@/components/ThemeProvider';
-
-// ── KPI helpers (style 1 pastel + sparkline) ───────────────────────────────────
-function hexAlpha(hex: string, alpha: number): string {
-  const h = hex.replace('#', '');
-  const r = parseInt(h.slice(0, 2), 16);
-  const g = parseInt(h.slice(2, 4), 16);
-  const b = parseInt(h.slice(4, 6), 16);
-  return `rgba(${r},${g},${b},${alpha})`;
-}
-
-const KPI_SPARKLINES: number[][] = [
-  [38, 42, 40, 48, 45, 52, 50, 58],
-  [62, 58, 55, 52, 54, 50, 48, 46],
-  [28, 32, 30, 35, 33, 38, 36, 40],
-  [44, 40, 46, 42, 48, 45, 50, 52],
-];
-
-function KpiSparkline({ data, color, compact = false }: { data: number[]; color: string; compact?: boolean }) {
-  const W = compact ? 64 : 76;
-  const H = compact ? 30 : 38;
-  const min = Math.min(...data);
-  const max = Math.max(...data);
-  const range = max - min || 1;
-  const pts = data
-    .map((v, i) => {
-      const x = 2 + (i / (data.length - 1)) * (W - 4);
-      const y = H - 3 - ((v - min) / range) * (H - 8);
-      return `${x},${y}`;
-    })
-    .join(' ');
-  return (
-    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden style={{ flexShrink: 0, display: 'block' }}>
-      <polyline
-        points={pts}
-        fill="none"
-        stroke={color}
-        strokeWidth={compact ? 2 : 2.25}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-/** Style 2 — area sparkline with gradient fill */
-function KpiSparklineArea({ data, color, gradId }: { data: number[]; color: string; gradId: string }) {
-  const W = 108;
-  const H = 72;
-  const min = Math.min(...data);
-  const max = Math.max(...data);
-  const range = max - min || 1;
-  const coords = data.map((v, i) => ({
-    x: 2 + (i / (data.length - 1)) * (W - 4),
-    y: H - 4 - ((v - min) / range) * (H - 12),
-  }));
-  const linePts = coords.map(c => `${c.x},${c.y}`).join(' ');
-  const areaPath =
-    `M${coords[0].x},${H} ` +
-    coords.map(c => `L${c.x},${c.y}`).join(' ') +
-    ` L${coords[coords.length - 1].x},${H} Z`;
-
-  return (
-    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden style={{ flexShrink: 0, display: 'block' }}>
-      <defs>
-        <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity={0.28} />
-          <stop offset="100%" stopColor={color} stopOpacity={0} />
-        </linearGradient>
-      </defs>
-      <path d={areaPath} fill={`url(#${gradId})`} />
-      <polyline
-        points={linePts}
-        fill="none"
-        stroke={color}
-        strokeWidth={2}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-// ── KPI card ──────────────────────────────────────────────────────────────────
-interface KpiCard {
-  label: string;
-  actual: number;
-  expected: number;
-  prefix?: string;
-  suffix?: string;
-  decimals?: number;
-  change: number;
-  icon: React.ReactNode;
-  color: string;
-}
-
-const KPI_CARDS: KpiCard[] = [
-  { label: 'Total Footfall',     actual: 15234, expected: 18000, change: 8.2,  icon: <Users       size={18} strokeWidth={1.5} />, color: '#655BD3' },
-  { label: 'Passerby Count',     actual: 45621, expected: 50000, change: 3.1,  icon: <Activity    size={18} strokeWidth={1.5} />, color: '#0EA5E9' },
-  { label: 'Avg Conversion',     actual: 12.4,  expected: 15,    change: -1.2, icon: <Zap         size={18} strokeWidth={1.5} />, color: '#F59E0B', suffix: '%', decimals: 1 },
-  { label: 'Top Store Visitors', actual: 15234, expected: 17000, change: 5.7,  icon: <ShoppingBag size={18} strokeWidth={1.5} />, color: '#10B981' },
-];
-
-function KpiCard({ card, styleVariant = 0, sparkIndex = 0, grouped = false }: { card: KpiCard; styleVariant?: 0 | 1 | 2; sparkIndex?: number; grouped?: boolean }) {
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
-  const pos = card.change >= 0;
-
-  // Style 0 = clean white (original)
-  if (styleVariant === 0) {
-    return (
-      <div style={{
-        background: 'var(--color-surface)',
-        borderRadius: 10,
-        padding: '16px 18px',
-        boxShadow: 'var(--shadow-card)',
-        border: `1px solid ${card.color}22`,
-        position: 'relative',
-        overflow: 'hidden',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 9 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
-            <div style={{ width: 34, height: 34, borderRadius: 8, background: `${card.color}1A`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: card.color, flexShrink: 0 }}>
-              {card.icon}
-            </div>
-            <AnimatedNumber value={card.actual} prefix={card.prefix} suffix={card.suffix} decimals={card.decimals} className="font-bold tabular-nums" style={{ fontSize: 26, color: 'var(--color-text-1)', lineHeight: 1 } as React.CSSProperties} />
-          </div>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2, fontSize: 11, fontWeight: 700, color: pos ? '#16A34A' : '#DC2626', background: pos ? 'var(--color-success-light)' : 'var(--color-error-light)', padding: '3px 7px', borderRadius: 99, flexShrink: 0, alignSelf: 'flex-start' }}>
-            {pos ? <ArrowUpRight size={10} strokeWidth={2.5} /> : <ArrowDownRight size={10} strokeWidth={2.5} />}
-            {Math.abs(card.change)}%
-          </span>
-        </div>
-        <p style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text-4)', lineHeight: 1 }}>{card.label}</p>
-      </div>
-    );
-  }
-
-  // Style 1 = soft pastel card with sparkline (reference design)
-  if (styleVariant === 1) {
-    const accent = card.color;
-    const sparkData = KPI_SPARKLINES[sparkIndex % KPI_SPARKLINES.length];
-    const changeColor = pos ? 'var(--color-success)' : 'var(--color-error)';
-    const valueColor = isDark
-      ? 'var(--color-text-1)'
-      : `color-mix(in srgb, ${accent} 72%, #0F172A)`;
-    const labelColor = isDark
-      ? 'var(--color-text-3)'
-      : `color-mix(in srgb, ${accent} 50%, #64748B)`;
-    const sparkColor = isDark
-      ? `color-mix(in srgb, ${accent} 75%, var(--color-text-2))`
-      : `color-mix(in srgb, ${accent} 80%, #1E293B)`;
-
-    return (
-      <div
-        style={{
-          borderRadius: 12,
-          padding: '14px 16px',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-          background: isDark
-            ? `linear-gradient(152deg, ${hexAlpha(accent, 0.16)} 0%, ${hexAlpha(accent, 0.05)} 42%, var(--color-surface-2) 100%)`
-            : `linear-gradient(152deg, ${hexAlpha(accent, 0.28)} 0%, ${hexAlpha(accent, 0.09)} 48%, #FFFFFF 100%)`,
-          border: `1px solid ${isDark ? hexAlpha(accent, 0.14) : hexAlpha(accent, 0.12)}`,
-          boxShadow: isDark ? 'var(--shadow-card)' : `0 2px 12px ${hexAlpha(accent, 0.08)}`,
-          position: 'relative',
-          overflow: 'hidden',
-        }}
-      >
-        {/* Top row: 3D icon + change */}
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-          <div
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: 10,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#FFFFFF',
-              background: isDark
-                ? `linear-gradient(145deg, color-mix(in srgb, ${accent} 55%, #FFFFFF) 0%, color-mix(in srgb, ${accent} 88%, #13161B) 100%)`
-                : `linear-gradient(145deg, color-mix(in srgb, ${accent} 70%, #FFFFFF) 0%, ${accent} 100%)`,
-              boxShadow: isDark
-                ? `0 4px 14px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.14)`
-                : `0 6px 18px ${hexAlpha(accent, 0.38)}, inset 0 1px 0 rgba(255,255,255,0.45)`,
-              flexShrink: 0,
-            }}
-          >
-            {card.icon}
-          </div>
-          <span
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 2,
-              fontSize: 11,
-              fontWeight: 600,
-              color: changeColor,
-              marginTop: 1,
-            }}
-          >
-            {pos ? '+' : '−'}{Math.abs(card.change)}%
-            {pos ? <ArrowUpRight size={11} strokeWidth={2.5} /> : <ArrowDownRight size={11} strokeWidth={2.5} />}
-          </span>
-        </div>
-
-        {/* Bottom row: label + value | sparkline */}
-        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 10, marginTop: 10 }}>
-          <div style={{ minWidth: 0 }}>
-            <p style={{ fontSize: 12, fontWeight: 500, color: labelColor, lineHeight: 1.2, marginBottom: 4 }}>
-              {card.label}
-            </p>
-            <AnimatedNumber
-              value={card.actual}
-              prefix={card.prefix}
-              suffix={card.suffix}
-              decimals={card.decimals}
-              className="font-bold tabular-nums"
-              style={{ fontSize: 24, color: valueColor, lineHeight: 1, letterSpacing: '-0.02em' } as React.CSSProperties}
-            />
-          </div>
-          <KpiSparkline data={sparkData} color={sparkColor} compact />
-        </div>
-      </div>
-    );
-  }
-
-  // Style 2 = unified panel card: title, value + trend pill, comparison, area sparkline
-  const sparkData = KPI_SPARKLINES[sparkIndex % KPI_SPARKLINES.length];
-  const sparkColor = isDark
-    ? (pos ? `color-mix(in srgb, ${card.color} 70%, #FFFFFF)` : 'var(--color-warning)')
-    : (pos ? card.color : '#F97316');
-  const trendTextColor = pos ? 'var(--color-success)' : 'var(--color-warning)';
-  const trendBg = pos
-    ? (isDark ? 'rgba(74, 222, 128, 0.14)' : '#DCFCE7')
-    : (isDark ? 'rgba(251, 191, 36, 0.14)' : '#FFEDD5');
-
-  return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'stretch',
-        justifyContent: 'space-between',
-        gap: 16,
-        padding: grouped ? '20px 24px' : '20px 22px',
-        minHeight: 112,
-        background: grouped ? 'transparent' : 'var(--color-surface)',
-        borderRadius: grouped ? 0 : 12,
-        border: grouped ? 'none' : `1px solid var(--color-border)`,
-        boxShadow: grouped ? 'none' : 'var(--shadow-card)',
-      }}
-    >
-      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-        <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-1)', lineHeight: 1.3, marginBottom: 14 }}>
-          {card.label}
-        </p>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 8 }}>
-          <AnimatedNumber
-            value={card.actual}
-            prefix={card.prefix}
-            suffix={card.suffix}
-            decimals={card.decimals}
-            className="font-bold tabular-nums"
-            style={{ fontSize: 32, color: 'var(--color-text-1)', lineHeight: 1, letterSpacing: '-0.03em' } as React.CSSProperties}
-          />
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, color: trendTextColor }}>
-            <span
-              style={{
-                width: 22,
-                height: 22,
-                borderRadius: '50%',
-                background: trendBg,
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexShrink: 0,
-              }}
-            >
-              {pos
-                ? <ArrowUpRight size={12} strokeWidth={2.5} />
-                : <ArrowDownRight size={12} strokeWidth={2.5} />}
-            </span>
-            {Math.abs(card.change)}%
-          </span>
-        </div>
-        <p style={{ fontSize: 12, fontWeight: 400, color: 'var(--color-text-4)', lineHeight: 1.3 }}>
-          compared to last week
-        </p>
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-        <KpiSparklineArea data={sparkData} color={sparkColor} gradId={`kpi-s2-${sparkIndex}`} />
-      </div>
-    </div>
-  );
-}
-
-// ── Store insights ────────────────────────────────────────────────────────────
-const SIGNALS = [
-  { id: 1, title: 'Below peak hours',         summary: 'Footfall 15% below projected peak. Promo push recommended 2–4 PM.',                 icon: <TrendingDown size={14} strokeWidth={1.5} />, color: '#F59E0B' },
-  { id: 2, title: 'Queue alert — VivoCity',   summary: 'Queue depth exceeded threshold for 40 min. Staff reallocation suggested.',          icon: <AlertCircle  size={14} strokeWidth={1.5} />, color: '#EF4444' },
-  { id: 3, title: 'Conversion trending up',   summary: 'Marina Bay Sands leads at 16.2% vs 12.4% avg — best performer this week.',          icon: <TrendingUp   size={14} strokeWidth={1.5} />, color: '#10B981' },
-  { id: 4, title: 'New tenant impact',        summary: 'Jurong Point saw +22% footfall increase after anchor tenant opened last week.',      icon: <Activity     size={14} strokeWidth={1.5} />, color: '#0EA5E9' },
-  { id: 5, title: 'Camera coverage gap',      summary: 'Zone C at Bugis Junction has 18% lower detection confidence than baseline.',        icon: <Video        size={14} strokeWidth={1.5} />, color: '#8B5CF6' },
-];
-
-// ── Checklist ─────────────────────────────────────────────────────────────────
-type TaskStatus = 'done' | 'pending' | 'overdue';
-interface Task {
-  id: number;
-  title: string;
-  store: string;
-  due: string;
-  status: TaskStatus;
-  requiresPhoto: boolean;
-  automated: boolean;
-  assignedTo?: string;
-}
-
-const INITIAL_TASKS: Task[] = [
-  { id: 1, title: 'Mannequin display',        store: 'Marina Bay Sands', due: 'Today',    status: 'done',    requiresPhoto: true,  automated: true  },
-  { id: 2, title: 'Window signage — June',    store: 'Orchard Central',  due: 'Today',    status: 'pending', requiresPhoto: true,  automated: false },
-  { id: 3, title: 'Layout rotation — Zone A', store: 'VivoCity',         due: 'Tomorrow', status: 'pending', requiresPhoto: true,  automated: true  },
-  { id: 4, title: 'Restock fitting room',     store: 'Bugis Junction',   due: 'Today',    status: 'overdue', requiresPhoto: false, automated: false },
-  { id: 5, title: 'Fixture re-arrangement',   store: 'Tampines Mall',    due: 'Jun 2',    status: 'pending', requiresPhoto: true,  automated: false },
-  { id: 6, title: 'Verify camera angles',     store: 'All Stores',       due: 'Weekly',   status: 'done',    requiresPhoto: false, automated: true  },
-];
-
-const STATUS_CFG: Record<TaskStatus, { icon: React.ReactNode; label: string; color: string; bg: string }> = {
-  done:    { icon: <CheckCircle2 size={14} strokeWidth={2} />, label: 'Done',    color: '#16A34A', bg: 'rgba(22,163,74,0.08)'   },
-  pending: { icon: <Circle       size={14} strokeWidth={2} />, label: 'Pending', color: '#D97706', bg: 'rgba(217,119,6,0.08)'   },
-  overdue: { icon: <AlertCircle  size={14} strokeWidth={2} />, label: 'Overdue', color: '#DC2626', bg: 'rgba(220,38,38,0.08)'   },
-};
+import { KpiCard, KPI_CARDS, KpiPanelGrouped } from '@/components/home/KpiCard';
+import {
+  SIGNALS, INITIAL_TASKS, STATUS_CFG, QUICK_ACTIONS,
+  RECENT_ALERTS, ALERT_CFG, RECENT_REPORTS, SUMMARY_CHIPS,
+  type Task,
+  type TaskStatus,
+} from '@/components/home/home-data';
 
 const STORES   = ['Marina Bay Sands', 'Orchard Central', 'VivoCity', 'Bugis Junction', 'Tampines Mall', 'Jurong Point', 'Northpoint City', 'All Stores'];
 const MANAGERS = ['Sarah Tan', 'John Lim', 'Priya S.', 'Ali Hassan', 'Wei Chen'];
 
-// ── Quick actions ─────────────────────────────────────────────────────────────
-const QUICK_ACTIONS = [
-  { label: 'Add a Member',       href: '/dashboard/team?action=add-member',                          icon: <UserPlus   size={16} strokeWidth={1.5} /> },
-  { label: 'Raise New Concern',  href: '/dashboard/preferences/tickets?action=raise-concern',        icon: <AlertCircle size={16} strokeWidth={1.5} /> },
-  { label: 'Create a New Page',  href: '/dashboard/analytics?action=new-page',                       icon: <LayoutGrid size={16} strokeWidth={1.5} /> },
-  { label: 'View Snapshots',     href: '/dashboard/analytics?action=view-snapshots',                 icon: <Video      size={16} strokeWidth={1.5} /> },
-];
-
-// ── Recent alerts / activity ──────────────────────────────────────────────────
-interface RecentAlert { id: number; type: 'critical' | 'warning' | 'success'; message: string; store: string; ago: string; icon: React.ReactNode; }
-
-const RECENT_ALERTS: RecentAlert[] = [
-  { id: 1, type: 'critical', message: 'Entrance camera offline',       store: 'Marina Bay Sands', ago: '2 min ago',  icon: <WifiOff      size={13} strokeWidth={1.5} /> },
-  { id: 2, type: 'warning',  message: 'High queue depth detected',     store: 'VivoCity',         ago: '9 min ago',  icon: <Flame        size={13} strokeWidth={1.5} /> },
-  { id: 3, type: 'critical', message: 'Unusual activity in Zone B',    store: 'Orchard Central',  ago: '17 min ago', icon: <AlertCircle  size={13} strokeWidth={1.5} /> },
-  { id: 4, type: 'success',  message: 'Queue cleared — peak resolved', store: 'Tampines Mall',    ago: '31 min ago', icon: <CheckCircle2 size={13} strokeWidth={1.5} /> },
-  { id: 5, type: 'warning',  message: 'Low footfall — 32% below avg', store: 'Northpoint City',  ago: '48 min ago', icon: <TrendingDown size={13} strokeWidth={1.5} /> },
-];
-
-const ALERT_CFG = {
-  critical: { color: '#DC2626', bg: 'var(--color-error-light)',   label: 'Alert'    },
-  warning:  { color: '#D97706', bg: 'var(--color-warning-light)', label: 'Warning'  },
-  success:  { color: '#16A34A', bg: 'var(--color-success-light)', label: 'Resolved' },
-};
-
-// ── Recent reports ────────────────────────────────────────────────────────────
-const RECENT_REPORTS = [
-  { id: 1, name: 'Monthly Footfall Summary',  scope: 'All Stores',       date: 'May 2026', tag: 'Footfall'     },
-  { id: 2, name: 'Demographics Breakdown',     scope: 'Marina Bay Sands', date: 'Week 21',  tag: 'Demographics' },
-  { id: 3, name: 'Queue Performance Report',   scope: 'VivoCity',         date: 'May 2026', tag: 'Queue'        },
-  { id: 4, name: 'Conversion Rate Analysis',   scope: 'All Stores',       date: 'May 2026', tag: 'Conversion'   },
-];
-
-// ── What's new ────────────────────────────────────────────────────────────────
-const WHATS_NEW = [
-  { id: 1, title: 'Heatmap widget',              desc: 'Visualize foot traffic density across zones in real time.',        date: 'May 26', icon: <LayoutGrid size={14} strokeWidth={1.5} />, color: 'var(--color-primary)' },
-  { id: 2, title: 'AI footfall predictions',     desc: 'ML-powered daily and hourly footfall forecasting per store.',      date: 'May 23', icon: <TrendingUp size={14} strokeWidth={1.5} />, color: '#10B981' },
-  { id: 3, title: 'Multi-store comparison',      desc: 'Side-by-side KPI comparison across up to 4 stores.',               date: 'May 20', icon: <BarChart2  size={14} strokeWidth={1.5} />, color: '#0EA5E9' },
-  { id: 4, title: 'Dwell time analytics',        desc: 'Track average customer dwell time per zone and section.',          date: 'May 17', icon: <Clock      size={14} strokeWidth={1.5} />, color: '#F59E0B' },
-  { id: 5, title: 'CSV & Excel export',          desc: 'All analytics reports now exportable in CSV and XLSX format.',     date: 'May 14', icon: <Download   size={14} strokeWidth={1.5} />, color: '#8B5CF6' },
-  { id: 6, title: 'Staff alert notifications',   desc: 'Push alerts to store staff for queue and footfall thresholds.',    date: 'May 11', icon: <Users      size={14} strokeWidth={1.5} />, color: '#EF4444' },
-];
-
 const cardStyle = dashboardCardStyle;
-
-const SUMMARY_CHIPS: { accent: string; text: React.ReactNode }[] = [
-  {
-    accent: 'var(--color-primary)',
-    text: <>Marina Bay Sands led footfall today with <strong style={{ color: 'var(--color-primary)', fontWeight: 600 }}>15,234</strong> visitors — its highest this month.</>,
-  },
-  {
-    accent: 'var(--color-success)',
-    text: <>Conversion rate is tracking at <strong style={{ color: 'var(--color-warning)', fontWeight: 600 }}>12.4%</strong>, up <strong style={{ color: 'var(--color-success)', fontWeight: 600 }}>+1.8 pts</strong> from yesterday.</>,
-  },
-  {
-    accent: 'var(--color-primary)',
-    text: <>Peak hour was <strong style={{ color: 'var(--color-primary)', fontWeight: 600 }}>1 PM</strong> across all stores — consider extra staffing 12–3 PM tomorrow.</>,
-  },
-  {
-    accent: 'var(--color-error)',
-    text: <><strong style={{ color: 'var(--color-error)', fontWeight: 600 }}>1 camera offline</strong> at Bugis Junction North Entry. Review recommended.</>,
-  },
-];
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function DashboardPage() {
@@ -430,7 +39,7 @@ export default function DashboardPage() {
   const [activitySearch, setSearch]   = useState('');
   const [activityTab,    setActTab]   = useState<'activity' | 'reports'>('activity');
   const [stripOpen,      setStripOpen] = useState(true);
-  const [kpiStyle,       setKpiStyle] = useState<0 | 1 | 2>(0);
+  const [kpiStyle,       setKpiStyle] = useState<0 | 1 | 2 | 3>(0);
   const photoRef = useRef<HTMLInputElement>(null);
   const isAdmin  = true;
   const DEFAULT_SHOW = 3;
@@ -551,7 +160,7 @@ export default function DashboardPage() {
                 {SUMMARY_CHIPS.map((chip, i) => (
                   <div
                     key={i}
-                    className="summary-chip"
+                    className="summary-chip insights-chip"
                     style={{
                       flex: '1 1 0',
                       minWidth: 0,
@@ -559,10 +168,7 @@ export default function DashboardPage() {
                       alignItems: 'flex-start',
                       gap: 8,
                       padding: '10px 12px',
-                      background: 'var(--color-insights-chip)',
                       borderRadius: 9,
-                      border: '1px solid var(--color-border)',
-                      boxShadow: 'var(--shadow-sm, 0 1px 2px rgba(0,0,0,0.04))',
                       fontSize: 11.5,
                       color: 'var(--color-text-2)',
                       lineHeight: 1.5,
@@ -592,7 +198,7 @@ export default function DashboardPage() {
           {/* Style switcher */}
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 10, gap: 6, alignItems: 'center' }}>
             <span style={{ fontSize: 11, color: 'var(--color-text-4)', fontWeight: 500, marginRight: 4 }}>Style</span>
-            {([0, 1, 2] as const).map(s => (
+            {([0, 1, 2, 3] as const).map(s => (
               <button
                 key={s}
                 onClick={() => setKpiStyle(s)}
@@ -607,26 +213,7 @@ export default function DashboardPage() {
             ))}
           </div>
           {kpiStyle === 2 ? (
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(4, 1fr)',
-                background: 'var(--color-surface)',
-                border: '1px solid var(--color-border)',
-                borderRadius: 12,
-                overflow: 'hidden',
-                boxShadow: 'var(--shadow-card)',
-              }}
-            >
-              {KPI_CARDS.map((card, i) => (
-                <div
-                  key={`${card.label}-${refreshCount}`}
-                  style={{ borderRight: i < KPI_CARDS.length - 1 ? '1px solid var(--color-border)' : 'none' }}
-                >
-                  <KpiCard card={card} styleVariant={2} sparkIndex={i} grouped />
-                </div>
-              ))}
-            </div>
+            <KpiPanelGrouped refreshCount={refreshCount} />
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
               {KPI_CARDS.map((card, i) => (
@@ -951,8 +538,8 @@ export default function DashboardPage() {
 
       {/* ── Add Task Modal ──────────────────────────────────────────────────────── */}
       {isAddTaskOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: 'var(--color-overlay)' }} onClick={() => setAddOpen(false)}>
-          <div style={{ background: 'var(--color-surface-elevated)', borderRadius: 20, boxShadow: 'var(--shadow-modal)', border: '1px solid var(--color-border)', width: '100%', maxWidth: 440, padding: '28px' }} onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center theme-overlay" onClick={() => setAddOpen(false)}>
+          <div className="modal-panel" style={{ borderRadius: 20, width: '100%', maxWidth: 440, padding: '28px' }} onClick={e => e.stopPropagation()}>
             <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-text-1)', marginBottom: 20 }}>Add New Task</h3>
             <form onSubmit={addTask} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div>

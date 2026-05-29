@@ -410,13 +410,9 @@ export function VisitorSnapshots({
           {(['all', 'entry', 'exit', 'passerby'] as const).map((f) => (
             <button
               key={f}
+              type="button"
               onClick={() => setEventFilter(f)}
-              className="px-3 py-1.5 rounded-full text-xs font-medium capitalize transition-colors"
-              style={{
-                background: eventFilter === f ? 'var(--color-primary-emphasis)' : 'var(--color-surface-2)',
-                color: eventFilter === f ? 'white' : 'var(--color-text-2)',
-                border: 'none', cursor: 'pointer',
-              }}
+              className={`filter-pill${eventFilter === f ? ' filter-pill--active' : ''}`}
             >
               {f === 'all' ? 'All Events' : EVENT_CONFIG[f].label}
             </button>

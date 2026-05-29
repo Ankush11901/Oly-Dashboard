@@ -27,15 +27,15 @@ interface TooltipProps {
 function CustomTooltip({ active, payload, label }: TooltipProps) {
   if (!active || !payload?.length) return null;
   return (
-    <div style={{ background: '#1A1A2E', borderRadius: 8, padding: '10px 14px', boxShadow: '0 4px 16px rgba(0,0,0,0.2)' }}>
-      <p style={{ color: '#9CA3AF', fontSize: 11, marginBottom: 6 }}>{label}</p>
+    <div style={{ background: 'var(--color-tooltip-bg)', borderRadius: 8, padding: '10px 14px', border: '1px solid var(--color-tooltip-border)', boxShadow: 'var(--shadow-md)' }}>
+      <p style={{ color: 'var(--color-tooltip-muted)', fontSize: 11, marginBottom: 6 }}>{label}</p>
       {payload.map((p) => (
         <div key={p.name} className="flex items-center justify-between gap-8" style={{ marginBottom: 3 }}>
           <div className="flex items-center gap-1.5">
             <span style={{ width: 8, height: 8, borderRadius: '50%', background: p.color, display: 'inline-block' }} />
-            <span style={{ color: '#D1D5DB', fontSize: 12 }}>{p.name}</span>
+            <span style={{ color: 'var(--color-tooltip-muted)', fontSize: 12 }}>{p.name}</span>
           </div>
-          <span style={{ color: 'white', fontSize: 13, fontWeight: 700 }}>{formatK(p.value)}</span>
+          <span style={{ color: 'var(--color-text-1)', fontSize: 13, fontWeight: 700 }}>{formatK(p.value)}</span>
         </div>
       ))}
     </div>
@@ -100,7 +100,7 @@ export function PasserbyTrendsChart() {
                 <stop offset="100%" stopColor="#00CE9C" stopOpacity={0} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--color-chart-grid)" vertical={false} />
             <XAxis
               dataKey="month"
               tick={{ fontSize: 11, fill: '#9CA3AF', fontFamily: 'inherit' }}

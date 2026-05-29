@@ -31,22 +31,22 @@ function CustomTooltip({ active, payload, label }: TooltipProps) {
   return (
     <div
       style={{
-        background: '#1A1A2E',
+        background: 'var(--color-tooltip-bg)',
         borderRadius: 8,
         padding: '10px 12px',
-        border: 'none',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+        border: '1px solid var(--color-tooltip-border)',
+        boxShadow: 'var(--shadow-md)',
         maxWidth: 200,
       }}
     >
-      <p style={{ color: '#D1D5DB', fontSize: 11, marginBottom: 6 }}>{label}</p>
+      <p style={{ color: 'var(--color-tooltip-muted)', fontSize: 11, marginBottom: 6 }}>{label}</p>
       {payload.map((p) => (
         <div key={p.name} className="flex items-center justify-between gap-4" style={{ marginBottom: 2 }}>
           <div className="flex items-center gap-1.5">
             <span style={{ width: 8, height: 8, borderRadius: 2, background: p.color, display: 'inline-block' }} />
-            <span style={{ color: '#D1D5DB', fontSize: 11 }}>{p.name}</span>
+            <span style={{ color: 'var(--color-tooltip-muted)', fontSize: 11 }}>{p.name}</span>
           </div>
-          <span style={{ color: 'white', fontSize: 11, fontWeight: 600 }}>{p.value}</span>
+          <span style={{ color: 'var(--color-text-1)', fontSize: 11, fontWeight: 600 }}>{p.value}</span>
         </div>
       ))}
       <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: 6, paddingTop: 4 }}>
@@ -110,7 +110,7 @@ export function VisitingHoursChart() {
                 </linearGradient>
               ))}
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--color-chart-grid)" vertical={false} />
             <XAxis
               dataKey="hour"
               tick={{ fontSize: 11, fill: '#6B7280', fontFamily: 'inherit' }}

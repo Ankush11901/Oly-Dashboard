@@ -134,12 +134,14 @@ function NewProfileModal({ onClose, onSave }: { onClose: () => void; onSave: (p:
 
   return (
     <div
-      style={{ position: 'fixed', inset: 0, zIndex: 9000, background: 'rgba(17,24,39,0.55)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+      className="theme-overlay"
+      style={{ position: 'fixed', inset: 0, zIndex: 9000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
       onClick={onClose}
     >
       <div
+        className="modal-panel"
         onClick={e => e.stopPropagation()}
-        style={{ background: 'var(--color-surface)', borderRadius: 16, width: '100%', maxWidth: 560, maxHeight: '90vh', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,0.25)', overflow: 'hidden' }}
+        style={{ borderRadius: 16, width: '100%', maxWidth: 560, maxHeight: '90vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
       >
         {/* Header */}
         <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid var(--color-border-subtle)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>

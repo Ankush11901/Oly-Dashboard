@@ -221,8 +221,8 @@ export default function TeamPage() {
 
       {/* Add Member Modal */}
       {addOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(17,24,39,0.6)' }} onClick={() => setAddOpen(false)}>
-          <div className="rounded-2xl shadow-2xl w-full max-w-md p-7" style={{ background: 'var(--color-surface)' }} onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center theme-overlay" onClick={() => setAddOpen(false)}>
+          <div className="modal-panel rounded-2xl w-full max-w-md p-7" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-5">
               <h3 className="text-base font-bold" style={{ color: 'var(--color-text-1)' }}>Add Team Member</h3>
               <button onClick={() => setAddOpen(false)} className="p-1.5 rounded-lg" style={{ color: 'var(--color-text-4)' }}><X size={16} /></button>
@@ -267,8 +267,8 @@ export default function TeamPage() {
 
       {/* Edit Member Modal */}
       {editMember && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(17,24,39,0.6)' }} onClick={() => setEditMember(null)}>
-          <div className="rounded-2xl shadow-2xl w-full max-w-md p-7" style={{ background: 'var(--color-surface)' }} onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center theme-overlay" onClick={() => setEditMember(null)}>
+          <div className="modal-panel rounded-2xl w-full max-w-md p-7" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-5">
               <h3 className="text-base font-bold" style={{ color: 'var(--color-text-1)' }}>Edit Team Member</h3>
               <button onClick={() => setEditMember(null)} className="p-1.5 rounded-lg" style={{ color: 'var(--color-text-4)' }}><X size={16} /></button>
@@ -313,8 +313,8 @@ export default function TeamPage() {
 
       {/* Delete Confirmation */}
       {deleteId !== null && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(17,24,39,0.6)' }} onClick={() => setDeleteId(null)}>
-          <div className="rounded-2xl shadow-2xl w-full max-w-sm p-7" style={{ background: 'var(--color-surface)' }} onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center theme-overlay" onClick={() => setDeleteId(null)}>
+          <div className="modal-panel rounded-2xl w-full max-w-sm p-7" onClick={e => e.stopPropagation()}>
             <div className="flex items-center gap-3 mb-3">
               <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'var(--color-error-light)' }}>
                 <Trash2 size={16} style={{ color: '#DC2626' }} />

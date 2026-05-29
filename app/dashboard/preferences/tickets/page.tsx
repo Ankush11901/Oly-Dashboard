@@ -80,10 +80,10 @@ const TICKETS: SupportTicket[] = [
 
 // ── Config ────────────────────────────────────────────────────────────────────
 const CATEGORY_CFG: Record<TicketCategory, { label: string; color: string; bg: string; icon: React.ReactNode }> = {
-  accuracy:    { label: 'Accuracy',    color: '#D97706', bg: 'var(--color-warning-light)', icon: <AlertTriangle size={11} strokeWidth={2.5} /> },
-  requirement: { label: 'Requirement', color: '#00CE9C', bg: '#CCFBF1',                    icon: <Sparkles      size={11} strokeWidth={2.5} /> },
-  technical:   { label: 'Technical',   color: '#3B82F6', bg: 'var(--color-info-light)',    icon: <Layers        size={11} strokeWidth={2.5} /> },
-  other:       { label: 'Other',       color: 'var(--color-text-3)', bg: 'var(--color-surface-2)', icon: <BarChart2 size={11} strokeWidth={2.5} /> },
+  accuracy:    { label: 'Accuracy',    color: 'var(--ticket-cat-accuracy-text)',    bg: 'var(--ticket-cat-accuracy-bg)',    icon: <AlertTriangle size={11} strokeWidth={2.5} /> },
+  requirement: { label: 'Requirement', color: 'var(--ticket-cat-requirement-text)', bg: 'var(--ticket-cat-requirement-bg)', icon: <Sparkles      size={11} strokeWidth={2.5} /> },
+  technical:   { label: 'Technical',   color: 'var(--ticket-cat-technical-text)',   bg: 'var(--ticket-cat-technical-bg)',   icon: <Layers        size={11} strokeWidth={2.5} /> },
+  other:       { label: 'Other',       color: 'var(--color-text-2)',              bg: 'var(--color-surface-2)',           icon: <BarChart2 size={11} strokeWidth={2.5} /> },
 };
 
 const STATUS_CFG: Record<TicketStatus, { label: string; color: string; bg: string; border: string; icon: React.ReactNode }> = {
@@ -93,9 +93,9 @@ const STATUS_CFG: Record<TicketStatus, { label: string; color: string; bg: strin
 };
 
 const STATUS_ACCENT: Record<TicketStatus, string> = {
-  open:      'var(--chart-1)',
-  in_review: '#D97706',
-  resolved:  '#16A34A',
+  open:      'var(--color-primary)',
+  in_review: 'var(--color-warning)',
+  resolved:  'var(--color-success)',
 };
 
 const AREAS = ['Footfall', 'Queue Mgmt', 'Demographics', 'Conversion', 'Reporting', 'Camera / Hardware', 'Other'];
@@ -109,6 +109,7 @@ function CategoryBadge({ cat }: { cat: TicketCategory }) {
       display: 'inline-flex', alignItems: 'center', gap: 4,
       padding: '3px 8px', borderRadius: 5,
       background: c.bg, color: c.color,
+      border: '1px solid var(--color-border-subtle)',
       fontSize: 10.5, fontWeight: 700, letterSpacing: '0.04em',
     }}>
       {c.icon}
@@ -159,11 +160,11 @@ function TicketRow({ ticket }: { ticket: SupportTicket }) {
         borderLeft: `3px solid ${accent}`,
         borderRadius: 12,
         overflow: 'hidden',
-        boxShadow: open ? `0 4px 16px rgba(0,0,0,0.07)` : '0 1px 3px rgba(0,0,0,0.05)',
+        boxShadow: open ? 'var(--shadow-card-hover)' : 'var(--shadow-card)',
         transition: 'box-shadow 200ms ease',
       }}
-      onMouseEnter={(e) => { if (!open) (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)'; }}
-      onMouseLeave={(e) => { if (!open) (e.currentTarget as HTMLElement).style.boxShadow = '0 1px 3px rgba(0,0,0,0.05)'; }}
+      onMouseEnter={(e) => { if (!open) (e.currentTarget as HTMLElement).style.boxShadow = 'var(--shadow-card-hover)'; }}
+      onMouseLeave={(e) => { if (!open) (e.currentTarget as HTMLElement).style.boxShadow = 'var(--shadow-card)'; }}
     >
       {/* Header row */}
       <div
@@ -177,7 +178,7 @@ function TicketRow({ ticket }: { ticket: SupportTicket }) {
         {/* Left: category + area */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, minWidth: 0 }}>
           <CategoryBadge cat={ticket.category} />
-          <span style={{ fontSize: 12, color: 'var(--color-border)' }}>›</span>
+          <span style={{ fontSize: 12, color: 'var(--color-text-4)' }}>›</span>
           <span style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--color-text-1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ticket.area}</span>
         </div>
 
@@ -250,9 +251,9 @@ function TicketRow({ ticket }: { ticket: SupportTicket }) {
 
           {/* Pending state */}
           {ticket.replies.length === 0 && ticket.status !== 'resolved' && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', background: '#FFFBEB', borderRadius: 8, border: '1px solid #FDE68A' }}>
-              <Clock size={13} strokeWidth={2} style={{ color: '#D97706', flexShrink: 0 }} />
-              <p style={{ fontSize: 12.5, color: '#92400E', margin: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', background: 'var(--color-warning-light)', borderRadius: 8, border: '1px solid var(--color-border)' }}>
+              <Clock size={13} strokeWidth={2} style={{ color: 'var(--color-warning)', flexShrink: 0 }} />
+              <p style={{ fontSize: 12.5, color: 'var(--color-text-2)', margin: 0 }}>
                 Awaiting response from the Oly support team — typically within 24 hours.
               </p>
             </div>
@@ -307,12 +308,14 @@ function RaiseModal({ onClose, onSubmit }: { onClose: () => void; onSubmit: (t: 
 
   return (
     <div
-      style={{ position: 'fixed', inset: 0, zIndex: 9000, background: 'rgba(17,24,39,0.55)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+      className="theme-overlay"
+      style={{ position: 'fixed', inset: 0, zIndex: 9000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
       onClick={onClose}
     >
       <div
+        className="modal-panel"
         onClick={e => e.stopPropagation()}
-        style={{ background: 'var(--color-surface)', borderRadius: 16, width: '100%', maxWidth: 520, boxShadow: '0 24px 64px rgba(0,0,0,0.18)', overflow: 'hidden' }}
+        style={{ borderRadius: 16, width: '100%', maxWidth: 520, overflow: 'hidden' }}
       >
         {/* Modal header */}
         <div style={{ padding: '20px 24px 18px', borderBottom: '1px solid var(--color-border-subtle)', display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -464,8 +467,8 @@ function MyTicketsPageContent() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginBottom: 24 }}>
         {[
           { label: 'Total Raised',     value: total,          color: 'var(--color-primary)', bg: 'var(--color-accent-bg)', border: 'var(--color-accent-border)', status: 'all'      as const },
-          { label: 'Open / In Review', value: openCount,      color: '#D97706', bg: '#FFFBEB', border: '#FDE68A', status: 'open'     as const },
-          { label: 'Resolved',         value: resolvedCount,  color: '#16A34A', bg: '#F0FDF4', border: '#BBF7D0', status: 'resolved' as const },
+          { label: 'Open / In Review', value: openCount,      color: 'var(--color-warning)', bg: 'var(--color-warning-light)', border: 'var(--color-border)', status: 'open'     as const },
+          { label: 'Resolved',         value: resolvedCount,  color: 'var(--color-success)', bg: 'var(--color-success-light)', border: 'var(--color-border)', status: 'resolved' as const },
         ].map(({ label, value, color, bg, border, status }) => (
           <button
             key={label}

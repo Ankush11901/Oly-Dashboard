@@ -81,11 +81,28 @@ export function VisitorDemographicsDonut({
       active: { filter: { type: 'none' } },
     },
     tooltip: {
-      y: {
-        formatter: (val: number) => {
-          const sum = scaledSeries.reduce((a, b) => a + b, 0);
-          return `${((val / sum) * 100).toFixed(1)}%`;
-        },
+      enabled: true,
+      fillSeriesColor: false,
+      theme: 'light',
+      custom: ({ series, seriesIndex, w }) => {
+        const idx = seriesIndex ?? 0;
+        const label = w.globals.labels[idx] ?? '';
+        const val = Number(series[idx] ?? 0);
+        const sum = scaledSeries.reduce((a, b) => a + b, 0);
+        const pct = sum ? ((val / sum) * 100).toFixed(1) : '0.0';
+        const color = AGE_GENDER_COLORS[idx] ?? REPORT_LIGHT.chart1;
+        const safeLabel = String(label).replace(/</g, '&lt;');
+        return (
+          `<div class="apex-donut-tooltip">` +
+            `<div class="apex-donut-tooltip-row">` +
+              `<span class="apex-donut-tooltip-swatch" style="background:${color}"></span>` +
+              `<span class="apex-donut-tooltip-label">${safeLabel}</span>` +
+            `</div>` +
+            `<div class="apex-donut-tooltip-value">` +
+              `${val.toLocaleString()}<span class="apex-donut-tooltip-pct">${pct}%</span>` +
+            `</div>` +
+          `</div>`
+        );
       },
     },
   }, documentLight ? { theme: 'light' } : undefined);

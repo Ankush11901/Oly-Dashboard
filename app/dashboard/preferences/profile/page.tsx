@@ -1,5 +1,6 @@
 'use client';
-import { useState, useRef } from 'react';
+import { Suspense, useState, useRef, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import {
   UserCircle, Mail, Phone, MapPin, Building, Shield, Check,
   Lock, Eye, EyeOff, Smartphone, Monitor, LogOut,
@@ -354,18 +355,17 @@ const TABS = [
   { id: 'password',  label: 'Password & Access',  icon: <Lock       size={15} strokeWidth={1.5} /> },
 ];
 
-export default function ProfileAndSecurityPage() {
+function ProfileAndSecurityContent() {
+  const searchParams = useSearchParams();
   const [active, setActive] = useState<'profile' | 'password'>('profile');
 
-  return (
-    <div className="p-8">
-      {/* Page header */}
-      <div className="flex items-center gap-3 mb-6">
-        <Shield size={24} style={{ color: 'var(--color-primary)' }} strokeWidth={1.5} />
-        <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--color-text-1)' }}>Profile &amp; Security</h1>
-      </div>
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab === 'password') setActive('password');
+  }, [searchParams]);
 
-      {/* Inner tab bar */}
+  return (
+    <>
       <div
         className="flex mb-6"
         style={{
@@ -396,9 +396,23 @@ export default function ProfileAndSecurityPage() {
         })}
       </div>
 
-      {/* Tab content */}
       {active === 'profile'  && <ProfileTab />}
       {active === 'password' && <PasswordTab />}
+    </>
+  );
+}
+
+export default function ProfileAndSecurityPage() {
+  return (
+    <div className="p-8">
+      <div className="flex items-center gap-3 mb-6">
+        <Shield size={24} style={{ color: 'var(--color-primary)' }} strokeWidth={1.5} />
+        <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--color-text-1)' }}>Profile &amp; Security</h1>
+      </div>
+
+      <Suspense fallback={null}>
+        <ProfileAndSecurityContent />
+      </Suspense>
     </div>
   );
 }

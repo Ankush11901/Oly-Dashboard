@@ -19,10 +19,10 @@ interface Camera {
   passerby: number;
 }
 
-const TYPE_BADGES: { key: 'entry' | 'exit' | 'passerby'; bg: string; icon: React.ReactNode }[] = [
-  { key: 'entry',    bg: 'rgba(22,163,74,0.52)',   icon: <LogIn          size={12} strokeWidth={2.5} /> },
-  { key: 'exit',     bg: 'rgba(220,38,38,0.52)',   icon: <LogOut         size={12} strokeWidth={2.5} /> },
-  { key: 'passerby', bg: 'rgba(217,119,6,0.60)',  icon: <PersonStanding size={12} strokeWidth={2.5} /> },
+const TYPE_BADGES: { key: 'entry' | 'exit' | 'passerby'; bg: string; border: string; icon: React.ReactNode }[] = [
+  { key: 'entry',    bg: 'rgba(22,163,74,0.78)',   border: 'rgba(74,222,128,0.35)', icon: <LogIn          size={12} strokeWidth={2.5} /> },
+  { key: 'exit',     bg: 'rgba(220,38,38,0.78)',   border: 'rgba(252,165,165,0.35)', icon: <LogOut         size={12} strokeWidth={2.5} /> },
+  { key: 'passerby', bg: 'rgba(180,83,9,0.82)',    border: 'rgba(251,191,36,0.35)', icon: <PersonStanding size={12} strokeWidth={2.5} /> },
 ];
 
 // loremflickr lock IDs chosen to return indoor mall / crowd / corridor scenes
@@ -75,12 +75,12 @@ function CameraFeed({ camera, selected, onToggle, onRoiClick, gridMode }: {
 
   return (
     <div
-      className="relative rounded-xl overflow-hidden flex-shrink-0 cursor-pointer group"
+      className="relative rounded-xl overflow-hidden flex-shrink-0 cursor-pointer group vms-camera-tile"
       style={{
-        background: '#111',
         outline: selected && gridMode ? '2px solid var(--color-primary)' : 'none',
         outlineOffset: 2,
         aspectRatio: '16/9',
+        boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.06)',
       }}
       onClick={onToggle}
     >
@@ -115,7 +115,7 @@ function CameraFeed({ camera, selected, onToggle, onRoiClick, gridMode }: {
         <div className="w-full h-full flex items-center justify-center" style={{ background: '#0a0a0a' }}>
           <div className="flex flex-col items-center gap-2">
             <WifiOff size={28} strokeWidth={1.5} style={{ color: 'var(--color-text-2)' }} />
-            <span className="text-xs font-mono" style={{ color: '#4B5563' }}>NO SIGNAL</span>
+            <span className="text-xs font-mono" style={{ color: 'var(--color-text-3)' }}>NO SIGNAL</span>
           </div>
         </div>
       )}
@@ -141,10 +141,10 @@ function CameraFeed({ camera, selected, onToggle, onRoiClick, gridMode }: {
               display: 'flex', alignItems: 'center', gap: 4,
               padding: '3px 7px 3px 5px',
               borderRadius: 5,
-              border: '1px solid rgba(139,127,245,0.7)',
-              background: 'rgba(139,127,245,0.85)',
-              backdropFilter: 'blur(6px)',
-              color: 'rgba(255,255,255,0.95)',
+              border: '1px solid rgba(255,255,255,0.22)',
+              background: 'rgba(0,0,0,0.55)',
+              backdropFilter: 'blur(8px)',
+              color: 'rgba(255,255,255,0.92)',
               fontSize: 9,
               fontWeight: 700,
               fontFamily: 'var(--font-base, "Neue Haas Grotesk Display Pro", "Helvetica Neue", sans-serif)',
@@ -153,12 +153,12 @@ function CameraFeed({ camera, selected, onToggle, onRoiClick, gridMode }: {
               transition: 'background 150ms ease, border-color 150ms ease',
             }}
             onMouseEnter={e => {
-              (e.currentTarget as HTMLElement).style.background = 'rgba(139,127,245,1)';
-              (e.currentTarget as HTMLElement).style.borderColor = 'rgba(139,127,245,1)';
+              (e.currentTarget as HTMLElement).style.background = 'rgba(0,0,0,0.72)';
+              (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.35)';
             }}
             onMouseLeave={e => {
-              (e.currentTarget as HTMLElement).style.background = 'rgba(139,127,245,0.85)';
-              (e.currentTarget as HTMLElement).style.borderColor = 'rgba(139,127,245,0.7)';
+              (e.currentTarget as HTMLElement).style.background = 'rgba(0,0,0,0.55)';
+              (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.22)';
             }}
           >
             <Scan size={9} strokeWidth={2.5} />
@@ -175,7 +175,7 @@ function CameraFeed({ camera, selected, onToggle, onRoiClick, gridMode }: {
             REC
           </span>
         )}
-        <div className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-semibold font-mono" style={{ background: 'rgba(0,0,0,0.55)', color: st.color }}>
+        <div className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-semibold font-mono" style={{ background: 'rgba(0,0,0,0.62)', border: '1px solid rgba(255,255,255,0.12)', color: st.color, backdropFilter: 'blur(4px)' }}>
           {st.icon}&nbsp;{st.label}
         </div>
       </div>
@@ -191,7 +191,7 @@ function CameraFeed({ camera, selected, onToggle, onRoiClick, gridMode }: {
           gap: 6,
           alignItems: 'flex-end',
         }}>
-          {TYPE_BADGES.map(({ key, bg, icon }) => (
+          {TYPE_BADGES.map(({ key, bg, border, icon }) => (
             <div
               key={key}
               style={{
@@ -204,13 +204,15 @@ function CameraFeed({ camera, selected, onToggle, onRoiClick, gridMode }: {
                 paddingBottom: 6,
                 borderRadius: 8,
                 background: bg,
-                backdropFilter: 'blur(6px)',
+                border: `1px solid ${border}`,
+                backdropFilter: 'blur(8px)',
                 color: '#fff',
                 fontSize: 11,
                 fontWeight: 700,
                 letterSpacing: '0.01em',
                 whiteSpace: 'nowrap',
-                boxShadow: '0 2px 6px rgba(0,0,0,0.22)',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.35)',
+                textShadow: '0 1px 2px rgba(0,0,0,0.4)',
               }}
             >
               {icon}
@@ -230,8 +232,8 @@ function CameraFeed({ camera, selected, onToggle, onRoiClick, gridMode }: {
 
       {/* Bottom info */}
       <div className="absolute bottom-0 left-0 right-0 px-2.5 py-2">
-        <p className="text-xs font-semibold text-white truncate">{camera.label}</p>
-        <p className="text-[10px] text-gray-300 truncate">{camera.store}</p>
+        <p className="text-xs font-semibold truncate" style={{ color: 'rgba(255,255,255,0.95)', textShadow: '0 1px 3px rgba(0,0,0,0.85)' }}>{camera.label}</p>
+        <p className="text-[10px] truncate" style={{ color: 'rgba(255,255,255,0.72)', textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}>{camera.store}</p>
       </div>
 
       {/* Select checkbox overlay when in grid selection mode */}
@@ -258,16 +260,15 @@ function RemoveConfirmModal({ camera, onConfirm, onCancel }: {
 }) {
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
-      style={{ background: 'rgba(17,24,39,0.45)', backdropFilter: 'blur(2px)' }}
+      className="fixed inset-0 z-50 flex items-center justify-center theme-overlay"
       onClick={onCancel}
     >
       <div
+        className="modal-panel"
         onClick={e => e.stopPropagation()}
         style={{
-          background: 'var(--color-surface)', borderRadius: 16, width: 320,
+          borderRadius: 16, width: 320,
           padding: '24px 24px 20px',
-          boxShadow: '0 20px 60px rgba(0,0,0,0.18)',
         }}
       >
         {/* Icon */}
@@ -322,13 +323,12 @@ function SettingsPanel({ cols, setCols, interval, setInterval: setIntervalVal, o
 }) {
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
-      style={{ background: 'rgba(17,24,39,0.6)' }}
+      className="fixed inset-0 z-50 flex items-center justify-center theme-overlay"
       onClick={onClose}
     >
       <div
-        style={{ background: 'var(--color-surface)', borderRadius: 16, padding: '24px 28px' }}
-        className="shadow-2xl w-full max-w-sm"
+        className="modal-panel w-full max-w-sm"
+        style={{ borderRadius: 16, padding: '24px 28px' }}
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-5">
@@ -576,8 +576,8 @@ export default function VMSPage() {
                   onClick={() => setCols(n)}
                   className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold transition-colors"
                   style={{
-                    background: active ? 'var(--color-primary)' : 'transparent',
-                    color: active ? 'white' : 'var(--color-text-3)',
+                    background: active ? 'var(--color-primary-emphasis)' : 'transparent',
+                    color: active ? 'var(--color-on-primary)' : 'var(--color-text-2)',
                     borderRight: n !== 4 ? '1px solid var(--color-border)' : 'none',
                   }}
                 >
@@ -598,7 +598,7 @@ export default function VMSPage() {
                           x={x} y={y}
                           width={size} height={size}
                           rx={0.5}
-                          fill={active ? 'white' : 'var(--color-text-4)'}
+                          fill={active ? 'var(--color-on-primary)' : 'var(--color-text-3)'}
                         />
                       );
                     })}

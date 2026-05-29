@@ -28,12 +28,20 @@ function buildAvailableDates(): Set<string> {
 }
 
 const AVAILABLE = buildAvailableDates();
+const DEFAULT_MONTH = new Date(2026, 4, 1);
 
 type OpenField = 'from' | 'to' | null;
 
 interface Props {
   value: { start: Date | null; end: Date | null };
   onChange: (range: { start: Date | null; end: Date | null }) => void;
+}
+
+function isDateDisabled(d: Date, activeField: 'from' | 'to', value: { start: Date | null; end: Date | null }) {
+  if (!AVAILABLE.has(dateKey(d))) return true;
+  if (activeField === 'to' && value.start && d.getTime() < value.start.getTime()) return true;
+  if (activeField === 'from' && value.end && d.getTime() > value.end.getTime()) return true;
+  return false;
 }
 
 function CalendarPanel({
@@ -61,13 +69,8 @@ function CalendarPanel({
     return cells;
   }, [viewMonth]);
 
-  const isInRange = (d: Date) => {
-    if (!value.start || !value.end) return false;
-    const t = d.getTime();
-    return t > value.start.getTime() && t < value.end.getTime();
-  };
-
   const monthLabel = viewMonth.toLocaleString('default', { month: 'long', year: 'numeric' });
+  const toBlockedWithoutFrom = activeField === 'to' && !value.start;
 
   return (
     <div
@@ -80,7 +83,7 @@ function CalendarPanel({
         background: 'var(--color-surface)',
         border: '1px solid var(--color-border)',
         borderRadius: 10,
-        boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+        boxShadow: 'var(--shadow-dropdown)',
         padding: '12px 14px',
       }}
     >
@@ -88,7 +91,7 @@ function CalendarPanel({
         <button
           type="button"
           onClick={() => setViewMonth(new Date(viewMonth.getFullYear(), viewMonth.getMonth() - 1, 1))}
-          style={{ width: 28, height: 28, borderRadius: 6, border: '1px solid var(--color-border)', background: 'var(--color-surface-2)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          style={{ width: 28, height: 28, borderRadius: 6, border: '1px solid var(--color-border)', background: 'var(--color-surface-2)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-text-2)' }}
         >
           <ChevronLeft size={14} />
         </button>
@@ -96,7 +99,7 @@ function CalendarPanel({
         <button
           type="button"
           onClick={() => setViewMonth(new Date(viewMonth.getFullYear(), viewMonth.getMonth() + 1, 1))}
-          style={{ width: 28, height: 28, borderRadius: 6, border: '1px solid var(--color-border)', background: 'var(--color-surface-2)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          style={{ width: 28, height: 28, borderRadius: 6, border: '1px solid var(--color-border)', background: 'var(--color-surface-2)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-text-2)' }}
         >
           <ChevronRight size={14} />
         </button>
@@ -111,36 +114,32 @@ function CalendarPanel({
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 2 }}>
         {calendarDays.map((d, i) => {
           if (!d) return <span key={`empty-${i}`} />;
-          const available = AVAILABLE.has(dateKey(d));
-          const isStart = value.start && sameDay(d, value.start);
-          const isEnd = value.end && sameDay(d, value.end);
-          const selected = activeField === 'from' ? isStart : isEnd;
-          const inRange = isInRange(d);
+          const disabled = toBlockedWithoutFrom || isDateDisabled(d, activeField, value);
+          const selected =
+            activeField === 'from'
+              ? Boolean(value.start && sameDay(d, value.start))
+              : Boolean(value.end && sameDay(d, value.end));
 
           return (
             <button
               key={dateKey(d)}
               type="button"
-              disabled={!available}
+              disabled={disabled}
               onClick={() => onSelect(d)}
               style={{
                 height: 32,
                 borderRadius: 6,
-                border: 'none',
+                border: selected ? '1px solid var(--color-primary)' : '1px solid transparent',
                 fontSize: 11.5,
-                fontWeight: selected || isStart || isEnd ? 700 : 500,
-                cursor: available ? 'pointer' : 'not-allowed',
-                background: isStart || isEnd
-                  ? 'var(--color-primary-emphasis)'
-                  : inRange
-                    ? 'var(--color-primary-light)'
-                    : 'transparent',
-                color: isStart || isEnd
+                fontWeight: selected ? 700 : 500,
+                cursor: disabled ? 'not-allowed' : 'pointer',
+                background: selected ? 'var(--color-primary-emphasis)' : 'transparent',
+                color: selected
                   ? 'var(--color-on-primary)'
-                  : available
-                    ? 'var(--color-text-2)'
-                    : 'var(--color-text-4)',
-                opacity: available ? 1 : 0.35,
+                  : disabled
+                    ? 'var(--color-text-4)'
+                    : 'var(--color-text-2)',
+                opacity: disabled && !selected ? 0.35 : 1,
               }}
             >
               {d.getDate()}
@@ -151,8 +150,10 @@ function CalendarPanel({
 
       <p style={{ fontSize: 10, color: 'var(--color-text-4)', marginTop: 10, lineHeight: 1.4 }}>
         {activeField === 'from'
-          ? 'Pick the start date. Only dates with report data are selectable.'
-          : 'Pick the end date. Must be on or after the From date.'}
+          ? 'Select a start date. Only dates with report data are available.'
+          : toBlockedWithoutFrom
+            ? 'Select a From date first, then choose an end date.'
+            : 'Select an end date on or after the From date.'}
       </p>
     </div>
   );
@@ -189,6 +190,7 @@ function DateField({
       <button
         type="button"
         onClick={onToggle}
+        aria-expanded={isOpen}
         style={{
           width: '100%',
           display: 'flex',
@@ -229,7 +231,12 @@ function DateField({
 
 export function DateRangePicker({ value, onChange }: Props) {
   const [openField, setOpenField] = useState<OpenField>(null);
-  const [viewMonth, setViewMonth] = useState(() => value.start ?? new Date(2026, 4, 1));
+  const [fromViewMonth, setFromViewMonth] = useState(() =>
+    value.start ? new Date(value.start.getFullYear(), value.start.getMonth(), 1) : DEFAULT_MONTH,
+  );
+  const [toViewMonth, setToViewMonth] = useState(() =>
+    value.end ? new Date(value.end.getFullYear(), value.end.getMonth(), 1) : DEFAULT_MONTH,
+  );
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -248,22 +255,20 @@ export function DateRangePicker({ value, onChange }: Props) {
   };
 
   const handleToSelect = (d: Date) => {
-    if (!value.start) {
-      onChange({ start: d, end: d });
-    } else if (d.getTime() < value.start.getTime()) {
-      onChange({ start: d, end: value.start });
-    } else {
-      onChange({ start: value.start, end: d });
-    }
+    if (!value.start || d.getTime() < value.start.getTime()) return;
+    onChange({ start: value.start, end: d });
     setOpenField(null);
   };
 
   const toggleField = (field: 'from' | 'to') => {
     setOpenField(current => {
       const next = current === field ? null : field;
-      if (next) {
-        const anchor = field === 'from' ? value.start : value.end ?? value.start;
-        if (anchor) setViewMonth(new Date(anchor.getFullYear(), anchor.getMonth(), 1));
+      if (next === 'from') {
+        const anchor = value.start ?? DEFAULT_MONTH;
+        setFromViewMonth(new Date(anchor.getFullYear(), anchor.getMonth(), 1));
+      } else if (next === 'to') {
+        const anchor = value.end ?? DEFAULT_MONTH;
+        setToViewMonth(new Date(anchor.getFullYear(), anchor.getMonth(), 1));
       }
       return next;
     });
@@ -277,8 +282,8 @@ export function DateRangePicker({ value, onChange }: Props) {
         field="from"
         isOpen={openField === 'from'}
         onToggle={() => toggleField('from')}
-        viewMonth={viewMonth}
-        setViewMonth={setViewMonth}
+        viewMonth={fromViewMonth}
+        setViewMonth={setFromViewMonth}
         range={value}
         onSelect={handleFromSelect}
       />
@@ -288,8 +293,8 @@ export function DateRangePicker({ value, onChange }: Props) {
         field="to"
         isOpen={openField === 'to'}
         onToggle={() => toggleField('to')}
-        viewMonth={viewMonth}
-        setViewMonth={setViewMonth}
+        viewMonth={toViewMonth}
+        setViewMonth={setToViewMonth}
         range={value}
         onSelect={handleToSelect}
       />
