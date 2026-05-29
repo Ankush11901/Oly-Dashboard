@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import {
-  Home, Users, BarChart2, Video, Settings, ChevronDown,
+  Home, Users, BarChart2, Video, Settings, ChevronDown, FileText,
 } from 'lucide-react';
 
 interface NavItem { label: string; href: string }
@@ -47,14 +47,18 @@ const NAV_NODES: NavNode[] = [
     icon: <Video size={16} strokeWidth={1.5} />,
   },
   {
+    type: 'flat',
+    label: 'Reports',
+    href: '/dashboard/reports',
+    icon: <FileText size={16} strokeWidth={1.5} />,
+  },
+  {
     type: 'section',
     label: 'Preferences',
     icon: <Settings size={16} strokeWidth={1.5} />,
     items: [
-      { label: 'Profile',               href: '/dashboard/preferences/profile' },
-      { label: 'Notification Settings', href: '/dashboard/preferences/notifications' },
-      { label: 'Password & Access',     href: '/dashboard/preferences/password' },
-      { label: 'Device Settings',       href: '/dashboard/preferences/devices' },
+      { label: 'Profile & Security',    href: '/dashboard/preferences/profile' },
+      { label: 'Alerts & Display',      href: '/dashboard/preferences/notifications' },
       { label: 'My Tickets',            href: '/dashboard/preferences/tickets' },
     ],
   },
@@ -109,16 +113,17 @@ export function SideNav() {
   return (
     <aside
       className="flex flex-col h-full flex-shrink-0 overflow-y-auto"
-      style={{ width: 'var(--sidebar-width)', background: '#FFFFFF', borderRight: '1px solid #E5E7EB' }}
+      style={{ width: 'var(--sidebar-width)', background: 'var(--color-surface)', borderRight: '1px solid var(--color-border)' }}
     >
       {/* Logo */}
       <div
         className="flex items-center px-4 flex-shrink-0"
-        style={{ height: 64, borderBottom: '1px solid #E5E7EB' }}
+        style={{ height: 64, borderBottom: '1px solid var(--color-border)' }}
       >
         <img
           src="/oly-logo.svg"
           alt="OlyRetail"
+          className="nav-logo"
           style={{ height: 26, width: 'auto', objectFit: 'contain', maxWidth: 140 }}
         />
       </div>
@@ -135,15 +140,15 @@ export function SideNav() {
                 href={node.href}
                 style={{
                   ...TOP_ITEM,
-                  color: active ? '#655BD3' : '#374151',
-                  background: active ? '#EEE9FF' : 'transparent',
+                  color: active ? 'var(--color-primary)' : 'var(--color-text-2)',
+                  background: active ? 'var(--color-primary-light)' : 'transparent',
                   fontWeight: active ? 600 : 500,
-                  borderLeft: active ? '2px solid #655BD3' : '2px solid transparent',
+                  borderLeft: active ? '2px solid var(--color-primary)' : '2px solid transparent',
                 }}
-                onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.background = '#F9FAFB'; }}
+                onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.background = 'var(--color-surface-2)'; }}
                 onMouseLeave={e => { if (!active) (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
               >
-                <span style={{ flexShrink: 0, color: active ? '#655BD3' : '#6B7280', display: 'flex' }}>
+                <span style={{ flexShrink: 0, color: active ? 'var(--color-primary)' : 'var(--color-text-3)', display: 'flex' }}>
                   {node.icon}
                 </span>
                 <span className="truncate">{node.label}</span>
@@ -164,11 +169,11 @@ export function SideNav() {
                 className="flex items-center rounded-lg transition-colors"
                 style={{
                   height: 40,
-                  color: anyChildActive ? '#655BD3' : '#374151',
+                  color: anyChildActive ? 'var(--color-primary)' : 'var(--color-text-2)',
                   background: 'transparent',
-                  borderLeft: anyChildActive ? '2px solid #655BD3' : '2px solid transparent',
+                  borderLeft: anyChildActive ? '2px solid var(--color-primary)' : '2px solid transparent',
                 }}
-                onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = '#F9FAFB'}
+                onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'var(--color-surface-2)'}
                 onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
               >
                 {/* Navigable area — link to first sub-item, also expands section */}
@@ -189,7 +194,7 @@ export function SideNav() {
                     minWidth: 0,
                   }}
                 >
-                  <span style={{ flexShrink: 0, color: anyChildActive ? '#655BD3' : '#6B7280', display: 'flex' }}>
+                  <span style={{ flexShrink: 0, color: anyChildActive ? 'var(--color-primary)' : 'var(--color-text-3)', display: 'flex' }}>
                     {section.icon}
                   </span>
                   <span className="truncate">{section.label}</span>
@@ -208,7 +213,7 @@ export function SideNav() {
                     background: 'transparent',
                     border: 'none',
                     cursor: 'pointer',
-                    color: '#9CA3AF',
+                    color: 'var(--color-text-4)',
                   }}
                 >
                   <span
@@ -240,12 +245,12 @@ export function SideNav() {
                         href={item.href}
                         style={{
                           ...SUB_ITEM,
-                          color: active ? '#655BD3' : '#9CA3AF',
-                          background: active ? '#EEE9FF' : 'transparent',
+                          color: active ? 'var(--color-primary)' : 'var(--color-text-4)',
+                          background: active ? 'var(--color-primary-light)' : 'transparent',
                           fontWeight: active ? 500 : 400,
-                          borderLeft: active ? '2px solid #655BD3' : '2px solid transparent',
+                          borderLeft: active ? '2px solid var(--color-primary)' : '2px solid transparent',
                         }}
-                        onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.background = '#F9FAFB'; }}
+                        onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.background = 'var(--color-surface-2)'; }}
                         onMouseLeave={e => { if (!active) (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
                       >
                         <span className="truncate">{item.label}</span>
@@ -260,17 +265,17 @@ export function SideNav() {
       </nav>
 
       {/* Bottom user */}
-      <div className="px-4 py-4 flex-shrink-0" style={{ borderTop: '1px solid #E5E7EB' }}>
+      <div className="px-4 py-4 flex-shrink-0" style={{ borderTop: '1px solid var(--color-border)' }}>
         <div className="flex items-center gap-3">
           <div
-            className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-semibold flex-shrink-0"
-            style={{ background: '#655BD3' }}
+            className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0"
+            style={{ background: 'var(--color-primary-emphasis)', color: 'var(--color-on-primary)' }}
           >AM</div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold truncate" style={{ color: '#111827' }}>Admin Manager</p>
-            <p className="text-xs truncate" style={{ color: '#6B7280' }}>admin@olyretail.com</p>
+            <p className="text-sm font-semibold truncate" style={{ color: 'var(--color-text-1)' }}>Admin Manager</p>
+            <p className="text-xs truncate" style={{ color: 'var(--color-text-3)' }}>admin@olyretail.com</p>
           </div>
-          <Settings size={14} strokeWidth={1.5} style={{ color: '#9CA3AF', flexShrink: 0 }} />
+          <Settings size={14} strokeWidth={1.5} style={{ color: 'var(--color-text-4)', flexShrink: 0 }} />
         </div>
       </div>
     </aside>

@@ -1,6 +1,7 @@
 'use client';
 import dynamic from 'next/dynamic';
 import type { ApexOptions } from 'apexcharts';
+import { useTheme } from '@/components/ThemeProvider';
 
 const ReactApexChart = dynamic(() => import('react-apexcharts'), {
   ssr: false,
@@ -22,8 +23,10 @@ interface Props {
 }
 
 export function ApexWrapper({ options, series, type, height, width }: Props) {
+  const { theme } = useTheme();
   return (
     <ReactApexChart
+      key={theme}
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       type={type as any}
       series={series}

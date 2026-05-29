@@ -115,10 +115,10 @@ function KpiCard({ label, value, icon, iconColor }: KpiCardProps) {
         <span style={{ color: iconColor }}>{icon}</span>
       </div>
       <div>
-        <p className="font-bold tabular-nums" style={{ fontSize: 26, color: '#111827', lineHeight: 1.2 }}>
+        <p className="font-bold tabular-nums" style={{ fontSize: 26, color: 'var(--color-text-1)', lineHeight: 1.2 }}>
           {value}
         </p>
-        <p className="text-sm font-medium" style={{ color: '#6B7280' }}>{label}</p>
+        <p className="text-sm font-medium" style={{ color: 'var(--color-text-3)' }}>{label}</p>
       </div>
     </div>
   );
@@ -133,12 +133,12 @@ interface TooltipProps {
 function QueueTooltip({ active, payload, label }: TooltipProps) {
   if (!active || !payload?.length) return null;
   return (
-    <div style={{ background: '#1A1A2E', borderRadius: 8, padding: '10px 14px', boxShadow: '0 4px 16px rgba(0,0,0,0.25)' }}>
-      <p style={{ color: '#9CA3AF', fontSize: 11, marginBottom: 4 }}>{label}</p>
+    <div style={{ background: 'var(--color-tooltip-bg)', borderRadius: 8, padding: '10px 14px', boxShadow: 'var(--shadow-md)', border: '1px solid var(--color-tooltip-border)' }}>
+      <p style={{ color: 'var(--color-text-4)', fontSize: 11, marginBottom: 4 }}>{label}</p>
       <div className="flex items-center gap-2">
-        <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#655BD3', display: 'inline-block' }} />
-        <span style={{ color: '#D1D5DB', fontSize: 12 }}>Queue Depth</span>
-        <span style={{ color: 'white', fontSize: 13, fontWeight: 700, marginLeft: 8 }}>{payload[0].value}</span>
+        <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--color-primary-emphasis)', display: 'inline-block' }} />
+        <span style={{ color: 'var(--color-text-2)', fontSize: 12 }}>Queue Depth</span>
+        <span style={{ color: 'var(--color-text-1)', fontSize: 13, fontWeight: 700, marginLeft: 8 }}>{payload[0].value}</span>
       </div>
     </div>
   );
@@ -158,15 +158,15 @@ export default function QueuePage() {
     <div className="p-8 space-y-6">
       {/* Header */}
       <div>
-        <h1 style={{ fontSize: 18, fontWeight: 700, color: '#111827' }}>Queue Management</h1>
-        <p style={{ fontSize: 13, color: '#6B7280', marginTop: 2 }}>
+        <h1 style={{ fontSize: 18, fontWeight: 700, color: 'var(--color-text-1)' }}>Queue Management</h1>
+        <p style={{ fontSize: 13, color: 'var(--color-text-3)', marginTop: 2 }}>
           Real-time queue monitoring across all stores
         </p>
       </div>
 
       {/* KPI Row */}
       <div className="grid grid-cols-4 gap-4">
-        <KpiCard label="Currently In Queue" value="47"    icon={<Users        size={20} strokeWidth={1.5} />} iconColor="#655BD3" />
+        <KpiCard label="Currently In Queue" value="47"    icon={<Users        size={20} strokeWidth={1.5} />} iconColor="var(--color-primary)" />
         <KpiCard label="Avg Wait Time"      value="8.3 min" icon={<Clock       size={20} strokeWidth={1.5} />} iconColor="#D97706" />
         <KpiCard label="Served Today"       value="1,243" icon={<CheckCircle2 size={20} strokeWidth={1.5} />} iconColor="#16A34A" />
         <KpiCard label="Queue Satisfaction" value="87%"   icon={<Star         size={20} strokeWidth={1.5} />} iconColor="#EC4899" />
@@ -174,8 +174,8 @@ export default function QueuePage() {
 
       {/* Live Queue Table */}
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-        <div className="flex items-center justify-between px-6 py-4" style={{ borderBottom: '1px solid #E5E7EB' }}>
-          <p className="text-sm font-semibold" style={{ color: '#111827' }}>Live Queue by Store</p>
+        <div className="flex items-center justify-between px-6 py-4" style={{ borderBottom: '1px solid var(--color-border)' }}>
+          <p className="text-sm font-semibold" style={{ color: 'var(--color-text-1)' }}>Live Queue by Store</p>
           <div className="flex items-center gap-1.5">
             <span
               className="w-2 h-2 rounded-full"
@@ -191,12 +191,12 @@ export default function QueuePage() {
 
         <table className="w-full">
           <thead>
-            <tr style={{ background: '#F9FAFB', borderBottom: '1px solid #E5E7EB' }}>
+            <tr style={{ background: 'var(--color-surface-2)', borderBottom: '1px solid var(--color-border)' }}>
               {['Store', 'In Queue', 'Avg Wait', 'Status', 'Trend'].map((col) => (
                 <th
                   key={col}
                   className="text-left px-6 py-3 text-xs font-semibold uppercase tracking-wide"
-                  style={{ color: '#9CA3AF' }}
+                  style={{ color: 'var(--color-text-4)' }}
                 >
                   {col}
                 </th>
@@ -209,13 +209,13 @@ export default function QueuePage() {
               return (
                 <tr
                   key={row.name}
-                  style={{ borderBottom: idx < STORE_DATA.length - 1 ? '1px solid #F3F4F6' : 'none' }}
-                  onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = '#F9FAFB')}
+                  style={{ borderBottom: idx < STORE_DATA.length - 1 ? '1px solid var(--color-border-subtle)' : 'none' }}
+                  onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = 'var(--color-surface-2)')}
                   onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = 'transparent')}
                 >
-                  <td className="px-6 py-3.5 text-sm font-medium" style={{ color: '#111827' }}>{row.name}</td>
-                  <td className="px-6 py-3.5 text-sm font-semibold tabular-nums" style={{ color: '#374151' }}>{row.inQueue}</td>
-                  <td className="px-6 py-3.5 text-sm tabular-nums" style={{ color: '#6B7280' }}>{row.avgWait}</td>
+                  <td className="px-6 py-3.5 text-sm font-medium" style={{ color: 'var(--color-text-1)' }}>{row.name}</td>
+                  <td className="px-6 py-3.5 text-sm font-semibold tabular-nums" style={{ color: 'var(--color-text-2)' }}>{row.inQueue}</td>
+                  <td className="px-6 py-3.5 text-sm tabular-nums" style={{ color: 'var(--color-text-3)' }}>{row.avgWait}</td>
                   <td className="px-6 py-3.5">
                     <span
                       className="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold"
@@ -238,11 +238,10 @@ export default function QueuePage() {
       <div className="card">
         <div className="flex items-center justify-between mb-1">
           <div>
-            <p className="text-sm font-semibold" style={{ color: '#111827' }}>Queue Depth — Last 12 Hours</p>
-            <p className="text-xs mt-0.5" style={{ color: '#9CA3AF' }}>Average queue length across all stores</p>
+            <p className="text-sm font-semibold" style={{ color: 'var(--color-text-1)' }}>Queue Depth — Last 12 Hours</p>
+            <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-4)' }}>Average queue length across all stores</p>
           </div>
-          {/* Period toggle */}
-          <div className="flex rounded-md overflow-hidden" style={{ border: '1px solid #E5E7EB' }}>
+          <div className="flex rounded-md overflow-hidden" style={{ border: '1px solid var(--color-border)' }}>
             {(['Today', 'This Week', 'This Month'] as Period[]).map((p, i, arr) => (
               <button
                 key={p}
@@ -252,9 +251,9 @@ export default function QueuePage() {
                   fontSize: 12,
                   fontWeight: 500,
                   border: 'none',
-                  borderRight: i < arr.length - 1 ? '1px solid #E5E7EB' : 'none',
-                  background: period === p ? '#655BD3' : 'white',
-                  color: period === p ? 'white' : '#6B7280',
+                  borderRight: i < arr.length - 1 ? '1px solid var(--color-border)' : 'none',
+                  background: period === p ? 'var(--color-primary)' : 'var(--color-surface)',
+                  color: period === p ? 'white' : 'var(--color-text-3)',
                   cursor: 'pointer',
                   transition: 'all 150ms',
                 }}
@@ -270,20 +269,20 @@ export default function QueuePage() {
             <AreaChart data={chartData} margin={{ top: 8, right: 8, bottom: 0, left: -8 }}>
               <defs>
                 <linearGradient id="queueGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%"   stopColor="#655BD3" stopOpacity={0.45} />
-                  <stop offset="100%" stopColor="#655BD3" stopOpacity={0} />
+                  <stop offset="0%" stopColor="var(--chart-1)" stopOpacity={0.45} />
+                  <stop offset="100%" stopColor="var(--chart-1)" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-subtle)" vertical={false} />
               <XAxis
                 dataKey="hour"
-                tick={{ fontSize: 11, fill: '#9CA3AF', fontFamily: 'inherit' }}
+                tick={{ fontSize: 11, fill: 'var(--color-text-4)', fontFamily: 'inherit' }}
                 axisLine={false}
                 tickLine={false}
               />
               <YAxis
                 domain={[0, 20]}
-                tick={{ fontSize: 11, fill: '#9CA3AF', fontFamily: 'inherit' }}
+                tick={{ fontSize: 11, fill: 'var(--color-text-4)', fontFamily: 'inherit' }}
                 axisLine={false}
                 tickLine={false}
                 width={30}
@@ -293,11 +292,11 @@ export default function QueuePage() {
                 type="monotone"
                 dataKey="depth"
                 name="Queue Depth"
-                stroke="#655BD3"
+                stroke="var(--chart-1)"
                 strokeWidth={2.5}
                 fill="url(#queueGrad)"
                 dot={false}
-                activeDot={{ r: 5, fill: '#655BD3', stroke: 'white', strokeWidth: 2 }}
+                activeDot={{ r: 5, fill: 'var(--chart-1)', stroke: 'var(--color-surface)', strokeWidth: 2 }}
               />
             </AreaChart>
           </ResponsiveContainer>
@@ -306,10 +305,10 @@ export default function QueuePage() {
 
       {/* Alert Config */}
       <div className="card">
-        <p className="text-sm font-semibold mb-4" style={{ color: '#111827' }}>Queue Alert Thresholds</p>
+        <p className="text-sm font-semibold mb-4" style={{ color: 'var(--color-text-1)' }}>Queue Alert Thresholds</p>
         <div className="flex flex-wrap items-end gap-4">
           <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: '#6B7280' }}>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--color-text-3)' }}>
               Alert when queue exceeds
             </label>
             <div className="flex items-center gap-2">
@@ -320,21 +319,22 @@ export default function QueuePage() {
                 onChange={(e) => setAlertQueue(Number(e.target.value))}
                 className="w-20 text-sm font-semibold"
                 style={{
-                  border: '1px solid #E5E7EB',
+                  border: '1px solid var(--color-border)',
                   borderRadius: 6,
                   padding: '7px 12px',
-                  color: '#111827',
+                  color: 'var(--color-text-1)',
+                  background: 'var(--color-surface)',
                   outline: 'none',
                 }}
-                onFocus={(e) => (e.currentTarget.style.borderColor = '#655BD3')}
-                onBlur={(e) => (e.currentTarget.style.borderColor = '#E5E7EB')}
+                onFocus={(e) => (e.currentTarget.style.borderColor = 'var(--color-primary)')}
+                onBlur={(e) => (e.currentTarget.style.borderColor = 'var(--color-border)')}
               />
-              <span className="text-sm" style={{ color: '#9CA3AF' }}>people</span>
+              <span className="text-sm" style={{ color: 'var(--color-text-4)' }}>people</span>
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: '#6B7280' }}>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--color-text-3)' }}>
               Alert when wait exceeds
             </label>
             <div className="flex items-center gap-2">
@@ -345,16 +345,17 @@ export default function QueuePage() {
                 onChange={(e) => setAlertWait(Number(e.target.value))}
                 className="w-20 text-sm font-semibold"
                 style={{
-                  border: '1px solid #E5E7EB',
+                  border: '1px solid var(--color-border)',
                   borderRadius: 6,
                   padding: '7px 12px',
-                  color: '#111827',
+                  color: 'var(--color-text-1)',
+                  background: 'var(--color-surface)',
                   outline: 'none',
                 }}
-                onFocus={(e) => (e.currentTarget.style.borderColor = '#655BD3')}
-                onBlur={(e) => (e.currentTarget.style.borderColor = '#E5E7EB')}
+                onFocus={(e) => (e.currentTarget.style.borderColor = 'var(--color-primary)')}
+                onBlur={(e) => (e.currentTarget.style.borderColor = 'var(--color-border)')}
               />
-              <span className="text-sm" style={{ color: '#9CA3AF' }}>min</span>
+              <span className="text-sm" style={{ color: 'var(--color-text-4)' }}>min</span>
             </div>
           </div>
 

@@ -18,7 +18,7 @@ function SegmentedBar({ breakdown }: { breakdown: number[] }) {
 
 function StoreRow({ name, visitors, breakdown, rank }: { name: string; visitors: number; breakdown: number[]; rank: number }) {
   return (
-    <div className="py-2.5" style={{ borderBottom: '1px solid #F3F4F6' }}>
+    <div className="py-2.5" style={{ borderBottom: '1px solid var(--color-border-subtle)' }}>
       <div className="flex items-center justify-between mb-0.5">
         <div className="flex items-center gap-2">
           <span
@@ -61,7 +61,7 @@ export function StorePerformanceSection() {
         </h2>
 
         <div className="space-y-4 flex-1">
-          <div className="flex items-center gap-3 p-3 rounded-lg" style={{ background: '#F9FAFB' }}>
+          <div className="flex items-center gap-3 p-3 rounded-lg" style={{ background: 'var(--color-surface-2)' }}>
             <div
               className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
               style={{ background: 'var(--color-primary-light)' }}
@@ -78,10 +78,10 @@ export function StorePerformanceSection() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3 p-3 rounded-lg" style={{ background: '#F9FAFB' }}>
+          <div className="flex items-center gap-3 p-3 rounded-lg" style={{ background: 'var(--color-surface-2)' }}>
             <div
               className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
-              style={{ background: '#FEF3C7' }}
+              style={{ background: 'var(--color-warning-light)' }}
             >
               <Clock size={18} strokeWidth={1.5} style={{ color: '#D97706' }} />
             </div>
@@ -96,7 +96,7 @@ export function StorePerformanceSection() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3 p-3 rounded-lg" style={{ background: '#F9FAFB' }}>
+          <div className="flex items-center gap-3 p-3 rounded-lg" style={{ background: 'var(--color-surface-2)' }}>
             <div
               className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
               style={{ background: 'var(--color-secondary-light)' }}
@@ -119,7 +119,7 @@ export function StorePerformanceSection() {
 
       {/* Right: Top stores by visitors */}
       <div className="card flex flex-col">
-        <p className="text-sm font-semibold mb-4" style={{ color: '#111827' }}>
+        <p className="text-sm font-semibold mb-4" style={{ color: 'var(--color-text-1)' }}>
           Top Stores by Visitors
         </p>
         <div className="overflow-y-auto flex-1" style={{ maxHeight: 360 }}>
@@ -135,7 +135,7 @@ export function StorePerformanceSection() {
         </div>
 
         {/* Legend */}
-        <div className="mt-4 pt-3 border-t" style={{ borderColor: '#F3F4F6' }}>
+        <div className="mt-4 pt-3 border-t" style={{ borderColor: 'var(--color-border-subtle)' }}>
           <p className="text-[10px] mb-1.5" style={{ color: 'var(--color-neutral-500)' }}>Age × Gender breakdown</p>
           <div className="flex flex-wrap gap-x-3 gap-y-1">
             {['M 0-2','M 3-12','M 13-21','M 22-35','M 35+','F 0-2','F 3-12','F 13-21','F 22-35','F 35+'].map((label, i) => (

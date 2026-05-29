@@ -1,6 +1,7 @@
 'use client';
-import { useState, useRef, useEffect } from 'react';
-import { Bell, ChevronDown, Calendar, Store, RefreshCw, Settings, LogOut, UserCircle, TrendingUp, SlidersHorizontal, Video, Check, X, Lightbulb, ArrowUpRight, ArrowDownRight, Users, Target, Clock } from 'lucide-react';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { Bell, ChevronDown, Calendar, Store, RefreshCw, Settings, LogOut, UserCircle, TrendingUp, SlidersHorizontal, Video, Check, X, ArrowUpRight, ArrowDownRight, Users, Target, Clock, Moon, Sun } from 'lucide-react';
+import { useTheme } from '@/components/ThemeProvider';
 import { usePathname } from 'next/navigation';
 import { useDashboardContext } from '@/components/DashboardProvider';
 
@@ -24,7 +25,7 @@ const FILTER_OPTIONS = {
 type FilterKey = keyof typeof FILTER_OPTIONS;
 
 // ── Insights of the Day Modal ─────────────────────────────────────────────────
-const PURPLE = '#655BD3';
+const PURPLE = 'var(--color-primary)';
 
 const HOURLY = [
   { h: '9am',  v: 210 }, { h: '10am', v: 380 }, { h: '11am', v: 520 },
@@ -42,11 +43,28 @@ const STORES_PERF = [
 ];
 
 function InsightsModal({ onClose }: { onClose: () => void }) {
-  useEffect(() => {
-    const esc = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
-    document.addEventListener('keydown', esc);
-    return () => document.removeEventListener('keydown', esc);
+  const [slideOpen, setSlideOpen] = useState(false);
+
+  const handleClose = useCallback(() => {
+    setSlideOpen(false);
+    window.setTimeout(onClose, 320);
   }, [onClose]);
+
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setSlideOpen(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
+
+  useEffect(() => {
+    const esc = (e: KeyboardEvent) => { if (e.key === 'Escape') handleClose(); };
+    document.addEventListener('keydown', esc);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', esc);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [handleClose]);
 
   const storeColors = [PURPLE, '#00CE9C', '#3B82F6', '#F59E0B', '#EC4899'];
   const maxStore = Math.max(...STORES_PERF.map(s => s.visitors));
@@ -66,7 +84,7 @@ function InsightsModal({ onClose }: { onClose: () => void }) {
     { h: '6pm',  footfall: 320, passerby: 1380 },
     { h: '7pm',  footfall: 190, passerby:  820 },
   ];
-  const TW = 820, TH = 96;
+  const TW = 380, TH = 80;
   const maxT = Math.max(...TRAFFIC.map(d => d.passerby));
   const tx = (i: number) => 8 + (i / (TRAFFIC.length - 1)) * (TW - 16);
   const ty = (v: number) => TH - 4 - ((v / maxT) * (TH - 12));
@@ -75,10 +93,8 @@ function InsightsModal({ onClose }: { onClose: () => void }) {
   const footfallArea = `M${tx(0)},${TH} ` + TRAFFIC.map((d, i) => `L${tx(i)},${ty(d.footfall)}`).join(' ') + ` L${tx(TRAFFIC.length - 1)},${TH}Z`;
 
   const insights = [
-    { icon: <TrendingUp size={13} strokeWidth={1.5} />, color: PURPLE,    bg: '#EEE9FF', text: 'Peak at 1 PM — deploy extra staff 12:30–2:30 PM across all stores.' },
-    { icon: <Users     size={13} strokeWidth={1.5} />, color: '#00CE9C',  bg: '#CCFBF1', text: 'Marina Bay leads at 18.2% conversion — replicate its zone layout system-wide.' },
-    { icon: <Clock     size={13} strokeWidth={1.5} />, color: '#F59E0B',  bg: '#FEF3C7', text: 'Zone D dwell time 11.4 min — highest engagement. Prioritise premium inventory here.' },
-    { icon: <Target    size={13} strokeWidth={1.5} />, color: '#3B82F6',  bg: '#DBEAFE', text: 'Orchard & Tampines declining — review queue times and checkout throughput.' },
+    { icon: <TrendingUp size={13} strokeWidth={1.5} />, color: PURPLE,    bg: 'var(--color-primary-light)', text: 'Peak at 1 PM — deploy extra staff 12:30–2:30 PM across all stores.' },
+    { icon: <Users     size={13} strokeWidth={1.5} />, color: '#00CE9C',  bg: 'var(--color-secondary-light)', text: 'Marina Bay leads at 18.2% conversion — replicate its zone layout system-wide.' },
   ];
 
   const recommendations = [
@@ -88,183 +104,203 @@ function InsightsModal({ onClose }: { onClose: () => void }) {
   ];
 
   const priorityColor: Record<string, { bg: string; color: string }> = {
-    High:   { bg: '#FEE2E2', color: '#DC2626' },
-    Medium: { bg: '#FEF3C7', color: '#D97706' },
+    High:   { bg: 'var(--color-error-light)', color: '#DC2626' },
+    Medium: { bg: 'var(--color-warning-light)', color: '#D97706' },
   };
 
   return (
-    <div
-      style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(15,23,42,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}
-      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
-    >
-      <div style={{ background: '#F9FAFB', borderRadius: 16, width: '100%', maxWidth: 940, maxHeight: '94vh', display: 'flex', flexDirection: 'column', boxShadow: '0 32px 80px rgba(0,0,0,0.22)', overflow: 'hidden' }}>
+    <>
+      {/* Backdrop */}
+      <div
+        aria-hidden
+        style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 9998,
+          background: 'var(--color-overlay)',
+          backdropFilter: 'blur(2px)',
+          opacity: slideOpen ? 1 : 0,
+          transition: 'opacity 320ms ease',
+        }}
+        onClick={handleClose}
+      />
+
+      {/* Right slide-in panel */}
+      <aside
+        role="dialog"
+        aria-modal="true"
+        aria-label="Insights of the Day"
+        style={{
+          position: 'fixed',
+          top: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: 9999,
+          width: '100%',
+          maxWidth: 520,
+          display: 'flex',
+          flexDirection: 'column',
+          background: 'var(--color-surface-elevated)',
+          borderLeft: '1px solid var(--color-border)',
+          boxShadow: 'var(--shadow-modal)',
+          transform: slideOpen ? 'translateX(0)' : 'translateX(100%)',
+          transition: 'transform 320ms cubic-bezier(0.4, 0, 0.2, 1)',
+        }}
+      >
 
         {/* ── Header ── */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid #E5E7EB', flexShrink: 0, background: 'white' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid var(--color-border)', flexShrink: 0, background: 'var(--color-surface)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 34, height: 34, borderRadius: 9, background: '#EEE9FF', display: 'flex', alignItems: 'center', justifyContent: 'center', color: PURPLE }}>
-              <Lightbulb size={16} strokeWidth={1.5} />
+            <div style={{ width: 34, height: 34, borderRadius: 9, background: 'var(--color-primary-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: PURPLE }}>
+              <TrendingUp size={16} strokeWidth={1.5} />
             </div>
             <div>
-              <p style={{ fontSize: 15, fontWeight: 700, color: '#0F172A' }}>Insights of the Day</p>
-              <p style={{ fontSize: 11, color: '#94A3B8', marginTop: 1 }}>AI-powered analysis · Updated 3 min ago</p>
+              <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-text-1)' }}>Insights of the Day</p>
+              <p style={{ fontSize: 11, color: 'var(--color-text-4)', marginTop: 1 }}>AI-powered analysis · Updated 3 min ago</p>
             </div>
           </div>
-          <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: 7, border: '1px solid #E5E7EB', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#64748B' }}
-            onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = '#F8FAFC'}
-            onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'white'}>
+          <button onClick={handleClose} style={{ width: 30, height: 30, borderRadius: 7, border: '1px solid var(--color-border)', background: 'var(--color-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--color-text-3)' }}
+            onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'var(--color-surface-2)'}
+            onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'var(--color-surface)'}>
             <X size={13} strokeWidth={1.5} />
           </button>
         </div>
 
         {/* ── Body ── */}
-        <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 14, overflowY: 'auto' }}>
+        <div style={{ flex: 1, padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 12, overflowY: 'auto' }}>
 
-          {/* ── Row 1: Store Performance — two charts side by side ── */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+          {/* ── Row 1: Visitor Count + Hourly Traffic ── */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
 
-            {/* Left: Visitor Count — horizontal progress bars (analytics style) */}
-            <div style={{ background: 'white', border: '1px solid #E5E7EB', borderRadius: 12, padding: '16px 18px' }}>
-              <p style={{ fontSize: 13, fontWeight: 700, color: '#111827', marginBottom: 2 }}>Visitor Count by Store</p>
-              <p style={{ fontSize: 11, color: '#6B7280', marginBottom: 14 }}>Today's footfall per location</p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {/* Visitor Count by Store */}
+            <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 12, padding: '14px 14px' }}>
+              <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text-1)', marginBottom: 2 }}>Visitor Count by Store</p>
+              <p style={{ fontSize: 10.5, color: 'var(--color-text-3)', marginBottom: 12 }}>Today&apos;s footfall</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {STORES_PERF.map((s, i) => (
-                  <div key={s.name} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <span style={{ width: 82, fontSize: 11, fontWeight: 500, color: '#374151', flexShrink: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <div key={s.name} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ width: 58, fontSize: 10, fontWeight: 500, color: 'var(--color-text-2)', flexShrink: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {s.name.split(' ').slice(0, 2).join(' ')}
                     </span>
-                    <div style={{ flex: 1, height: 9, background: '#F3F4F6', borderRadius: 4, overflow: 'hidden' }}>
+                    <div style={{ flex: 1, height: 8, background: 'var(--color-surface-2)', borderRadius: 4, overflow: 'hidden' }}>
                       <div style={{ width: `${(s.visitors / maxStore) * 100}%`, height: '100%', background: storeColors[i], borderRadius: 4 }} />
                     </div>
-                    <span style={{ width: 38, fontSize: 11, fontWeight: 600, color: '#374151', textAlign: 'right', flexShrink: 0 }}>
+                    <span style={{ width: 32, fontSize: 10, fontWeight: 600, color: 'var(--color-text-2)', textAlign: 'right', flexShrink: 0 }}>
                       {(s.visitors / 1000).toFixed(1)}K
                     </span>
-                    <span style={{ fontSize: 10.5, fontWeight: 600, color: s.trend === 'up' ? '#16A34A' : '#DC2626', flexShrink: 0, width: 36, textAlign: 'right' }}>
-                      {s.trend === 'up' ? '↑' : '↓'} {s.conv}%
-                    </span>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Right: Conversion Rate — vertical bar chart (analytics style) */}
-            <div style={{ background: 'white', border: '1px solid #E5E7EB', borderRadius: 12, padding: '16px 18px' }}>
-              <p style={{ fontSize: 13, fontWeight: 700, color: '#111827', marginBottom: 2 }}>Conversion Rate by Store</p>
-              <p style={{ fontSize: 11, color: '#6B7280', marginBottom: 10 }}>Passerby-to-entry conversion %</p>
-              <div style={{ display: 'flex', gap: 6, alignItems: 'flex-end', height: 100 }}>
-                {STORES_PERF.map((s, i) => {
-                  const barPx = Math.round((s.conv / maxConv) * 82);
+            {/* Hourly Traffic Trends */}
+            <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 12, padding: '14px 14px' }}>
+              <div style={{ marginBottom: 10 }}>
+                <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text-1)' }}>Hourly Traffic Trends</p>
+                <p style={{ fontSize: 10.5, color: 'var(--color-text-3)', marginTop: 1 }}>Footfall vs. Passerby</p>
+              </div>
+              <div style={{ display: 'flex', gap: 10, marginBottom: 8 }}>
+                {[{ c: PURPLE, l: 'Footfall' }, { c: '#00CE9C', l: 'Passerby' }].map(({ c, l }) => (
+                  <div key={l} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <div style={{ width: 10, height: 2.5, borderRadius: 2, background: c }} />
+                    <span style={{ fontSize: 9.5, color: 'var(--color-text-3)' }}>{l}</span>
+                  </div>
+                ))}
+              </div>
+              <svg viewBox={`0 0 ${TW} ${TH + 16}`} style={{ width: '100%', height: TH + 16, overflow: 'visible' }}>
+                <defs>
+                  <linearGradient id="ins-fg" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={PURPLE} stopOpacity="0.14" />
+                    <stop offset="100%" stopColor={PURPLE} stopOpacity="0.01" />
+                  </linearGradient>
+                </defs>
+                {[0.25, 0.5, 0.75, 1].map(p => (
+                  <line key={p} x1={0} y1={TH - 4 - p * (TH - 12)} x2={TW} y2={TH - 4 - p * (TH - 12)}
+                    stroke="var(--color-border-subtle)" strokeWidth="1" strokeDasharray="4,3" />
+                ))}
+                <path d={footfallArea} fill="url(#ins-fg)" />
+                <polyline points={passerbyPts} fill="none" stroke="#00CE9C" strokeWidth="1.6" strokeLinejoin="round" strokeLinecap="round" />
+                <polyline points={footfallPts} fill="none" stroke={PURPLE} strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round" />
+                {TRAFFIC.map((d, i) => (
+                  <circle key={i} cx={tx(i)} cy={ty(d.footfall)} r="2" fill="var(--color-surface)" stroke={PURPLE} strokeWidth="1.5" />
+                ))}
+                {TRAFFIC.filter((_, i) => i % 2 === 0).map((d, idx) => {
+                  const i = idx * 2;
                   return (
-                    <div key={s.name} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
-                      <span style={{ fontSize: 8.5, fontWeight: 700, color: storeColors[i] }}>{s.conv}%</span>
-                      <div style={{ width: '78%', height: barPx, background: storeColors[i], borderRadius: '4px 4px 0 0', opacity: 0.88 }} />
-                    </div>
+                    <text key={i} x={tx(i)} y={TH + 12} textAnchor="middle" fontSize="8" fill="var(--color-text-4)">{d.h}</text>
                   );
                 })}
-              </div>
-              <div style={{ display: 'flex', gap: 6, borderTop: '1px solid #F3F4F6', paddingTop: 6 }}>
-                {STORES_PERF.map(s => (
-                  <div key={s.name} style={{ flex: 1, fontSize: 7.5, color: '#9CA3AF', textAlign: 'center', fontWeight: 500 }}>
-                    {s.name.split(' ')[0]}
-                  </div>
-                ))}
-              </div>
+              </svg>
             </div>
           </div>
 
-          {/* ── Row 2: Hourly Traffic Trends — analytics-style dual-line chart ── */}
-          <div style={{ background: 'white', border: '1px solid #E5E7EB', borderRadius: 12, padding: '16px 18px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-              <div>
-                <p style={{ fontSize: 13, fontWeight: 700, color: '#111827' }}>Hourly Traffic Trends</p>
-                <p style={{ fontSize: 11, color: '#6B7280', marginTop: 1 }}>Footfall vs. Passerby — all stores combined</p>
-              </div>
-              {/* Legend */}
-              <div style={{ display: 'flex', gap: 12 }}>
-                {[{ c: PURPLE, l: 'Footfall' }, { c: '#00CE9C', l: 'Passerby' }].map(({ c, l }) => (
-                  <div key={l} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                    <div style={{ width: 12, height: 3, borderRadius: 2, background: c }} />
-                    <span style={{ fontSize: 10.5, color: '#6B7280' }}>{l}</span>
+          {/* ── Row 2: Conversion Rate by Store ── */}
+          <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 12, padding: '14px 16px' }}>
+            <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text-1)', marginBottom: 2 }}>Conversion Rate by Store</p>
+            <p style={{ fontSize: 10.5, color: 'var(--color-text-3)', marginBottom: 10 }}>Passerby-to-entry conversion %</p>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end', height: 88 }}>
+              {STORES_PERF.map((s, i) => {
+                const barPx = Math.round((s.conv / maxConv) * 72);
+                return (
+                  <div key={s.name} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+                    <span style={{ fontSize: 8, fontWeight: 700, color: storeColors[i] }}>{s.conv}%</span>
+                    <div style={{ width: '72%', height: barPx, background: storeColors[i], borderRadius: '4px 4px 0 0', opacity: 0.88 }} />
                   </div>
-                ))}
-              </div>
+                );
+              })}
             </div>
-            <svg viewBox={`0 0 ${TW} ${TH + 18}`} style={{ width: '100%', height: TH + 18, overflow: 'visible' }}>
-              <defs>
-                <linearGradient id="ins-fg" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={PURPLE} stopOpacity="0.14" />
-                  <stop offset="100%" stopColor={PURPLE} stopOpacity="0.01" />
-                </linearGradient>
-              </defs>
-              {/* Dashed gridlines — analytics style */}
-              {[0.25, 0.5, 0.75, 1].map(p => (
-                <line key={p} x1={0} y1={TH - 4 - p * (TH - 12)} x2={TW} y2={TH - 4 - p * (TH - 12)}
-                  stroke="#F3F4F6" strokeWidth="1" strokeDasharray="4,3" />
+            <div style={{ display: 'flex', gap: 8, borderTop: '1px solid var(--color-border-subtle)', paddingTop: 6, marginTop: 2 }}>
+              {STORES_PERF.map(s => (
+                <div key={s.name} style={{ flex: 1, fontSize: 7.5, color: 'var(--color-text-4)', textAlign: 'center', fontWeight: 500 }}>
+                  {s.name.split(' ')[0]}
+                </div>
               ))}
-              {/* Area fill under footfall */}
-              <path d={footfallArea} fill="url(#ins-fg)" />
-              {/* Passerby line */}
-              <polyline points={passerbyPts} fill="none" stroke="#00CE9C" strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round" />
-              {/* Footfall line */}
-              <polyline points={footfallPts} fill="none" stroke={PURPLE} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
-              {/* Footfall dots */}
-              {TRAFFIC.map((d, i) => (
-                <circle key={i} cx={tx(i)} cy={ty(d.footfall)} r="2.5" fill="white" stroke={PURPLE} strokeWidth="1.5" />
-              ))}
-              {/* X axis labels */}
-              {TRAFFIC.map((d, i) => (
-                <text key={i} x={tx(i)} y={TH + 14} textAnchor="middle" fontSize="9" fill="#9CA3AF">{d.h}</text>
-              ))}
-            </svg>
+            </div>
           </div>
 
-          {/* ── Row 3: Key Insights + Recommendations — side by side ── */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+          {/* ── Row 3: Insights & Recommendations (combined, stacked) ── */}
+          <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 12, padding: '14px 16px' }}>
+            <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text-1)', marginBottom: 12 }}>Insights &amp; Recommendations</p>
 
-            {/* Key Insights */}
-            <div style={{ background: 'white', border: '1px solid #E5E7EB', borderRadius: 12, padding: '16px 18px' }}>
-              <p style={{ fontSize: 13, fontWeight: 700, color: '#111827', marginBottom: 12 }}>Key Insights</p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {insights.map((ins, i) => (
-                  <div key={i} style={{ display: 'flex', gap: 10, padding: '9px 12px', background: '#FAFAFA', borderRadius: 8, border: '1px solid #F3F4F6' }}>
-                    <div style={{ width: 24, height: 24, borderRadius: 7, background: ins.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: ins.color, flexShrink: 0 }}>
-                      {ins.icon}
-                    </div>
-                    <p style={{ fontSize: 11.5, color: '#374151', lineHeight: 1.55, margin: 0 }}>{ins.text}</p>
+            <p style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase', color: 'var(--color-text-4)', marginBottom: 8 }}>Key Insights</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 7, marginBottom: 16 }}>
+              {insights.map((ins, i) => (
+                <div key={i} style={{ display: 'flex', gap: 9, padding: '8px 10px', background: 'var(--color-surface-2)', borderRadius: 8, border: '1px solid var(--color-border-subtle)' }}>
+                  <div style={{ width: 22, height: 22, borderRadius: 6, background: ins.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: ins.color, flexShrink: 0 }}>
+                    {ins.icon}
                   </div>
-                ))}
-              </div>
+                  <p style={{ fontSize: 11, color: 'var(--color-text-2)', lineHeight: 1.5, margin: 0 }}>{ins.text}</p>
+                </div>
+              ))}
             </div>
 
-            {/* Actionable Recommendations */}
-            <div style={{ background: 'white', border: '1px solid #E5E7EB', borderRadius: 12, padding: '16px 18px' }}>
-              <p style={{ fontSize: 13, fontWeight: 700, color: '#111827', marginBottom: 12 }}>Actionable Recommendations</p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {recommendations.map((r, i) => (
-                  <div key={i} style={{ display: 'flex', gap: 12, padding: '11px 14px', border: '1px solid #E5E7EB', borderRadius: 9 }}>
-                    <div style={{ width: 22, height: 22, borderRadius: 6, background: '#EEE9FF', display: 'flex', alignItems: 'center', justifyContent: 'center', color: PURPLE, fontSize: 11, fontWeight: 700, flexShrink: 0 }}>
-                      {i + 1}
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 4 }}>
-                        <p style={{ fontSize: 12, fontWeight: 600, color: '#111827', margin: 0 }}>{r.title}</p>
-                        <span style={{ padding: '2px 6px', borderRadius: 9999, fontSize: 9.5, fontWeight: 600, background: priorityColor[r.priority].bg, color: priorityColor[r.priority].color }}>{r.priority}</span>
-                      </div>
-                      <p style={{ fontSize: 11.5, color: '#6B7280', lineHeight: 1.55, margin: 0 }}>{r.body}</p>
-                    </div>
+            <p style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase', color: 'var(--color-text-4)', marginBottom: 8 }}>Actionable Recommendations</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+              {recommendations.map((r, i) => (
+                <div key={i} style={{ display: 'flex', gap: 10, padding: '9px 12px', border: '1px solid var(--color-border)', borderRadius: 8 }}>
+                  <div style={{ width: 20, height: 20, borderRadius: 5, background: 'var(--color-primary-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: PURPLE, fontSize: 10, fontWeight: 700, flexShrink: 0 }}>
+                    {i + 1}
                   </div>
-                ))}
-              </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3, flexWrap: 'wrap' }}>
+                      <p style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--color-text-1)', margin: 0 }}>{r.title}</p>
+                      <span style={{ padding: '1px 6px', borderRadius: 9999, fontSize: 9, fontWeight: 600, background: priorityColor[r.priority].bg, color: priorityColor[r.priority].color }}>{r.priority}</span>
+                    </div>
+                    <p style={{ fontSize: 11, color: 'var(--color-text-3)', lineHeight: 1.5, margin: 0 }}>{r.body}</p>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 
         </div>
-      </div>
-    </div>
+      </aside>
+    </>
   );
 }
 
 export function TopBar() {
+  const { theme, toggle } = useTheme();
   const { triggerRefresh } = useDashboardContext();
   const pathname = usePathname();
   const showQualifiedShopper = pathname?.startsWith('/dashboard/analytics') ?? false;
@@ -386,10 +422,10 @@ export function TopBar() {
         <div className="flex items-center gap-3 relative" ref={rightSectionRef}>
 
           {/* Insights of the Day */}
-          <button className="flex items-center gap-2 border transition-colors" style={{ height: 34, paddingLeft: 14, paddingRight: 14, borderRadius: 6, borderColor: '#DDD6FE', color: '#655BD3', background: '#F5F3FF', fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap', cursor: 'pointer' }}
+          <button className="flex items-center gap-2 border transition-colors" style={{ height: 34, paddingLeft: 14, paddingRight: 14, borderRadius: 6, borderColor: 'var(--color-accent-border)', color: 'var(--color-primary)', background: 'var(--color-accent-bg)', fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap', cursor: 'pointer' }}
             onClick={() => setShowInsights(true)}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#EDE9FE'; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = '#F5F3FF'; }}>
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--color-accent-bg-hover)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'var(--color-accent-bg)'; }}>
             <TrendingUp size={14} strokeWidth={1.5} />
             Insights of the Day
           </button>
@@ -397,26 +433,26 @@ export function TopBar() {
           {/* Qualified Shopper — analytics only */}
           {showQualifiedShopper ? (
             <div className="relative">
-              <button onClick={openQsDropdown} className="flex items-center gap-2 rounded-md px-3 transition-colors border" style={{ height: 34, background: qsEnabled ? '#F5F3FF' : 'var(--color-surface)', borderColor: qsEnabled ? '#DDD6FE' : 'var(--color-border)', color: 'var(--color-text-1)' }}>
-                <Settings size={14} strokeWidth={1.5} style={{ color: qsEnabled ? '#655BD3' : 'var(--color-text-3)' }} />
-                <span className="text-[13px] font-semibold" style={{ color: qsEnabled ? '#655BD3' : 'var(--color-text-2)', whiteSpace: 'nowrap' }}>Qualified Shopper</span>
+              <button onClick={openQsDropdown} className="flex items-center gap-2 rounded-md px-3 transition-colors border" style={{ height: 34, background: qsEnabled ? 'var(--color-accent-bg)' : 'var(--color-surface)', borderColor: qsEnabled ? 'var(--color-accent-border)' : 'var(--color-border)', color: 'var(--color-text-1)' }}>
+                <Settings size={14} strokeWidth={1.5} style={{ color: qsEnabled ? 'var(--color-primary)' : 'var(--color-text-3)' }} />
+                <span className="text-[13px] font-semibold" style={{ color: qsEnabled ? 'var(--color-primary)' : 'var(--color-text-2)', whiteSpace: 'nowrap' }}>Qualified Shopper</span>
               </button>
               {activeDropdown === 'shoppers' && (
-                <div className="absolute top-full right-0 mt-2 rounded-lg shadow-xl border z-50 bg-white" style={{ borderColor: 'var(--color-border)', width: 288 }}>
+                <div className="absolute top-full right-0 mt-2 rounded-lg shadow-xl border z-50" style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)', width: 288 }}>
                   <div className="px-4 pt-4 pb-3 border-b" style={{ borderColor: 'var(--color-border)' }}>
-                    <p className="text-sm font-semibold text-gray-900">Qualified Shopper</p>
-                    <p className="text-xs text-gray-400 mt-0.5">Set age &amp; gender filters</p>
+                    <p className="text-sm font-semibold" style={{ color: 'var(--color-text-1)' }}>Qualified Shopper</p>
+                    <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-4)' }}>Set age &amp; gender filters</p>
                     {qsEnabled && (
-                      <div style={{ marginTop: 10, padding: '6px 10px', borderRadius: 6, background: '#F5F3FF', border: '1px solid #DDD6FE', display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#655BD3', flexShrink: 0 }} />
-                        <span style={{ fontSize: 11.5, fontWeight: 600, color: '#655BD3' }}>{savedTitle || 'Active'}: Age {savedMin}–{savedMax} · {genderLabel}{savedExclude ? ' · Kids excl.' : ''}</span>
+                      <div style={{ marginTop: 10, padding: '6px 10px', borderRadius: 6, background: 'var(--color-accent-bg)', border: '1px solid var(--color-accent-border)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--color-primary-emphasis)', flexShrink: 0 }} />
+                        <span style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--color-primary)' }}>{savedTitle || 'Active'}: Age {savedMin}–{savedMax} · {genderLabel}{savedExclude ? ' · Kids excl.' : ''}</span>
                       </div>
                     )}
                   </div>
                   <div className="p-4 space-y-4">
                     {/* Custom title */}
                     <div>
-                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Filter Name</p>
+                      <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: 'var(--color-text-3)' }}>Filter Name</p>
                       <input
                         type="text"
                         placeholder="e.g. High-Intent Adults"
@@ -424,51 +460,52 @@ export function TopBar() {
                         onChange={e => setDraftTitle(e.target.value)}
                         style={{
                           width: '100%', boxSizing: 'border-box',
-                          border: '1px solid #E5E7EB', borderRadius: 6,
+                          border: '1px solid var(--color-border)', borderRadius: 6,
                           padding: '7px 10px', fontSize: 13,
-                          color: '#111827', outline: 'none',
+                          background: 'var(--color-surface-2)',
+                          color: 'var(--color-text-1)', outline: 'none',
                           transition: 'border-color 150ms ease',
                         }}
-                        onFocus={e => (e.currentTarget.style.borderColor = '#655BD3')}
-                        onBlur={e => (e.currentTarget.style.borderColor = '#E5E7EB')}
+                        onFocus={e => (e.currentTarget.style.borderColor = 'var(--color-primary)')}
+                        onBlur={e => (e.currentTarget.style.borderColor = 'var(--color-border)')}
                       />
-                      <p style={{ fontSize: 10.5, color: '#9CA3AF', marginTop: 4, lineHeight: 1.4 }}>
+                      <p style={{ fontSize: 10.5, color: 'var(--color-text-4)', marginTop: 4, lineHeight: 1.4 }}>
                         Shown in place of "Active" once saved
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Age Range</p>
+                      <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: 'var(--color-text-3)' }}>Age Range</p>
                       <div className="flex items-center gap-3">
                         <div className="flex-1">
-                          <label className="text-xs text-gray-400 mb-1 block">Min</label>
-                          <input type="number" value={draftMin} onChange={e => setDraftMin(Number(e.target.value))} className="w-full border rounded-md px-2.5 py-1.5 text-sm font-semibold text-gray-800 outline-none" style={{ borderColor: 'var(--color-border)' }} min={0} max={draftMax} onFocus={e => (e.currentTarget.style.borderColor = '#655BD3')} onBlur={e => (e.currentTarget.style.borderColor = 'var(--color-border)')} />
+                          <label className="text-xs mb-1 block" style={{ color: 'var(--color-text-4)' }}>Min</label>
+                          <input type="number" value={draftMin} onChange={e => setDraftMin(Number(e.target.value))} className="w-full border rounded-md px-2.5 py-1.5 text-sm font-semibold outline-none" style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface-2)', color: 'var(--color-text-1)' }} min={0} max={draftMax} onFocus={e => (e.currentTarget.style.borderColor = 'var(--color-primary)')} onBlur={e => (e.currentTarget.style.borderColor = 'var(--color-border)')} />
                         </div>
-                        <span style={{ fontSize: 12, color: '#D1D5DB', flexShrink: 0 }}>—</span>
+                        <span style={{ fontSize: 12, color: 'var(--color-text-4)', flexShrink: 0 }}>—</span>
                         <div className="flex-1">
-                          <label className="text-xs text-gray-400 mb-1 block">Max</label>
-                          <input type="number" value={draftMax} onChange={e => setDraftMax(Number(e.target.value))} className="w-full border rounded-md px-2.5 py-1.5 text-sm font-semibold text-gray-800 outline-none" style={{ borderColor: 'var(--color-border)' }} min={draftMin} max={120} onFocus={e => (e.currentTarget.style.borderColor = '#655BD3')} onBlur={e => (e.currentTarget.style.borderColor = 'var(--color-border)')} />
+                          <label className="text-xs mb-1 block" style={{ color: 'var(--color-text-4)' }}>Max</label>
+                          <input type="number" value={draftMax} onChange={e => setDraftMax(Number(e.target.value))} className="w-full border rounded-md px-2.5 py-1.5 text-sm font-semibold outline-none" style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface-2)', color: 'var(--color-text-1)' }} min={draftMin} max={120} onFocus={e => (e.currentTarget.style.borderColor = 'var(--color-primary)')} onBlur={e => (e.currentTarget.style.borderColor = 'var(--color-border)')} />
                         </div>
                       </div>
                     </div>
                     <div>
-                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Gender</p>
+                      <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: 'var(--color-text-3)' }}>Gender</p>
                       <div className="flex items-center gap-2">
                         {['Male', 'Female'].map(g => {
                           const on = draftGenders.has(g);
                           return (
-                            <button key={g} onClick={() => toggleGender(g)} className="flex-1 py-1.5 rounded text-xs font-semibold border transition-all" style={{ background: on ? '#655BD3' : 'transparent', borderColor: on ? '#655BD3' : 'var(--color-border)', color: on ? '#fff' : 'var(--color-text-2)' }}>{g}</button>
+                            <button key={g} onClick={() => toggleGender(g)} className="flex-1 py-1.5 rounded text-xs font-semibold border transition-all" style={{ background: on ? 'var(--color-primary-emphasis)' : 'transparent', borderColor: on ? 'var(--color-primary-emphasis)' : 'var(--color-border)', color: on ? 'var(--color-on-primary)' : 'var(--color-text-2)' }}>{g}</button>
                           );
                         })}
                       </div>
                     </div>
                     <label className="flex items-center gap-2.5 cursor-pointer">
-                      <input type="checkbox" checked={draftExclude} onChange={e => setDraftExclude(e.target.checked)} className="w-4 h-4 rounded" style={{ accentColor: '#655BD3' }} />
-                      <span className="text-sm text-gray-700">Exclude children (under 13)</span>
+                      <input type="checkbox" checked={draftExclude} onChange={e => setDraftExclude(e.target.checked)} className="w-4 h-4 rounded" style={{ accentColor: 'var(--color-primary-emphasis)' }} />
+                      <span className="text-sm" style={{ color: 'var(--color-text-2)' }}>Exclude children (under 13)</span>
                     </label>
                   </div>
                   <div className="px-4 pb-4 flex gap-2">
-                    <button onClick={() => setActiveDropdown(null)} style={{ flex: 1, height: 36, borderRadius: 6, border: '1px solid #E5E7EB', background: 'white', fontSize: 13, fontWeight: 500, color: '#374151', cursor: 'pointer' }}>Cancel</button>
-                    <button onClick={saveQs} className="transition-opacity hover:opacity-90" style={{ flex: 2, height: 36, borderRadius: 6, border: 'none', background: '#655BD3', fontSize: 13, fontWeight: 600, color: 'white', cursor: 'pointer' }}>Apply &amp; Save</button>
+                    <button onClick={() => setActiveDropdown(null)} style={{ flex: 1, height: 36, borderRadius: 6, border: '1px solid var(--color-border)', background: 'var(--color-surface)', fontSize: 13, fontWeight: 500, color: 'var(--color-text-2)', cursor: 'pointer' }}>Cancel</button>
+                    <button onClick={saveQs} className="transition-opacity hover:opacity-90" style={{ flex: 2, height: 36, borderRadius: 6, border: 'none', background: 'var(--color-primary-emphasis)', fontSize: 13, fontWeight: 600, color: 'white', cursor: 'pointer' }}>Apply &amp; Save</button>
                   </div>
                 </div>
               )}
@@ -476,7 +513,23 @@ export function TopBar() {
           ) : null}
 
           {/* Divider */}
-          <div style={{ width: 1, height: 20, background: '#E5E7EB', flexShrink: 0 }} />
+          <div style={{ width: 1, height: 20, background: 'var(--color-border)', flexShrink: 0 }} />
+
+          {/* Dark mode toggle */}
+          <button
+            onClick={toggle}
+            className="p-2 rounded-md transition-colors"
+            style={{ color: 'var(--color-text-3)' }}
+            aria-label="Toggle dark mode"
+            title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'var(--color-surface-2)'}
+            onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
+          >
+            {theme === 'dark'
+              ? <Sun  size={18} strokeWidth={1.5} />
+              : <Moon size={18} strokeWidth={1.5} />
+            }
+          </button>
 
           {/* Bell */}
           <div className="relative">
@@ -487,9 +540,9 @@ export function TopBar() {
               <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full" style={{ background: 'var(--color-error)' }} />
             </button>
             {activeDropdown === 'bell' && (
-              <div className="absolute top-full right-0 mt-2 w-80 rounded-lg shadow-xl border z-50 bg-white" style={{ borderColor: 'var(--color-border)' }}>
-                <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: 'rgba(0,0,0,0.04)' }}>
-                  <span className="text-sm font-semibold text-gray-900">Notifications</span>
+              <div className="absolute top-full right-0 mt-2 w-80 rounded-lg shadow-xl border z-50" style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}>
+                <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: 'var(--color-border-subtle)' }}>
+                  <span className="text-sm font-semibold" style={{ color: 'var(--color-text-1)' }}>Notifications</span>
                   <button className="text-xs font-medium" style={{ color: 'var(--color-primary)' }}>Mark all read</button>
                 </div>
                 <div>
@@ -498,17 +551,20 @@ export function TopBar() {
                     { color: '#22c55e', title: 'Footfall target reached',          desc: 'VivoCity hit 12,000 visitors',         time: '14m ago' },
                     { color: '#3b82f6', title: 'Weekly report ready',              desc: 'May 25 analytics summary available',   time: '1h ago' },
                   ].map((n, i) => (
-                    <div key={i} className="flex items-start gap-3 px-4 py-3 hover:bg-gray-50 transition-colors" style={{ borderTop: i > 0 ? '1px solid rgba(0,0,0,0.04)' : 'none' }}>
+                    <div key={i} className="flex items-start gap-3 px-4 py-3 transition-colors" style={{ borderTop: i > 0 ? '1px solid var(--color-border-subtle)' : 'none' }}
+                      onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'var(--color-surface-2)'}
+                      onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
+                    >
                       <div className="w-2 h-2 rounded-full mt-1.5 flex-shrink-0" style={{ background: n.color }} />
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-gray-900 leading-snug">{n.title}</p>
-                        <p className="text-xs text-gray-400 mt-0.5 leading-snug">{n.desc}</p>
+                        <p className="text-sm font-semibold leading-snug" style={{ color: 'var(--color-text-1)' }}>{n.title}</p>
+                        <p className="text-xs mt-0.5 leading-snug" style={{ color: 'var(--color-text-4)' }}>{n.desc}</p>
                       </div>
-                      <span className="text-[11px] text-gray-400 flex-shrink-0 mt-0.5">{n.time}</span>
+                      <span className="flex-shrink-0 mt-0.5" style={{ fontSize: 11, color: 'var(--color-text-4)' }}>{n.time}</span>
                     </div>
                   ))}
                 </div>
-                <div className="px-4 py-3 text-center" style={{ borderTop: '1px solid rgba(0,0,0,0.04)' }}>
+                <div className="px-4 py-3 text-center" style={{ borderTop: '1px solid var(--color-border-subtle)' }}>
                   <button className="text-xs font-medium" style={{ color: 'var(--color-primary)' }}>View all notifications</button>
                 </div>
               </div>
@@ -520,22 +576,34 @@ export function TopBar() {
             <button onClick={() => toggleDropdown('avatar')} className="flex items-center gap-2 rounded-md px-2 py-1.5 transition-colors"
               onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'var(--color-surface-2)'}
               onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}>
-              <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-semibold" style={{ background: '#7c3aed' }}>AM</div>
+              <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold" style={{ background: 'var(--color-primary-emphasis)', color: 'var(--color-on-primary)' }}>AM</div>
               <ChevronDown size={14} strokeWidth={1.5} style={{ color: 'var(--color-text-3)' }} />
             </button>
             {activeDropdown === 'avatar' && (
-              <div className="absolute top-full right-0 mt-2 w-52 rounded-lg shadow-xl border z-50 bg-white overflow-hidden" style={{ borderColor: 'var(--color-border)' }}>
+              <div className="absolute top-full right-0 mt-2 w-52 rounded-lg shadow-xl border z-50 overflow-hidden" style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}>
                 <div className="flex flex-col items-center py-4 px-4 border-b" style={{ borderColor: 'var(--color-border)' }}>
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-semibold mb-2" style={{ background: '#7c3aed' }}>AM</div>
-                  <p className="text-sm font-bold text-gray-900">Admin Manager</p>
-                  <p className="text-xs text-gray-400 mt-0.5">admin@olyretail.com</p>
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold mb-2" style={{ background: 'var(--color-primary-emphasis)', color: 'var(--color-on-primary)' }}>AM</div>
+                  <p className="text-sm font-bold" style={{ color: 'var(--color-text-1)' }}>Admin Manager</p>
+                  <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-4)' }}>admin@olyretail.com</p>
                 </div>
                 <div className="py-1">
-                  <button className="w-full h-10 px-4 flex items-center gap-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"><UserCircle size={15} strokeWidth={1.5} className="text-gray-400" />My Profile</button>
-                  <button className="w-full h-10 px-4 flex items-center gap-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"><Settings size={15} strokeWidth={1.5} className="text-gray-400" />Account Settings</button>
-                  <button className="w-full h-10 px-4 flex items-center gap-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"><Bell size={15} strokeWidth={1.5} className="text-gray-400" />Notifications</button>
+                  <button className="w-full h-10 px-4 flex items-center gap-2.5 text-sm transition-colors" style={{ color: 'var(--color-text-2)' }}
+                    onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'var(--color-surface-2)'}
+                    onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
+                  ><UserCircle size={15} strokeWidth={1.5} style={{ color: 'var(--color-text-4)' }} />My Profile</button>
+                  <button className="w-full h-10 px-4 flex items-center gap-2.5 text-sm transition-colors" style={{ color: 'var(--color-text-2)' }}
+                    onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'var(--color-surface-2)'}
+                    onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
+                  ><Settings size={15} strokeWidth={1.5} style={{ color: 'var(--color-text-4)' }} />Account Settings</button>
+                  <button className="w-full h-10 px-4 flex items-center gap-2.5 text-sm transition-colors" style={{ color: 'var(--color-text-2)' }}
+                    onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'var(--color-surface-2)'}
+                    onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
+                  ><Bell size={15} strokeWidth={1.5} style={{ color: 'var(--color-text-4)' }} />Notifications</button>
                   <div className="my-1 border-t" style={{ borderColor: 'var(--color-border)' }} />
-                  <button className="w-full h-10 px-4 flex items-center gap-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors"><LogOut size={15} strokeWidth={1.5} />Sign Out</button>
+                  <button className="w-full h-10 px-4 flex items-center gap-2.5 text-sm transition-colors" style={{ color: '#EF4444' }}
+                    onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'var(--color-error-light)'}
+                    onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
+                  ><LogOut size={15} strokeWidth={1.5} />Sign Out</button>
                 </div>
               </div>
             )}
@@ -566,9 +634,9 @@ export function TopBar() {
                 className="flex items-center gap-2 rounded-md border transition-colors"
                 style={{
                   height: 34, paddingLeft: 14, paddingRight: 14,
-                  borderColor: activeDropdown === 'locationFilter' || hasActiveFilters ? '#655BD3' : 'var(--color-border)',
-                  color: activeDropdown === 'locationFilter' || hasActiveFilters ? '#655BD3' : 'var(--color-text-2)',
-                  background: activeDropdown === 'locationFilter' || hasActiveFilters ? '#F5F3FF' : 'var(--color-surface)',
+                  borderColor: activeDropdown === 'locationFilter' || hasActiveFilters ? 'var(--color-primary)' : 'var(--color-border)',
+                  color: activeDropdown === 'locationFilter' || hasActiveFilters ? 'var(--color-primary)' : 'var(--color-text-2)',
+                  background: activeDropdown === 'locationFilter' || hasActiveFilters ? 'var(--color-accent-bg)' : 'var(--color-surface)',
                   fontSize: 13, fontWeight: 500,
                 }}
                 onMouseEnter={e => { if (!hasActiveFilters && activeDropdown !== 'locationFilter') (e.currentTarget as HTMLElement).style.background = 'var(--color-surface-2)'; }}
@@ -577,7 +645,7 @@ export function TopBar() {
                 <SlidersHorizontal size={13} strokeWidth={1.5} />
                 Filter
                 {hasActiveFilters && (
-                  <span style={{ width: 16, height: 16, borderRadius: '50%', background: '#655BD3', color: 'white', fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', marginLeft: 2 }}>
+                  <span style={{ width: 16, height: 16, borderRadius: '50%', background: 'var(--color-primary-emphasis)', color: 'white', fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', marginLeft: 2 }}>
                     {Object.values(appliedFilters).filter((v, i) => v !== Object.values(emptyFilters)[i]).length}
                   </span>
                 )}
@@ -586,44 +654,44 @@ export function TopBar() {
               {/* ── Location filter panel ── */}
               {activeDropdown === 'locationFilter' && (
                 <div
-                  className="absolute top-full mt-2 rounded-xl shadow-2xl border z-50 bg-white"
-                  style={{ left: 0, width: 560, borderColor: '#E5E7EB' }}
+                  className="absolute top-full mt-2 rounded-xl shadow-2xl border z-50"
+                  style={{ left: 0, width: 560, borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
                 >
                   {/* Panel header */}
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px 12px', borderBottom: '1px solid #F1F5F9' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px 12px', borderBottom: '1px solid var(--color-border-subtle)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <SlidersHorizontal size={14} strokeWidth={1.5} style={{ color: '#655BD3' }} />
-                      <span style={{ fontSize: 13.5, fontWeight: 700, color: '#0F172A' }}>Filter by Location</span>
+                      <SlidersHorizontal size={14} strokeWidth={1.5} style={{ color: 'var(--color-primary)' }} />
+                      <span style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--color-text-1)' }}>Filter by Location</span>
                     </div>
-                    <button onClick={clearAllFilters} style={{ fontSize: 11.5, fontWeight: 600, color: '#94A3B8', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <button onClick={clearAllFilters} style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--color-text-4)', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
                       <X size={11} strokeWidth={2} />
                       Clear all
                     </button>
                   </div>
 
                   {/* 3-2 filter grid */}
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, padding: '14px 20px 16px', background: 'white' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, padding: '14px 20px 16px', background: 'var(--color-surface)' }}>
                     {(Object.keys(FILTER_OPTIONS) as FilterKey[]).map((key) => {
                       const isOpen = openSubFilter === key;
                       const val = draftFilters[key];
                       const isSet = val !== FILTER_OPTIONS[key][0];
                       return (
                         <div key={key} style={{ position: 'relative' }}>
-                          <p style={{ fontSize: 10, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 6 }}>{key}</p>
+                          <p style={{ fontSize: 10, fontWeight: 700, color: 'var(--color-text-4)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 6 }}>{key}</p>
                           <button
                             onClick={() => setOpenSubFilter(isOpen ? null : key)}
                             style={{
                               width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6,
                               height: 36, paddingLeft: 10, paddingRight: 10, borderRadius: 8,
-                              border: `1.5px solid ${isSet ? '#655BD3' : '#E5E7EB'}`,
-                              background: isSet ? '#F5F3FF' : '#F8FAFC',
+                              border: `1.5px solid ${isSet ? 'var(--color-primary)' : 'var(--color-border)'}`,
+                              background: isSet ? 'var(--color-accent-bg)' : 'var(--color-surface-2)',
                               fontSize: 12.5, fontWeight: isSet ? 600 : 500,
-                              color: isSet ? '#655BD3' : '#374151',
+                              color: isSet ? 'var(--color-primary)' : 'var(--color-text-2)',
                               cursor: 'pointer', transition: 'all 150ms',
                               whiteSpace: 'nowrap', overflow: 'hidden',
                             }}
                             onMouseEnter={e => { if (!isSet) (e.currentTarget as HTMLElement).style.borderColor = '#C7D2FE'; }}
-                            onMouseLeave={e => { if (!isSet) (e.currentTarget as HTMLElement).style.borderColor = '#E5E7EB'; }}
+                            onMouseLeave={e => { if (!isSet) (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-border)'; }}
                           >
                             <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{val}</span>
                             <ChevronDown size={12} strokeWidth={2} style={{ flexShrink: 0, transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform 150ms' }} />
@@ -631,19 +699,19 @@ export function TopBar() {
 
                           {/* Sub-dropdown */}
                           {isOpen && (
-                            <div style={{ position: 'absolute', top: 'calc(100% + 4px)', left: 0, minWidth: '100%', background: 'white', border: '1px solid #E5E7EB', borderRadius: 8, boxShadow: '0 8px 24px rgba(0,0,0,0.10)', zIndex: 60, overflow: 'hidden', paddingTop: 4, paddingBottom: 4 }}>
+                            <div style={{ position: 'absolute', top: 'calc(100% + 4px)', left: 0, minWidth: '100%', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 8, boxShadow: '0 8px 24px rgba(0,0,0,0.10)', zIndex: 60, overflow: 'hidden', paddingTop: 4, paddingBottom: 4 }}>
                               {FILTER_OPTIONS[key].map(option => {
                                 const selected = draftFilters[key] === option;
                                 return (
                                   <button
                                     key={option}
                                     onClick={() => { setDraftFilters(prev => ({ ...prev, [key]: option })); setOpenSubFilter(null); }}
-                                    style={{ width: '100%', textAlign: 'left', padding: '8px 12px', fontSize: 12.5, fontWeight: selected ? 600 : 400, color: selected ? '#655BD3' : '#374151', background: selected ? '#F5F3FF' : 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, transition: 'background 100ms' }}
-                                    onMouseEnter={e => { if (!selected) (e.currentTarget as HTMLElement).style.background = '#F8FAFC'; }}
+                                    style={{ width: '100%', textAlign: 'left', padding: '8px 12px', fontSize: 12.5, fontWeight: selected ? 600 : 400, color: selected ? 'var(--color-primary)' : 'var(--color-text-2)', background: selected ? 'var(--color-accent-bg)' : 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, transition: 'background 100ms' }}
+                                    onMouseEnter={e => { if (!selected) (e.currentTarget as HTMLElement).style.background = 'var(--color-surface-2)'; }}
                                     onMouseLeave={e => { if (!selected) (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
                                   >
                                     {option}
-                                    {selected && <Check size={11} strokeWidth={2.5} style={{ color: '#655BD3', flexShrink: 0 }} />}
+                                    {selected && <Check size={11} strokeWidth={2.5} style={{ color: 'var(--color-primary)', flexShrink: 0 }} />}
                                   </button>
                                 );
                               })}
@@ -655,16 +723,16 @@ export function TopBar() {
                   </div>
 
                   {/* Panel footer */}
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8, padding: '12px 20px 14px', borderTop: '1px solid #F1F5F9' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8, padding: '12px 20px 14px', borderTop: '1px solid var(--color-border-subtle)' }}>
                     <button
                       onClick={() => setActiveDropdown(null)}
-                      style={{ height: 34, paddingLeft: 16, paddingRight: 16, borderRadius: 7, border: '1px solid #E5E7EB', background: 'white', fontSize: 13, fontWeight: 500, color: '#374151', cursor: 'pointer' }}
+                      style={{ height: 34, paddingLeft: 16, paddingRight: 16, borderRadius: 7, border: '1px solid var(--color-border)', background: 'var(--color-surface)', fontSize: 13, fontWeight: 500, color: 'var(--color-text-2)', cursor: 'pointer' }}
                     >
                       Cancel
                     </button>
                     <button
                       onClick={applyLocationFilter}
-                      style={{ height: 34, paddingLeft: 20, paddingRight: 20, borderRadius: 7, border: 'none', background: '#655BD3', fontSize: 13, fontWeight: 600, color: 'white', cursor: 'pointer', transition: 'opacity 150ms' }}
+                      style={{ height: 34, paddingLeft: 20, paddingRight: 20, borderRadius: 7, border: 'none', background: 'var(--color-primary-emphasis)', fontSize: 13, fontWeight: 600, color: 'white', cursor: 'pointer', transition: 'opacity 150ms' }}
                       onMouseEnter={e => (e.currentTarget as HTMLElement).style.opacity = '0.88'}
                       onMouseLeave={e => (e.currentTarget as HTMLElement).style.opacity = '1'}
                     >
@@ -694,7 +762,10 @@ export function TopBar() {
               {activeDropdown === 'date' && (
                 <div className="absolute top-full right-0 mt-1 w-48 rounded-md border shadow-lg z-50 p-1" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
                   {['Today', 'Yesterday', 'Last 7 Days', 'Last 30 Days', 'This Month', 'Custom Range'].map(f => (
-                    <button key={f} className="w-full text-left px-3 py-2 text-sm rounded hover:bg-gray-50 transition-colors" style={{ color: 'var(--color-text-1)' }}>{f}</button>
+                    <button key={f} className="w-full text-left px-3 py-2 text-sm rounded transition-colors" style={{ color: 'var(--color-text-1)' }}
+                    onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'var(--color-surface-2)'}
+                    onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
+                  >{f}</button>
                   ))}
                 </div>
               )}
@@ -714,9 +785,8 @@ export function TopBar() {
               borderRadius: 6, border: '1px solid var(--color-border)',
               background: 'var(--color-surface)', flexShrink: 0,
             }}>
-              <span style={{ fontSize: 12.5, fontWeight: 500, color: 'var(--color-text-3)', whiteSpace: 'nowrap' }}>Total Alerts</span>
-              <span style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--color-text-1)' }}>
-                {selectedCamera.offline}
+              <span style={{ fontSize: 12.5, fontWeight: 500, color: 'var(--color-text-3)', whiteSpace: 'nowrap' }}>
+                Total Alerts:&nbsp;&nbsp;<span style={{ color: '#DC2626', fontWeight: 700 }}>{selectedCamera.offline}</span>
               </span>
             </div>
 
@@ -728,11 +798,11 @@ export function TopBar() {
                 style={{
                   display: 'flex', alignItems: 'center', gap: 5,
                   height: '100%', paddingLeft: 12, paddingRight: 10,
-                  background: activeDropdown === 'camera' ? '#F5F3FF' : 'var(--color-surface)',
+                  background: activeDropdown === 'camera' ? 'var(--color-accent-bg)' : 'var(--color-surface)',
                   border: 'none', borderRight: '1px solid var(--color-border)',
                   cursor: 'pointer',
                   fontSize: 13, fontWeight: 500,
-                  color: activeDropdown === 'camera' ? '#655BD3' : 'var(--color-text-2)',
+                  color: activeDropdown === 'camera' ? 'var(--color-primary)' : 'var(--color-text-2)',
                   whiteSpace: 'nowrap', borderRadius: '6px 0 0 6px',
                 }}
                 onMouseEnter={e => { if (activeDropdown !== 'camera') (e.currentTarget as HTMLElement).style.background = 'var(--color-surface-2)'; }}
@@ -755,21 +825,21 @@ export function TopBar() {
 
               {/* Camera dropdown */}
               {activeDropdown === 'camera' && (
-                <div style={{ position: 'absolute', top: 'calc(100% + 6px)', left: 0, background: 'white', border: '1px solid #E5E7EB', borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.10)', zIndex: 50, minWidth: 240, overflow: 'hidden', paddingTop: 4, paddingBottom: 4 }}>
+                <div style={{ position: 'absolute', top: 'calc(100% + 6px)', left: 0, background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.10)', zIndex: 50, minWidth: 240, overflow: 'hidden', paddingTop: 4, paddingBottom: 4 }}>
                   {CAMERA_OPTIONS.map((opt, idx) => {
                     const active = selectedCameraIdx === idx;
                     return (
                       <button
                         key={opt.label}
                         onClick={() => { setSelectedCameraIdx(idx); setActiveDropdown(null); }}
-                        style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '9px 14px', background: active ? '#F5F3FF' : 'transparent', border: 'none', cursor: 'pointer', transition: 'background 120ms' }}
-                        onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.background = '#F8FAFC'; }}
+                        style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '9px 14px', background: active ? 'var(--color-accent-bg)' : 'transparent', border: 'none', cursor: 'pointer', transition: 'background 120ms' }}
+                        onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.background = 'var(--color-surface-2)'; }}
                         onMouseLeave={e => { if (!active) (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
                       >
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          {active && <Check size={11} strokeWidth={2.5} style={{ color: '#655BD3' }} />}
+                          {active && <Check size={11} strokeWidth={2.5} style={{ color: 'var(--color-primary)' }} />}
                           {!active && <span style={{ width: 11 }} />}
-                          <span style={{ fontSize: 13, fontWeight: active ? 600 : 400, color: active ? '#655BD3' : '#374151' }}>{opt.label}</span>
+                          <span style={{ fontSize: 13, fontWeight: active ? 600 : 400, color: active ? 'var(--color-primary)' : 'var(--color-text-2)' }}>{opt.label}</span>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
                           <span style={{ fontSize: 11, fontWeight: 600, color: 'white', background: '#64748B', borderRadius: 4, padding: '1px 5px' }}>{opt.total}</span>

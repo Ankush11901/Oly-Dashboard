@@ -40,10 +40,10 @@ function DropdownMenu({ items, onClose }: { items: NavItem[]; onClose: () => voi
         position: 'absolute',
         top: 'calc(100% + 6px)',
         left: 0,
-        background: '#fff',
-        border: '1px solid #E5E7EB',
+        background: 'var(--color-surface)',
+        border: '1px solid var(--color-border)',
         borderRadius: 10,
-        boxShadow: '0 8px 24px rgba(0,0,0,0.10)',
+        boxShadow: 'var(--shadow-dropdown)',
         minWidth: 180,
         zIndex: 200,
         overflow: 'hidden',
@@ -59,12 +59,12 @@ function DropdownMenu({ items, onClose }: { items: NavItem[]; onClose: () => voi
             display: 'block',
             padding: '8px 14px',
             fontSize: 13,
-            color: '#374151',
+            color: 'var(--color-text-2)',
             textDecoration: 'none',
             whiteSpace: 'nowrap',
             transition: 'background 120ms ease',
           }}
-          onMouseEnter={e => (e.currentTarget.style.background = '#F9FAFB')}
+          onMouseEnter={e => (e.currentTarget.style.background = 'var(--color-surface-2)')}
           onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
         >
           {item.label}
@@ -97,14 +97,15 @@ export function TopNavBar() {
       ref={navRef}
       style={{
         height: 44,
-        background: '#fff',
-        borderBottom: '1px solid #E5E7EB',
+        background: 'var(--color-surface)',
+        borderBottom: '1px solid var(--color-border)',
         display: 'flex',
         alignItems: 'center',
         paddingLeft: 20,
         paddingRight: 20,
         gap: 2,
         flexShrink: 0,
+        transition: 'background 200ms ease, border-color 200ms ease',
       }}
     >
       {NAV_NODES.map((node) => {
@@ -124,16 +125,16 @@ export function TopNavBar() {
                 borderRadius: 8,
                 fontSize: 13,
                 fontWeight: active ? 600 : 500,
-                color: active ? '#655BD3' : '#374151',
-                background: active ? '#EEE9FF' : 'transparent',
+                color: active ? 'var(--color-primary)' : 'var(--color-text-2)',
+                background: active ? 'var(--color-primary-light)' : 'transparent',
                 textDecoration: 'none',
                 transition: 'background 120ms ease, color 120ms ease',
                 whiteSpace: 'nowrap',
               }}
-              onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.background = '#F9FAFB'; }}
+              onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.background = 'var(--color-surface-2)'; }}
               onMouseLeave={e => { if (!active) (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
             >
-              <span style={{ color: active ? '#655BD3' : '#6B7280', display: 'flex' }}>{node.icon}</span>
+              <span style={{ color: active ? 'var(--color-primary)' : 'var(--color-text-3)', display: 'flex' }}>{node.icon}</span>
               {node.label}
             </Link>
           );
@@ -158,19 +159,19 @@ export function TopNavBar() {
                 borderRadius: 8,
                 fontSize: 13,
                 fontWeight: anyChildActive ? 600 : 500,
-                color: anyChildActive ? '#655BD3' : '#374151',
-                background: anyChildActive ? '#EEE9FF' : isOpen ? '#F9FAFB' : 'transparent',
+                color: anyChildActive ? 'var(--color-primary)' : 'var(--color-text-2)',
+                background: anyChildActive ? 'var(--color-primary-light)' : isOpen ? 'var(--color-surface-2)' : 'transparent',
                 border: 'none',
                 cursor: 'pointer',
                 transition: 'background 120ms ease, color 120ms ease',
                 whiteSpace: 'nowrap',
               }}
-              onMouseEnter={e => { if (!anyChildActive && !isOpen) (e.currentTarget as HTMLElement).style.background = '#F9FAFB'; }}
+              onMouseEnter={e => { if (!anyChildActive && !isOpen) (e.currentTarget as HTMLElement).style.background = 'var(--color-surface-2)'; }}
               onMouseLeave={e => { if (!anyChildActive && !isOpen) (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
             >
-              <span style={{ color: anyChildActive ? '#655BD3' : '#6B7280', display: 'flex' }}>{section.icon}</span>
+              <span style={{ color: anyChildActive ? 'var(--color-primary)' : 'var(--color-text-3)', display: 'flex' }}>{section.icon}</span>
               {section.label}
-              <span style={{ display: 'flex', color: '#9CA3AF', transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform 180ms ease' }}>
+              <span style={{ display: 'flex', color: 'var(--color-text-4)', transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform 180ms ease' }}>
                 <ChevronDown size={12} strokeWidth={2} />
               </span>
             </button>

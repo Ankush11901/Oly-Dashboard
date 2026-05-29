@@ -109,30 +109,30 @@ export function CustomSelect({
           width: '100%',
           padding: isSm ? '0 8px' : '9px 10px 9px 12px',
           height: isSm ? 28 : undefined,
-          border: `${isSm ? 1 : 1.5}px solid ${open ? '#655BD3' : '#E5E7EB'}`,
+          border: `${isSm ? 1 : 1.5}px solid ${open ? 'var(--color-primary)' : 'var(--color-border)'}`,
           borderRadius: isSm ? 6 : 8,
-          background: 'white',
-          color: hasValue ? '#111827' : '#9CA3AF',
+          background: 'var(--color-surface)',
+          color: hasValue ? 'var(--color-text-1)' : 'var(--color-text-4)',
           fontSize: isSm ? 11.5 : 13,
           fontWeight: 400,
           cursor: 'pointer',
           outline: 'none',
           boxSizing: 'border-box',
           transition: 'border-color 150ms ease, box-shadow 150ms ease',
-          ...(open ? { boxShadow: '0 0 0 3px rgba(101,91,211,0.12)' } : {}),
+          ...(open ? { boxShadow: '0 0 0 3px var(--color-focus-ring)' } : {}),
           ...style,
         }}
         onMouseEnter={e => {
-          if (!open) (e.currentTarget).style.borderColor = '#C4B5FD';
+          if (!open) (e.currentTarget).style.borderColor = 'var(--color-accent-muted)';
         }}
         onMouseLeave={e => {
-          if (!open) (e.currentTarget).style.borderColor = '#E5E7EB';
+          if (!open) (e.currentTarget).style.borderColor = 'var(--color-border)';
         }}
       >
         <span style={{
           flex: 1, textAlign: 'left',
           overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-          color: hasValue ? '#111827' : '#9CA3AF',
+          color: hasValue ? 'var(--color-text-1)' : 'var(--color-text-4)',
         }}>
           {displayLabel}
         </span>
@@ -140,7 +140,7 @@ export function CustomSelect({
           size={isSm ? 11 : 13}
           strokeWidth={2.5}
           style={{
-            color: '#9CA3AF', flexShrink: 0,
+            color: 'var(--color-text-4)', flexShrink: 0,
             transform: open ? 'rotate(180deg)' : 'rotate(0)',
             transition: 'transform 200ms ease',
           }}
@@ -153,10 +153,10 @@ export function CustomSelect({
           ref={panelRef}
           style={{
             ...panelStyle,
-            background: 'white',
-            border: '1px solid #E5E7EB',
+            background: 'var(--color-surface)',
+            border: '1px solid var(--color-border)',
             borderRadius: 10,
-            boxShadow: '0 8px 32px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06)',
+            boxShadow: 'var(--shadow-dropdown)',
             padding: '4px',
             maxHeight: 220,
             overflowY: 'auto',
@@ -174,15 +174,15 @@ export function CustomSelect({
                   width: '100%',
                   padding: isSm ? '6px 10px' : '8px 12px',
                   borderRadius: 6, border: 'none',
-                  background: sel ? '#EEE9FF' : 'transparent',
-                  color: sel ? '#655BD3' : '#374151',
+                  background: sel ? 'var(--color-primary-light)' : 'transparent',
+                  color: sel ? 'var(--color-primary)' : 'var(--color-text-2)',
                   fontSize: isSm ? 12 : 13,
                   fontWeight: sel ? 600 : 400,
                   cursor: 'pointer', textAlign: 'left',
                   transition: 'background 100ms',
                 }}
                 onMouseEnter={e => {
-                  if (!sel) (e.currentTarget).style.background = '#F9F7FF';
+                  if (!sel) (e.currentTarget).style.background = 'var(--color-surface-2)';
                 }}
                 onMouseLeave={e => {
                   if (!sel) (e.currentTarget).style.background = 'transparent';
@@ -190,7 +190,7 @@ export function CustomSelect({
               >
                 <span>{opt.label}</span>
                 {sel && (
-                  <Check size={12} strokeWidth={2.5} style={{ color: '#655BD3', flexShrink: 0 }} />
+                  <Check size={12} strokeWidth={2.5} style={{ color: 'var(--color-primary)', flexShrink: 0 }} />
                 )}
               </button>
             );

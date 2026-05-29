@@ -30,7 +30,7 @@ interface ModulePerm {
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 const ROLES: RoleDef[] = [
-  { id: 'super_admin',       name: 'Super Admin',       description: 'Full unrestricted access to all modules',         color: '#655BD3', userCount: 2,  isSystem: true  },
+  { id: 'super_admin',       name: 'Super Admin',       description: 'Full unrestricted access to all modules',         color: 'var(--color-primary)', userCount: 2,  isSystem: true  },
   { id: 'regional_director', name: 'Regional Director', description: 'Cross-store analytics, team oversight',           color: '#3B82F6', userCount: 3,  isSystem: false },
   { id: 'store_manager',     name: 'Store Manager',     description: 'Full access to assigned store data & team',       color: '#00CE9C', userCount: 8,  isSystem: false },
   { id: 'security_ops',      name: 'Security Ops',      description: 'Live feed monitoring and incident reporting',      color: '#F59E0B', userCount: 5,  isSystem: false },
@@ -99,9 +99,9 @@ const PERM_MATRIX: Record<string, ModulePerm[]> = {
 
 // ── Config ────────────────────────────────────────────────────────────────────
 const LEVEL_CFG: Record<PermLevel, { label: string; bg: string; text: string; icon: React.ReactNode }> = {
-  full: { label: 'Full',  bg: '#EEE9FF', text: '#655BD3', icon: <Check size={10} strokeWidth={2.5} /> },
-  view: { label: 'View',  bg: '#DBEAFE', text: '#2563EB', icon: <Eye   size={10} strokeWidth={2}   /> },
-  none: { label: 'None',  bg: '#F3F4F6', text: '#9CA3AF', icon: <Minus size={10} strokeWidth={2.5} /> },
+  full: { label: 'Full',  bg: 'var(--color-primary-light)', text: 'var(--color-primary)', icon: <Check size={10} strokeWidth={2.5} /> },
+  view: { label: 'View',  bg: 'var(--color-info-light)',    text: '#2563EB', icon: <Eye   size={10} strokeWidth={2}   /> },
+  none: { label: 'None',  bg: 'var(--color-surface-2)',     text: 'var(--color-text-4)', icon: <Minus size={10} strokeWidth={2.5} /> },
 };
 
 function moduleAccessLevel(mod: ModulePerm): PermLevel {
@@ -131,7 +131,7 @@ function PermToggle({ level, onChange, disabled }: { level: PermLevel; onChange:
   return (
     <div style={{
       display: 'inline-flex',
-      background: '#F3F4F6',
+      background: 'var(--color-surface-2)',
       borderRadius: 9, padding: 2, gap: 1, flexShrink: 0,
     }}>
       {(['full', 'view', 'none'] as PermLevel[]).map(l => {
@@ -145,8 +145,8 @@ function PermToggle({ level, onChange, disabled }: { level: PermLevel; onChange:
               display: 'flex', alignItems: 'center', gap: 4,
               padding: '4px 11px', borderRadius: 7, border: 'none',
               fontSize: 11, fontWeight: active ? 700 : 400,
-              background: active ? 'white' : 'transparent',
-              color: active ? c.text : '#9CA3AF',
+              background: active ? 'var(--color-surface)' : 'transparent',
+              color: active ? c.text : 'var(--color-text-4)',
               cursor: disabled ? 'default' : 'pointer',
               transition: 'all 120ms ease',
               boxShadow: active ? '0 1px 3px rgba(0,0,0,0.1), 0 1px 1px rgba(0,0,0,0.06)' : 'none',
@@ -160,7 +160,7 @@ function PermToggle({ level, onChange, disabled }: { level: PermLevel; onChange:
   );
 }
 
-const ROLE_COLORS = ['#655BD3', '#3B82F6', '#00CE9C', '#F59E0B', '#EC4899', '#8B5CF6', '#DC2626'];
+const ROLE_COLORS = ['var(--chart-1)', 'var(--chart-4)', 'var(--chart-2)', 'var(--chart-3)', 'var(--chart-5)', 'var(--chart-6)', 'var(--color-error)'];
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function PermissionsPage() {
@@ -240,10 +240,10 @@ export default function PermissionsPage() {
         <div className="flex items-center gap-3">
           <div style={{
             width: 40, height: 40, borderRadius: 11,
-            background: '#EEE9FF',
+            background: 'var(--color-primary-light)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
-            <ShieldCheck size={20} strokeWidth={1.5} style={{ color: '#655BD3' }} />
+            <ShieldCheck size={20} strokeWidth={1.5} style={{ color: 'var(--color-primary)' }} />
           </div>
           <div>
             <h1 style={{ fontSize: 20, fontWeight: 800, color: 'var(--color-text-1)', lineHeight: 1.2 }}>Permissions</h1>
@@ -255,7 +255,7 @@ export default function PermissionsPage() {
         <button
           onClick={() => setCreateOpen(true)}
           className="flex items-center gap-2 text-sm font-semibold text-white"
-          style={{ padding: '8px 16px', borderRadius: 9, background: '#655BD3', border: 'none', cursor: 'pointer' }}
+          style={{ padding: '8px 16px', borderRadius: 9, background: 'var(--color-primary-emphasis)', border: 'none', cursor: 'pointer' }}
         >
           <Plus size={14} strokeWidth={2.5} />
           Create Role
@@ -265,9 +265,9 @@ export default function PermissionsPage() {
       {/* ── Stats row ───────────────────────────────────────────────────────── */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
         {[
-          { label: 'Total Roles',   value: roles.length,                          color: '#655BD3', bg: '#EEE9FF', icon: <ShieldCheck size={16} strokeWidth={1.5} /> },
-          { label: 'System Roles',  value: roles.filter(r => r.isSystem).length,  color: '#6B7280', bg: '#F3F4F6', icon: <Lock size={16} strokeWidth={1.5} /> },
-          { label: 'Custom Roles',  value: roles.filter(r => !r.isSystem).length, color: '#3B82F6', bg: '#DBEAFE', icon: <ShieldCheck size={16} strokeWidth={1.5} /> },
+          { label: 'Total Roles',   value: roles.length,                          color: 'var(--color-primary)', bg: 'var(--color-primary-light)', icon: <ShieldCheck size={16} strokeWidth={1.5} /> },
+          { label: 'System Roles',  value: roles.filter(r => r.isSystem).length,  color: 'var(--color-text-3)', bg: 'var(--color-surface-2)', icon: <Lock size={16} strokeWidth={1.5} /> },
+          { label: 'Custom Roles',  value: roles.filter(r => !r.isSystem).length, color: '#3B82F6', bg: 'var(--color-info-light)', icon: <ShieldCheck size={16} strokeWidth={1.5} /> },
           { label: 'Total Members', value: totalUsers,                             color: '#00CE9C', bg: '#CCFBF1', icon: <Users size={16} strokeWidth={1.5} /> },
         ].map(s => (
           <div key={s.label} className="card" style={{ padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 14 }}>
@@ -305,13 +305,13 @@ export default function PermissionsPage() {
                   display: 'flex', flexDirection: 'column', alignItems: 'flex-start',
                   padding: '16px 22px', border: 'none',
                   borderRight: idx < roles.length - 1 ? '1px solid var(--color-border)' : 'none',
-                  borderBottom: `3px solid ${active ? '#655BD3' : 'transparent'}`,
+                  borderBottom: `3px solid ${active ? 'var(--color-primary)' : 'transparent'}`,
                   cursor: 'pointer', textAlign: 'left',
                   minWidth: 175, flexShrink: 0,
-                  background: active ? '#F5F3FF' : 'transparent',
+                  background: active ? 'var(--color-primary-light)' : 'transparent',
                   transition: 'all 150ms ease',
                 }}
-                onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.background = '#F9FAFB'; }}
+                onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.background = 'var(--color-surface-2)'; }}
                 onMouseLeave={e => { if (!active) (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
               >
                 {/* Role avatar */}
@@ -329,7 +329,7 @@ export default function PermissionsPage() {
                 {/* Role name */}
                 <p style={{
                   fontSize: 12.5, fontWeight: 700, lineHeight: 1.2, marginBottom: 3,
-                  color: active ? '#655BD3' : 'var(--color-text-1)',
+                  color: active ? 'var(--color-primary)' : 'var(--color-text-1)',
                 }}>
                   {r.name}
                 </p>
@@ -342,7 +342,7 @@ export default function PermissionsPage() {
                     <span style={{
                       display: 'inline-flex', alignItems: 'center', gap: 2,
                       fontSize: 8.5, fontWeight: 700, padding: '1px 5px', borderRadius: 3,
-                      background: '#F3F4F6', color: '#9CA3AF',
+                      background: 'var(--color-surface-2)', color: 'var(--color-text-4)',
                     }}>
                       <Lock size={7} strokeWidth={2.5} />SYS
                     </span>
@@ -363,12 +363,12 @@ export default function PermissionsPage() {
           >
             <div style={{
               width: 38, height: 38, borderRadius: 11,
-              border: '1.5px dashed #D1D5DB',
+              border: '1.5px dashed var(--color-border)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
-              <Plus size={15} strokeWidth={2} style={{ color: '#D1D5DB' }} />
+              <Plus size={15} strokeWidth={2} style={{ color: 'var(--color-text-4)' }} />
             </div>
-            <span style={{ fontSize: 11, fontWeight: 500, color: '#9CA3AF' }}>New Role</span>
+            <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--color-text-4)' }}>New Role</span>
           </button>
         </div>
       </div>
@@ -399,7 +399,7 @@ export default function PermissionsPage() {
                   <span style={{
                     display: 'inline-flex', alignItems: 'center', gap: 3,
                     fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 4,
-                    background: '#F3F4F6', color: '#6B7280',
+                    background: 'var(--color-surface-2)', color: 'var(--color-text-3)',
                   }}>
                     <Lock size={8} strokeWidth={2.5} />SYSTEM ROLE
                   </span>
@@ -412,9 +412,9 @@ export default function PermissionsPage() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <div style={{
               display: 'flex', alignItems: 'center', gap: 5,
-              padding: '5px 10px', borderRadius: 8, background: '#F3F4F6',
+              padding: '5px 10px', borderRadius: 8, background: 'var(--color-surface-2)',
             }}>
-              <Users size={12} strokeWidth={1.5} style={{ color: '#6B7280' }} />
+              <Users size={12} strokeWidth={1.5} style={{ color: 'var(--color-text-3)' }} />
               <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-2)' }}>
                 {role.userCount} member{role.userCount !== 1 ? 's' : ''}
               </span>
@@ -426,8 +426,8 @@ export default function PermissionsPage() {
                   style={{
                     display: 'flex', alignItems: 'center', gap: 5,
                     padding: '6px 12px', borderRadius: 8,
-                    border: '1px solid #E5E7EB', fontSize: 12, fontWeight: 500,
-                    color: '#374151', background: '#fff', cursor: 'pointer',
+                    border: '1px solid var(--color-border)', fontSize: 12, fontWeight: 500,
+                    color: 'var(--color-text-2)', background: 'var(--color-surface)', cursor: 'pointer',
                   }}
                 >
                   <Edit2 size={12} strokeWidth={1.5} />Edit Role
@@ -437,8 +437,8 @@ export default function PermissionsPage() {
                   style={{
                     display: 'flex', alignItems: 'center', gap: 5,
                     padding: '6px 12px', borderRadius: 8,
-                    border: '1px solid #FEE2E2', fontSize: 12, fontWeight: 500,
-                    color: '#DC2626', background: '#FFF5F5', cursor: 'pointer',
+                    border: '1px solid var(--color-error-light)', fontSize: 12, fontWeight: 500,
+                    color: '#DC2626', background: 'var(--color-error-light)', cursor: 'pointer',
                   }}
                 >
                   <Trash2 size={12} strokeWidth={1.5} />Delete
@@ -451,21 +451,21 @@ export default function PermissionsPage() {
         {/* Legend */}
         <div style={{
           padding: '9px 24px', borderBottom: '1px solid var(--color-border)',
-          display: 'flex', alignItems: 'center', gap: 16, background: '#FCFCFC', flexWrap: 'wrap',
+          display: 'flex', alignItems: 'center', gap: 16, background: 'var(--color-surface)', flexWrap: 'wrap',
         }}>
-          <span style={{ fontSize: 10, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.07em', flexShrink: 0 }}>
+          <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--color-text-4)', textTransform: 'uppercase', letterSpacing: '0.07em', flexShrink: 0 }}>
             Access levels:
           </span>
           {(['full', 'view', 'none'] as PermLevel[]).map(l => (
             <div key={l} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
               <PermBadge level={l} />
-              <span style={{ fontSize: 11, color: '#9CA3AF' }}>
+              <span style={{ fontSize: 11, color: 'var(--color-text-4)' }}>
                 {l === 'full' ? '— unrestricted' : l === 'view' ? '— read-only' : '— no access'}
               </span>
             </div>
           ))}
           {role.isSystem && (
-            <span style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: '#9CA3AF' }}>
+            <span style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--color-text-4)' }}>
               <Lock size={10} strokeWidth={2} />System roles cannot be modified
             </span>
           )}
@@ -474,14 +474,14 @@ export default function PermissionsPage() {
         {/* Module sections */}
         {modules.map((mod, moduleIdx) => {
           const summary    = moduleAccessLevel(mod);
-          const summaryBg  = summary === 'full' ? '#EEE9FF' : summary === 'view' ? '#DBEAFE' : '#F3F4F6';
-          const summaryClr = summary === 'full' ? '#655BD3' : summary === 'view' ? '#2563EB' : '#9CA3AF';
+          const summaryBg  = summary === 'full' ? 'var(--color-primary-light)' : summary === 'view' ? 'var(--color-info-light)' : 'var(--color-surface-2)';
+          const summaryClr = summary === 'full' ? 'var(--color-primary)' : summary === 'view' ? 'var(--color-info)' : 'var(--color-text-4)';
 
           return (
             <div
               key={mod.module}
               style={{
-                borderBottom: moduleIdx < modules.length - 1 ? '1px solid #F3F4F6' : 'none',
+                borderBottom: moduleIdx < modules.length - 1 ? '1px solid var(--color-border-subtle)' : 'none',
               }}
             >
               {/* Module header */}
@@ -496,7 +496,7 @@ export default function PermissionsPage() {
                 </div>
                 <p style={{
                   flex: 1, fontSize: 13.5, fontWeight: 700,
-                  color: summary === 'none' ? '#9CA3AF' : 'var(--color-text-1)',
+                  color: summary === 'none' ? 'var(--color-text-4)' : 'var(--color-text-1)',
                 }}>
                   {mod.module}
                 </p>
@@ -514,16 +514,16 @@ export default function PermissionsPage() {
                     style={{
                       display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
                       padding: '9px 14px', borderRadius: 9,
-                      background: action.level === 'none' ? 'transparent' : '#FAFAFA',
+                      background: action.level === 'none' ? 'transparent' : 'var(--color-surface)',
                       border: '1px solid',
-                      borderColor: action.level === 'none' ? '#F3F4F6' : '#EBEBEB',
+                      borderColor: action.level === 'none' ? 'var(--color-border-subtle)' : 'var(--color-border)',
                       flex: '1 1 calc(50% - 4px)', minWidth: 260,
                       transition: 'all 150ms',
                     }}
                   >
                     <span style={{
                       fontSize: 12.5, fontWeight: 500,
-                      color: action.level === 'none' ? '#9CA3AF' : 'var(--color-text-2)',
+                      color: action.level === 'none' ? 'var(--color-text-4)' : 'var(--color-text-2)',
                     }}>
                       {action.label}
                     </span>
@@ -544,7 +544,7 @@ export default function PermissionsPage() {
           <div style={{
             padding: '14px 24px', borderTop: '1px solid var(--color-border)',
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            background: '#FAFAFA',
+            background: 'var(--color-surface)',
           }}>
             <p style={{ fontSize: 11.5, color: 'var(--color-text-3)' }}>
               Changes apply immediately when saved.
@@ -559,8 +559,8 @@ export default function PermissionsPage() {
                 onClick={handleResetDefault}
                 style={{
                   padding: '8px 18px', borderRadius: 8,
-                  border: '1px solid #E5E7EB', fontSize: 13, fontWeight: 500,
-                  color: '#374151', background: '#fff', cursor: 'pointer',
+                  border: '1px solid var(--color-border)', fontSize: 13, fontWeight: 500,
+                  color: 'var(--color-text-2)', background: 'var(--color-surface)', cursor: 'pointer',
                 }}
               >
                 Reset to Default
@@ -570,7 +570,7 @@ export default function PermissionsPage() {
                 style={{
                   padding: '8px 20px', borderRadius: 8,
                   border: 'none', fontSize: 13, fontWeight: 700,
-                  color: '#fff', background: '#655BD3', cursor: 'pointer',
+                  color: '#fff', background: 'var(--color-primary-emphasis)', cursor: 'pointer',
                 }}
               >
                 Save Changes
@@ -583,32 +583,32 @@ export default function PermissionsPage() {
       {/* ── Create Role Modal ──────────────────────────────────────────────── */}
       {createOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(17,24,39,0.6)' }} onClick={() => setCreateOpen(false)}>
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-7" onClick={e => e.stopPropagation()}>
+          <div onClick={e => e.stopPropagation()} style={{ background: 'var(--color-surface)', borderRadius: 16, boxShadow: '0 20px 60px rgba(0,0,0,0.3)', width: '100%', maxWidth: 448, padding: 28 }}>
             <div className="flex items-center justify-between mb-5">
-              <h3 style={{ fontSize: 15, fontWeight: 700, color: '#111827' }}>Create New Role</h3>
-              <button onClick={() => setCreateOpen(false)} className="p-1.5 rounded-lg hover:bg-gray-100" style={{ color: '#9CA3AF' }}><X size={16} /></button>
+              <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-text-1)' }}>Create New Role</h3>
+              <button onClick={() => setCreateOpen(false)} style={{ padding: 6, borderRadius: 8, border: 'none', background: 'var(--color-surface-2)', color: 'var(--color-text-4)', cursor: 'pointer' }}><X size={16} /></button>
             </div>
             <form onSubmit={handleCreateRole} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold mb-1.5" style={{ color: '#374151' }}>Role Name</label>
-                <input type="text" required autoFocus placeholder="e.g. Data Analyst" value={newRole.name} onChange={e => setNewRole(r => ({ ...r, name: e.target.value }))} className="w-full text-sm rounded-lg px-3 py-2.5 outline-none" style={{ border: '1px solid #E5E7EB', color: '#111827' }} />
+                <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--color-text-2)' }}>Role Name</label>
+                <input type="text" required autoFocus placeholder="e.g. Data Analyst" value={newRole.name} onChange={e => setNewRole(r => ({ ...r, name: e.target.value }))} className="w-full text-sm rounded-lg px-3 py-2.5 outline-none" style={{ border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: 'var(--color-text-1)' }} />
               </div>
               <div>
-                <label className="block text-xs font-semibold mb-1.5" style={{ color: '#374151' }}>Description <span style={{ fontWeight: 400, color: '#9CA3AF' }}>(optional)</span></label>
-                <input type="text" placeholder="Brief description of this role's access" value={newRole.description} onChange={e => setNewRole(r => ({ ...r, description: e.target.value }))} className="w-full text-sm rounded-lg px-3 py-2.5 outline-none" style={{ border: '1px solid #E5E7EB', color: '#111827' }} />
+                <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--color-text-2)' }}>Description <span style={{ fontWeight: 400, color: 'var(--color-text-4)' }}>(optional)</span></label>
+                <input type="text" placeholder="Brief description of this role's access" value={newRole.description} onChange={e => setNewRole(r => ({ ...r, description: e.target.value }))} className="w-full text-sm rounded-lg px-3 py-2.5 outline-none" style={{ border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: 'var(--color-text-1)' }} />
               </div>
               <div>
-                <label className="block text-xs font-semibold mb-2" style={{ color: '#374151' }}>Colour</label>
+                <label className="block text-xs font-semibold mb-2" style={{ color: 'var(--color-text-2)' }}>Colour</label>
                 <div style={{ display: 'flex', gap: 8 }}>
                   {ROLE_COLORS.map(c => (
-                    <button key={c} type="button" onClick={() => setNewRole(r => ({ ...r, color: c }))} style={{ width: 26, height: 26, borderRadius: '50%', background: c, border: newRole.color === c ? '3px solid #111827' : '2px solid transparent', cursor: 'pointer', flexShrink: 0 }} />
+                    <button key={c} type="button" onClick={() => setNewRole(r => ({ ...r, color: c }))} style={{ width: 26, height: 26, borderRadius: '50%', background: c, border: newRole.color === c ? '3px solid var(--color-text-1)' : '2px solid transparent', cursor: 'pointer', flexShrink: 0 }} />
                   ))}
                 </div>
               </div>
-              <p style={{ fontSize: 11, color: '#9CA3AF' }}>Permissions start as a copy of Staff Associate. You can edit them after creation.</p>
+              <p style={{ fontSize: 11, color: 'var(--color-text-4)' }}>Permissions start as a copy of Staff Associate. You can edit them after creation.</p>
               <div className="flex gap-3 pt-1">
-                <button type="button" onClick={() => setCreateOpen(false)} className="flex-1 py-2.5 rounded-lg text-sm font-medium" style={{ border: '1px solid #E5E7EB', color: '#374151' }}>Cancel</button>
-                <button type="submit" className="flex-1 py-2.5 rounded-lg text-sm font-semibold text-white" style={{ background: '#655BD3' }}>Create Role</button>
+                <button type="button" onClick={() => setCreateOpen(false)} className="flex-1 py-2.5 rounded-lg text-sm font-medium" style={{ border: '1px solid var(--color-border)', color: 'var(--color-text-2)', background: 'var(--color-surface)' }}>Cancel</button>
+                <button type="submit" className="flex-1 py-2.5 rounded-lg text-sm font-semibold text-white" style={{ background: 'var(--color-primary-emphasis)' }}>Create Role</button>
               </div>
             </form>
           </div>
@@ -618,31 +618,31 @@ export default function PermissionsPage() {
       {/* ── Edit Role Modal ────────────────────────────────────────────────── */}
       {editRole && (
         <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(17,24,39,0.6)' }} onClick={() => setEditRole(null)}>
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-7" onClick={e => e.stopPropagation()}>
+          <div onClick={e => e.stopPropagation()} style={{ background: 'var(--color-surface)', borderRadius: 16, boxShadow: '0 20px 60px rgba(0,0,0,0.3)', width: '100%', maxWidth: 448, padding: 28 }}>
             <div className="flex items-center justify-between mb-5">
-              <h3 style={{ fontSize: 15, fontWeight: 700, color: '#111827' }}>Edit Role</h3>
-              <button onClick={() => setEditRole(null)} className="p-1.5 rounded-lg hover:bg-gray-100" style={{ color: '#9CA3AF' }}><X size={16} /></button>
+              <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-text-1)' }}>Edit Role</h3>
+              <button onClick={() => setEditRole(null)} style={{ padding: 6, borderRadius: 8, border: 'none', background: 'var(--color-surface-2)', color: 'var(--color-text-4)', cursor: 'pointer' }}><X size={16} /></button>
             </div>
             <form onSubmit={handleEditSave} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold mb-1.5" style={{ color: '#374151' }}>Role Name</label>
-                <input type="text" required value={editRole.name} onChange={e => setEditRole(r => r ? { ...r, name: e.target.value } : r)} className="w-full text-sm rounded-lg px-3 py-2.5 outline-none" style={{ border: '1px solid #E5E7EB', color: '#111827' }} />
+                <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--color-text-2)' }}>Role Name</label>
+                <input type="text" required value={editRole.name} onChange={e => setEditRole(r => r ? { ...r, name: e.target.value } : r)} className="w-full text-sm rounded-lg px-3 py-2.5 outline-none" style={{ border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: 'var(--color-text-1)' }} />
               </div>
               <div>
-                <label className="block text-xs font-semibold mb-1.5" style={{ color: '#374151' }}>Description</label>
-                <input type="text" value={editRole.description} onChange={e => setEditRole(r => r ? { ...r, description: e.target.value } : r)} className="w-full text-sm rounded-lg px-3 py-2.5 outline-none" style={{ border: '1px solid #E5E7EB', color: '#111827' }} />
+                <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--color-text-2)' }}>Description</label>
+                <input type="text" value={editRole.description} onChange={e => setEditRole(r => r ? { ...r, description: e.target.value } : r)} className="w-full text-sm rounded-lg px-3 py-2.5 outline-none" style={{ border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: 'var(--color-text-1)' }} />
               </div>
               <div>
-                <label className="block text-xs font-semibold mb-2" style={{ color: '#374151' }}>Colour</label>
+                <label className="block text-xs font-semibold mb-2" style={{ color: 'var(--color-text-2)' }}>Colour</label>
                 <div style={{ display: 'flex', gap: 8 }}>
                   {ROLE_COLORS.map(c => (
-                    <button key={c} type="button" onClick={() => setEditRole(r => r ? { ...r, color: c } : r)} style={{ width: 26, height: 26, borderRadius: '50%', background: c, border: editRole.color === c ? '3px solid #111827' : '2px solid transparent', cursor: 'pointer', flexShrink: 0 }} />
+                    <button key={c} type="button" onClick={() => setEditRole(r => r ? { ...r, color: c } : r)} style={{ width: 26, height: 26, borderRadius: '50%', background: c, border: editRole.color === c ? '3px solid var(--color-text-1)' : '2px solid transparent', cursor: 'pointer', flexShrink: 0 }} />
                   ))}
                 </div>
               </div>
               <div className="flex gap-3 pt-1">
-                <button type="button" onClick={() => setEditRole(null)} className="flex-1 py-2.5 rounded-lg text-sm font-medium" style={{ border: '1px solid #E5E7EB', color: '#374151' }}>Cancel</button>
-                <button type="submit" className="flex-1 py-2.5 rounded-lg text-sm font-semibold text-white" style={{ background: '#655BD3' }}>Save</button>
+                <button type="button" onClick={() => setEditRole(null)} className="flex-1 py-2.5 rounded-lg text-sm font-medium" style={{ border: '1px solid var(--color-border)', color: 'var(--color-text-2)', background: 'var(--color-surface)' }}>Cancel</button>
+                <button type="submit" className="flex-1 py-2.5 rounded-lg text-sm font-semibold text-white" style={{ background: 'var(--color-primary-emphasis)' }}>Save</button>
               </div>
             </form>
           </div>
@@ -652,18 +652,18 @@ export default function PermissionsPage() {
       {/* ── Delete Role Confirmation ───────────────────────────────────────── */}
       {deleteRoleId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(17,24,39,0.6)' }} onClick={() => setDeleteRoleId(null)}>
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-7" onClick={e => e.stopPropagation()}>
+          <div onClick={e => e.stopPropagation()} style={{ background: 'var(--color-surface)', borderRadius: 16, boxShadow: '0 20px 60px rgba(0,0,0,0.3)', width: '100%', maxWidth: 384, padding: 28 }}>
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: '#FEE2E2' }}>
+              <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'var(--color-error-light)' }}>
                 <Trash2 size={16} style={{ color: '#DC2626' }} />
               </div>
-              <h3 style={{ fontSize: 15, fontWeight: 700, color: '#111827' }}>Delete Role</h3>
+              <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-text-1)' }}>Delete Role</h3>
             </div>
-            <p className="text-sm mb-6" style={{ color: '#6B7280' }}>
+            <p className="text-sm mb-6" style={{ color: 'var(--color-text-3)' }}>
               Are you sure you want to delete <strong>{roles.find(r => r.id === deleteRoleId)?.name}</strong>? Members with this role will lose access. This cannot be undone.
             </p>
             <div className="flex gap-3">
-              <button onClick={() => setDeleteRoleId(null)} className="flex-1 py-2.5 rounded-lg text-sm font-medium" style={{ border: '1px solid #E5E7EB', color: '#374151' }}>Cancel</button>
+              <button onClick={() => setDeleteRoleId(null)} className="flex-1 py-2.5 rounded-lg text-sm font-medium" style={{ border: '1px solid var(--color-border)', color: 'var(--color-text-2)', background: 'var(--color-surface)' }}>Cancel</button>
               <button onClick={handleDeleteRole} className="flex-1 py-2.5 rounded-lg text-sm font-semibold text-white" style={{ background: '#DC2626' }}>Delete Role</button>
             </div>
           </div>

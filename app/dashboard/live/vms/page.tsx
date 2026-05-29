@@ -22,39 +22,39 @@ interface Camera {
 const TYPE_BADGES: { key: 'entry' | 'exit' | 'passerby'; bg: string; icon: React.ReactNode }[] = [
   { key: 'entry',    bg: 'rgba(22,163,74,0.52)',   icon: <LogIn          size={12} strokeWidth={2.5} /> },
   { key: 'exit',     bg: 'rgba(220,38,38,0.52)',   icon: <LogOut         size={12} strokeWidth={2.5} /> },
-  { key: 'passerby', bg: 'rgba(101,91,211,0.52)', icon: <PersonStanding size={12} strokeWidth={2.5} /> },
+  { key: 'passerby', bg: 'rgba(217,119,6,0.60)',  icon: <PersonStanding size={12} strokeWidth={2.5} /> },
 ];
 
 // loremflickr lock IDs chosen to return indoor mall / crowd / corridor scenes
 const CAMERAS: Camera[] = [
-  { id: 'CAM-MBS-01', label: 'Entrance A',   store: 'Marina Bay Sands', zone: 'Entrance', status: 'online',   seed: 3,  entry: 238,  exit: 181,  passerby: 2082 },
-  { id: 'CAM-MBS-02', label: 'Entrance B',   store: 'Marina Bay Sands', zone: 'Entrance', status: 'online',   seed: 7,  entry: 174,  exit: 143,  passerby: 1540 },
-  { id: 'CAM-MBS-03', label: 'Level 1 Main', store: 'Marina Bay Sands', zone: 'Floor',    status: 'online',   seed: 11, entry: 312,  exit: 289,  passerby: 3210 },
-  { id: 'CAM-ORC-01', label: 'Main Door',    store: 'Orchard Central',  zone: 'Entrance', status: 'online',   seed: 15, entry: 174,  exit: 132,  passerby: 1340 },
-  { id: 'CAM-ORC-02', label: 'Atrium',       store: 'Orchard Central',  zone: 'Atrium',   status: 'degraded', seed: 19, entry: 98,   exit: 87,   passerby: 920  },
-  { id: 'CAM-VIV-01', label: 'North Gate',   store: 'VivoCity',         zone: 'Entrance', status: 'online',   seed: 23, entry: 312,  exit: 274,  passerby: 2890 },
-  { id: 'CAM-VIV-02', label: 'Level 2',      store: 'VivoCity',         zone: 'Floor',    status: 'online',   seed: 27, entry: 203,  exit: 189,  passerby: 1875 },
+  { id: 'CAM-MBS-01', label: 'Entrance A',   store: 'Marina Bay Sands', zone: 'Entrance', status: 'online',   seed: 3,  entry: 238,  exit: 181,  passerby: 882  },
+  { id: 'CAM-MBS-02', label: 'Entrance B',   store: 'Marina Bay Sands', zone: 'Entrance', status: 'online',   seed: 7,  entry: 174,  exit: 143,  passerby: 740  },
+  { id: 'CAM-MBS-03', label: 'Level 1 Main', store: 'Marina Bay Sands', zone: 'Floor',    status: 'online',   seed: 11, entry: 312,  exit: 289,  passerby: 871  },
+  { id: 'CAM-ORC-01', label: 'Main Door',    store: 'Orchard Central',  zone: 'Entrance', status: 'online',   seed: 15, entry: 174,  exit: 132,  passerby: 734  },
+  { id: 'CAM-ORC-02', label: 'Atrium',       store: 'Orchard Central',  zone: 'Atrium',   status: 'degraded', seed: 19, entry: 98,   exit: 87,   passerby: 720  },
+  { id: 'CAM-VIV-01', label: 'North Gate',   store: 'VivoCity',         zone: 'Entrance', status: 'online',   seed: 23, entry: 312,  exit: 274,  passerby: 890  },
+  { id: 'CAM-VIV-02', label: 'Level 2',      store: 'VivoCity',         zone: 'Floor',    status: 'online',   seed: 27, entry: 203,  exit: 189,  passerby: 875  },
   { id: 'CAM-BGS-01', label: 'North Entry',  store: 'Bugis Junction',   zone: 'Entrance', status: 'offline',  seed: 31, entry: 0,    exit: 0,    passerby: 0    },
-  { id: 'CAM-TAM-01', label: 'Side Entry',   store: 'Tampines Mall',    zone: 'Entrance', status: 'online',   seed: 35, entry: 203,  exit: 159,  passerby: 1620 },
-  { id: 'CAM-TAM-02', label: 'Main Hall',    store: 'Tampines Mall',    zone: 'Floor',    status: 'online',   seed: 39, entry: 167,  exit: 145,  passerby: 1430 },
-  { id: 'CAM-JUR-01', label: 'Main Atrium',  store: 'Jurong Point',     zone: 'Atrium',   status: 'online',   seed: 43, entry: 289,  exit: 241,  passerby: 2341 },
-  { id: 'CAM-NPC-01', label: 'Ground Floor', store: 'Northpoint City',  zone: 'Entrance', status: 'online',   seed: 47, entry: 267,  exit: 198,  passerby: 1980 },
-  { id: 'CAM-JUR-02', label: 'B2 Parking',   store: 'Jurong Point',     zone: 'Entrance', status: 'online',   seed: 51, entry: 189,  exit: 167,  passerby: 1590 },
-  { id: 'CAM-NPC-02', label: 'Level 2 Hall', store: 'Northpoint City',  zone: 'Floor',    status: 'online',   seed: 55, entry: 142,  exit: 128,  passerby: 1180 },
-  { id: 'CAM-MBS-04', label: 'Food Court',   store: 'Marina Bay Sands', zone: 'Floor',    status: 'online',   seed: 59, entry: 198,  exit: 176,  passerby: 1890 },
-  { id: 'CAM-ORC-03', label: 'Level 3 Lift', store: 'Orchard Central',  zone: 'Floor',    status: 'degraded', seed: 63, entry: 67,   exit: 59,   passerby: 590  },
-  { id: 'CAM-VIV-03', label: 'South Gate',   store: 'VivoCity',         zone: 'Entrance', status: 'online',   seed: 67, entry: 276,  exit: 254,  passerby: 2540 },
-  { id: 'CAM-BGS-02', label: 'Food Hall',    store: 'Bugis Junction',   zone: 'Floor',    status: 'online',   seed: 71, entry: 123,  exit: 108,  passerby: 1020 },
-  { id: 'CAM-TAM-03', label: 'Carpark Entry',store: 'Tampines Mall',    zone: 'Entrance', status: 'online',   seed: 75, entry: 145,  exit: 132,  passerby: 1320 },
-  { id: 'CAM-JUR-03', label: 'L1 Atrium',    store: 'Jurong Point',     zone: 'Atrium',   status: 'online',   seed: 79, entry: 201,  exit: 187,  passerby: 1890 },
-  { id: 'CAM-MBS-05', label: 'VIP Lounge',   store: 'Marina Bay Sands', zone: 'Floor',    status: 'online',   seed: 83, entry: 89,   exit: 76,   passerby: 740  },
-  { id: 'CAM-ORC-04', label: 'Basement',     store: 'Orchard Central',  zone: 'Entrance', status: 'online',   seed: 87, entry: 134,  exit: 118,  passerby: 1120 },
-  { id: 'CAM-VIV-04', label: 'Rooftop Walk', store: 'VivoCity',         zone: 'Floor',    status: 'degraded', seed: 91, entry: 56,   exit: 49,   passerby: 470  },
-  { id: 'CAM-BGS-03', label: 'East Wing',    store: 'Bugis Junction',   zone: 'Floor',    status: 'online',   seed: 95, entry: 178,  exit: 162,  passerby: 1530 },
-  { id: 'CAM-CWP-01', label: 'Main Entrance',store: 'Causeway Point',   zone: 'Entrance', status: 'online',   seed: 99, entry: 221,  exit: 198,  passerby: 1970 },
-  { id: 'CAM-CWP-02', label: 'Level 1 Hall', store: 'Causeway Point',   zone: 'Floor',    status: 'online',   seed: 103,entry: 167,  exit: 143,  passerby: 1450 },
-  { id: 'CAM-NPC-03', label: 'Atrium Sky',   store: 'Northpoint City',  zone: 'Atrium',   status: 'online',   seed: 107,entry: 312,  exit: 287,  passerby: 2780 },
-  { id: 'CAM-TAM-04', label: 'Food Court',   store: 'Tampines Mall',    zone: 'Floor',    status: 'online',   seed: 111,entry: 198,  exit: 176,  passerby: 1680 },
+  { id: 'CAM-TAM-01', label: 'Side Entry',   store: 'Tampines Mall',    zone: 'Entrance', status: 'online',   seed: 35, entry: 203,  exit: 159,  passerby: 762  },
+  { id: 'CAM-TAM-02', label: 'Main Hall',    store: 'Tampines Mall',    zone: 'Floor',    status: 'online',   seed: 39, entry: 167,  exit: 145,  passerby: 743  },
+  { id: 'CAM-JUR-01', label: 'Main Atrium',  store: 'Jurong Point',     zone: 'Atrium',   status: 'online',   seed: 43, entry: 289,  exit: 241,  passerby: 881  },
+  { id: 'CAM-NPC-01', label: 'Ground Floor', store: 'Northpoint City',  zone: 'Entrance', status: 'online',   seed: 47, entry: 267,  exit: 198,  passerby: 868  },
+  { id: 'CAM-JUR-02', label: 'B2 Parking',   store: 'Jurong Point',     zone: 'Entrance', status: 'online',   seed: 51, entry: 189,  exit: 167,  passerby: 759  },
+  { id: 'CAM-NPC-02', label: 'Level 2 Hall', store: 'Northpoint City',  zone: 'Floor',    status: 'online',   seed: 55, entry: 142,  exit: 128,  passerby: 718  },
+  { id: 'CAM-MBS-04', label: 'Food Court',   store: 'Marina Bay Sands', zone: 'Floor',    status: 'online',   seed: 59, entry: 198,  exit: 176,  passerby: 874  },
+  { id: 'CAM-ORC-03', label: 'Level 3 Lift', store: 'Orchard Central',  zone: 'Floor',    status: 'degraded', seed: 63, entry: 67,   exit: 59,   passerby: 703  },
+  { id: 'CAM-VIV-03', label: 'South Gate',   store: 'VivoCity',         zone: 'Entrance', status: 'online',   seed: 67, entry: 276,  exit: 254,  passerby: 887  },
+  { id: 'CAM-BGS-02', label: 'Food Hall',    store: 'Bugis Junction',   zone: 'Floor',    status: 'online',   seed: 71, entry: 123,  exit: 108,  passerby: 732  },
+  { id: 'CAM-TAM-03', label: 'Carpark Entry',store: 'Tampines Mall',    zone: 'Entrance', status: 'online',   seed: 75, entry: 145,  exit: 132,  passerby: 751  },
+  { id: 'CAM-JUR-03', label: 'L1 Atrium',    store: 'Jurong Point',     zone: 'Atrium',   status: 'online',   seed: 79, entry: 201,  exit: 187,  passerby: 876  },
+  { id: 'CAM-MBS-05', label: 'VIP Lounge',   store: 'Marina Bay Sands', zone: 'Floor',    status: 'online',   seed: 83, entry: 89,   exit: 76,   passerby: 712  },
+  { id: 'CAM-ORC-04', label: 'Basement',     store: 'Orchard Central',  zone: 'Entrance', status: 'online',   seed: 87, entry: 134,  exit: 118,  passerby: 728  },
+  { id: 'CAM-VIV-04', label: 'Rooftop Walk', store: 'VivoCity',         zone: 'Floor',    status: 'degraded', seed: 91, entry: 56,   exit: 49,   passerby: 707  },
+  { id: 'CAM-BGS-03', label: 'East Wing',    store: 'Bugis Junction',   zone: 'Floor',    status: 'online',   seed: 95, entry: 178,  exit: 162,  passerby: 753  },
+  { id: 'CAM-CWP-01', label: 'Main Entrance',store: 'Causeway Point',   zone: 'Entrance', status: 'online',   seed: 99, entry: 221,  exit: 198,  passerby: 870  },
+  { id: 'CAM-CWP-02', label: 'Level 1 Hall', store: 'Causeway Point',   zone: 'Floor',    status: 'online',   seed: 103,entry: 167,  exit: 143,  passerby: 745  },
+  { id: 'CAM-NPC-03', label: 'Atrium Sky',   store: 'Northpoint City',  zone: 'Atrium',   status: 'online',   seed: 107,entry: 312,  exit: 287,  passerby: 892  },
+  { id: 'CAM-TAM-04', label: 'Food Court',   store: 'Tampines Mall',    zone: 'Floor',    status: 'online',   seed: 111,entry: 198,  exit: 176,  passerby: 738  },
 ];
 
 const STATUS_STYLES = {
@@ -64,10 +64,11 @@ const STATUS_STYLES = {
 };
 
 // ── Camera feed tile ──────────────────────────────────────────────────────────
-function CameraFeed({ camera, selected, onToggle, gridMode }: {
+function CameraFeed({ camera, selected, onToggle, onRoiClick, gridMode }: {
   camera: Camera;
   selected: boolean;
   onToggle: () => void;
+  onRoiClick: () => void;
   gridMode: boolean;
 }) {
   const st = STATUS_STYLES[camera.status];
@@ -77,7 +78,7 @@ function CameraFeed({ camera, selected, onToggle, gridMode }: {
       className="relative rounded-xl overflow-hidden flex-shrink-0 cursor-pointer group"
       style={{
         background: '#111',
-        outline: selected && gridMode ? '2px solid #655BD3' : 'none',
+        outline: selected && gridMode ? '2px solid var(--color-primary)' : 'none',
         outlineOffset: 2,
         aspectRatio: '16/9',
       }}
@@ -113,7 +114,7 @@ function CameraFeed({ camera, selected, onToggle, gridMode }: {
       ) : (
         <div className="w-full h-full flex items-center justify-center" style={{ background: '#0a0a0a' }}>
           <div className="flex flex-col items-center gap-2">
-            <WifiOff size={28} strokeWidth={1.5} style={{ color: '#374151' }} />
+            <WifiOff size={28} strokeWidth={1.5} style={{ color: 'var(--color-text-2)' }} />
             <span className="text-xs font-mono" style={{ color: '#4B5563' }}>NO SIGNAL</span>
           </div>
         </div>
@@ -126,10 +127,44 @@ function CameraFeed({ camera, selected, onToggle, gridMode }: {
       }} />
       <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-transparent to-black/20 pointer-events-none" />
 
-      {/* Top-left: camera ID monospace */}
-      <div className="absolute top-2 left-2 font-mono text-[9px] leading-tight" style={{ color: 'rgba(255,255,255,0.8)', textShadow: '0 1px 3px rgba(0,0,0,0.9)' }}>
-        <div style={{ fontWeight: 700 }}>{camera.id}</div>
-        <div style={{ opacity: 0.65 }}>{camera.zone}</div>
+      {/* Top-left: camera ID monospace + ROI chip below */}
+      <div className="absolute top-2 left-2 flex flex-col items-start gap-3">
+        <div className="font-mono text-[9px] leading-tight" style={{ color: 'rgba(255,255,255,0.8)', textShadow: '0 1px 3px rgba(0,0,0,0.9)' }}>
+          <div style={{ fontWeight: 700 }}>{camera.id}</div>
+          <div style={{ opacity: 0.65 }}>{camera.zone}</div>
+        </div>
+        {camera.status !== 'offline' && (
+          <button
+            onClick={e => { e.stopPropagation(); onRoiClick(); }}
+            title="View ROI zones"
+            style={{
+              display: 'flex', alignItems: 'center', gap: 4,
+              padding: '3px 7px 3px 5px',
+              borderRadius: 5,
+              border: '1px solid rgba(139,127,245,0.7)',
+              background: 'rgba(139,127,245,0.85)',
+              backdropFilter: 'blur(6px)',
+              color: 'rgba(255,255,255,0.95)',
+              fontSize: 9,
+              fontWeight: 700,
+              fontFamily: 'var(--font-base, "Neue Haas Grotesk Display Pro", "Helvetica Neue", sans-serif)',
+              letterSpacing: '0.04em',
+              cursor: 'pointer',
+              transition: 'background 150ms ease, border-color 150ms ease',
+            }}
+            onMouseEnter={e => {
+              (e.currentTarget as HTMLElement).style.background = 'rgba(139,127,245,1)';
+              (e.currentTarget as HTMLElement).style.borderColor = 'rgba(139,127,245,1)';
+            }}
+            onMouseLeave={e => {
+              (e.currentTarget as HTMLElement).style.background = 'rgba(139,127,245,0.85)';
+              (e.currentTarget as HTMLElement).style.borderColor = 'rgba(139,127,245,0.7)';
+            }}
+          >
+            <Scan size={9} strokeWidth={2.5} />
+            ROI
+          </button>
+        )}
       </div>
 
       {/* Top-right: REC + status */}
@@ -204,8 +239,8 @@ function CameraFeed({ camera, selected, onToggle, gridMode }: {
         <div
           className="absolute top-2 left-2 w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors"
           style={{
-            background: selected ? '#655BD3' : 'rgba(255,255,255,0.2)',
-            borderColor: selected ? '#655BD3' : 'rgba(255,255,255,0.5)',
+            background: selected ? 'var(--color-primary)' : 'rgba(255,255,255,0.2)',
+            borderColor: selected ? 'var(--color-primary)' : 'rgba(255,255,255,0.5)',
           }}
         >
           {selected && <Check size={11} strokeWidth={3} color="white" />}
@@ -230,7 +265,7 @@ function RemoveConfirmModal({ camera, onConfirm, onCancel }: {
       <div
         onClick={e => e.stopPropagation()}
         style={{
-          background: '#fff', borderRadius: 16, width: 320,
+          background: 'var(--color-surface)', borderRadius: 16, width: 320,
           padding: '24px 24px 20px',
           boxShadow: '0 20px 60px rgba(0,0,0,0.18)',
         }}
@@ -238,17 +273,17 @@ function RemoveConfirmModal({ camera, onConfirm, onCancel }: {
         {/* Icon */}
         <div style={{
           width: 44, height: 44, borderRadius: 12,
-          background: '#FEE2E2', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: 'var(--color-error-light)', display: 'flex', alignItems: 'center', justifyContent: 'center',
           marginBottom: 14,
         }}>
           <Monitor size={20} strokeWidth={1.5} style={{ color: '#DC2626' }} />
         </div>
 
-        <p style={{ fontSize: 15, fontWeight: 700, color: '#111827', marginBottom: 6 }}>
+        <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-text-1)', marginBottom: 6 }}>
           Remove camera from view?
         </p>
-        <p style={{ fontSize: 12.5, color: '#6B7280', lineHeight: 1.55, marginBottom: 20 }}>
-          <span style={{ fontWeight: 600, color: '#374151' }}>{camera.label}</span>
+        <p style={{ fontSize: 12.5, color: 'var(--color-text-3)', lineHeight: 1.55, marginBottom: 20 }}>
+          <span style={{ fontWeight: 600, color: 'var(--color-text-2)' }}>{camera.label}</span>
           {' '}({camera.store}) will be hidden from the feed. You can re-add it anytime from the camera selector.
         </p>
 
@@ -256,8 +291,8 @@ function RemoveConfirmModal({ camera, onConfirm, onCancel }: {
           <button
             onClick={onCancel}
             style={{
-              flex: 1, height: 36, borderRadius: 8, border: '1px solid #E5E7EB',
-              background: '#fff', fontSize: 13, fontWeight: 500, color: '#374151', cursor: 'pointer',
+              flex: 1, height: 36, borderRadius: 8, border: '1px solid var(--color-border)',
+              background: 'var(--color-surface)', fontSize: 13, fontWeight: 500, color: 'var(--color-text-2)', cursor: 'pointer',
             }}
           >
             Keep it
@@ -292,19 +327,19 @@ function SettingsPanel({ cols, setCols, interval, setInterval: setIntervalVal, o
       onClick={onClose}
     >
       <div
-        className="bg-white shadow-2xl w-full max-w-sm"
-        style={{ borderRadius: 16, padding: '24px 28px' }}
+        style={{ background: 'var(--color-surface)', borderRadius: 16, padding: '24px 28px' }}
+        className="shadow-2xl w-full max-w-sm"
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-5">
-          <h3 className="text-base font-bold" style={{ color: '#111827' }}>View Settings</h3>
-          <button onClick={onClose} style={{ color: '#9CA3AF' }}><X size={18} strokeWidth={2} /></button>
+          <h3 className="text-base font-bold" style={{ color: 'var(--color-text-1)' }}>View Settings</h3>
+          <button onClick={onClose} style={{ color: 'var(--color-text-4)' }}><X size={18} strokeWidth={2} /></button>
         </div>
 
         <div className="space-y-5">
           <div>
-            <label className="text-xs font-semibold block mb-2" style={{ color: '#374151' }}>
-              Carousel Interval: <span style={{ color: '#655BD3' }}>{interval}s</span>
+            <label className="text-xs font-semibold block mb-2" style={{ color: 'var(--color-text-2)' }}>
+              Carousel Interval: <span style={{ color: 'var(--color-primary)' }}>{interval}s</span>
             </label>
             <input
               type="range"
@@ -313,9 +348,9 @@ function SettingsPanel({ cols, setCols, interval, setInterval: setIntervalVal, o
               step={5}
               value={interval}
               onChange={e => setIntervalVal(Number(e.target.value))}
-              style={{ width: '100%', accentColor: '#655BD3' }}
+              style={{ width: '100%', accentColor: 'var(--color-primary-emphasis)' }}
             />
-            <div className="flex justify-between text-[10px] mt-1" style={{ color: '#9CA3AF' }}>
+            <div className="flex justify-between text-[10px] mt-1" style={{ color: 'var(--color-text-4)' }}>
               <span>5s</span><span>60s</span>
             </div>
           </div>
@@ -324,7 +359,7 @@ function SettingsPanel({ cols, setCols, interval, setInterval: setIntervalVal, o
         <button
           onClick={onClose}
           className="w-full py-2.5 rounded-lg text-sm font-semibold text-white mt-6"
-          style={{ background: '#655BD3' }}
+          style={{ background: 'var(--color-primary-emphasis)' }}
         >Done</button>
       </div>
     </div>
@@ -336,7 +371,7 @@ const CAMS_PER_PAGE = 16;
 // ROI lines: static decorative overlay polygons simulating detection zones
 const ROI_LINES = [
   { points: '12%,15% 48%,12% 52%,55% 10%,58%', color: '#00CE9C' },
-  { points: '55%,10% 88%,14% 90%,62% 53%,58%', color: '#655BD3' },
+  { points: '55%,10% 88%,14% 90%,62% 53%,58%', color: 'var(--color-primary)' },
   { points: '20%,65% 78%,62% 80%,90% 18%,92%', color: '#F59E0B' },
 ];
 
@@ -466,21 +501,21 @@ export default function VMSPage() {
   const degradedCams = CAMERAS.filter(c => c.status === 'degraded').length;
 
   return (
-    <div className="flex flex-col h-full" style={{ background: '#F9FAFB' }}>
+    <div className="flex flex-col h-full" style={{ background: 'var(--color-page-bg)' }}>
       {/* Header */}
       <div
         className="flex items-center justify-between px-6 py-3 flex-shrink-0"
-        style={{ background: 'white', borderBottom: '1px solid #E5E7EB' }}
+        style={{ background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)' }}
       >
         <div className="flex items-center gap-3">
-          <Monitor size={16} strokeWidth={1.5} style={{ color: '#655BD3' }} />
+          <Monitor size={16} strokeWidth={1.5} style={{ color: 'var(--color-primary)' }} />
           <div className="flex items-center gap-1.5">
             {/* Clickable status badges — double as status filters */}
             {statusFilter !== 'all' && (
               <button
                 onClick={() => setStatusFilter('all')}
                 className="text-xs font-medium px-2 py-0.5 rounded-full transition-all"
-                style={{ background: '#F3F4F6', color: '#6B7280', border: 'none', cursor: 'pointer' }}
+                style={{ background: 'var(--color-surface-2)', color: 'var(--color-text-3)', border: 'none', cursor: 'pointer' }}
               >
                 All
               </button>
@@ -531,7 +566,7 @@ export default function VMSPage() {
           {/* Grid layout toggle: 2×2 / 3×3 / 4×4 */}
           <div
             className="flex rounded-lg overflow-hidden"
-            style={{ border: '1px solid #E5E7EB', background: '#F9FAFB' }}
+            style={{ border: '1px solid var(--color-border)', background: 'var(--color-surface-2)' }}
           >
             {([2, 3, 4] as const).map((n) => {
               const active = cols === n;
@@ -541,9 +576,9 @@ export default function VMSPage() {
                   onClick={() => setCols(n)}
                   className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold transition-colors"
                   style={{
-                    background: active ? '#655BD3' : 'transparent',
-                    color: active ? 'white' : '#6B7280',
-                    borderRight: n !== 4 ? '1px solid #E5E7EB' : 'none',
+                    background: active ? 'var(--color-primary)' : 'transparent',
+                    color: active ? 'white' : 'var(--color-text-3)',
+                    borderRight: n !== 4 ? '1px solid var(--color-border)' : 'none',
                   }}
                 >
                   {/* Mini grid icon */}
@@ -563,7 +598,7 @@ export default function VMSPage() {
                           x={x} y={y}
                           width={size} height={size}
                           rx={0.5}
-                          fill={active ? 'white' : '#9CA3AF'}
+                          fill={active ? 'white' : 'var(--color-text-4)'}
                         />
                       );
                     })}
@@ -574,16 +609,16 @@ export default function VMSPage() {
             })}
           </div>
 
-          <div className="w-px h-5" style={{ background: '#E5E7EB' }} />
+          <div className="w-px h-5" style={{ background: 'var(--color-border)' }} />
 
           {/* Camera selector toggle */}
           <button
             onClick={() => setSelectMode(!selectMode)}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
             style={{
-              background: selectMode ? '#EEE9FF' : '#F9FAFB',
-              color: selectMode ? '#655BD3' : '#374151',
-              border: `1px solid ${selectMode ? '#DDD6FE' : '#E5E7EB'}`,
+              background: selectMode ? 'var(--color-primary-light)' : 'var(--color-surface-2)',
+              color: selectMode ? 'var(--color-primary)' : 'var(--color-text-2)',
+              border: `1px solid ${selectMode ? 'var(--color-accent-border)' : 'var(--color-border)'}`,
             }}
           >
             <Grid size={13} strokeWidth={2} />
@@ -595,9 +630,9 @@ export default function VMSPage() {
             onClick={() => { setCarouselMode(!carouselMode); setCarouselIndex(0); }}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors"
             style={{
-              background: carouselMode ? '#655BD3' : '#F9FAFB',
-              color: carouselMode ? 'white' : '#374151',
-              border: `1px solid ${carouselMode ? '#655BD3' : '#E5E7EB'}`,
+              background: carouselMode ? 'var(--color-primary-emphasis)' : 'var(--color-surface-2)',
+              color: carouselMode ? 'white' : 'var(--color-text-2)',
+              border: `1px solid ${carouselMode ? 'var(--color-primary)' : 'var(--color-border)'}`,
             }}
           >
             {carouselMode ? <Pause size={13} strokeWidth={2} /> : <Play size={13} strokeWidth={2} />}
@@ -607,7 +642,7 @@ export default function VMSPage() {
           <button
             onClick={() => setShowSettings(true)}
             className="p-2 rounded-lg transition-colors"
-            style={{ background: '#F9FAFB', border: '1px solid #E5E7EB', color: '#6B7280' }}
+            style={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', color: 'var(--color-text-3)' }}
           >
             <Settings size={15} strokeWidth={1.5} />
           </button>
@@ -617,13 +652,13 @@ export default function VMSPage() {
       {/* Filter bar */}
       <div
         className="flex items-center gap-3 px-6 flex-shrink-0"
-        style={{ background: '#fff', borderBottom: '1px solid #F3F4F6', height: 44 }}
+        style={{ background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border-subtle)', height: 44 }}
       >
         {/* Filters — left side */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
 
           {/* ZONE — underline-tab style with inline rename */}
-          <div className="flex items-center gap-0" style={{ borderBottom: '2px solid #F3F4F6' }}>
+          <div className="flex items-center gap-0" style={{ borderBottom: '2px solid var(--color-border-subtle)' }}>
             {ZONES.map(z => {
               const active = zoneFilter === z;
               const displayLabel = z === 'all' ? 'All' : getZoneLabel(z);
@@ -647,8 +682,8 @@ export default function VMSPage() {
                       }}
                       style={{
                         height: 28, width: 90, padding: '0 8px', fontSize: 11.5, fontWeight: 600,
-                        border: '1.5px solid #655BD3', borderRadius: 6, outline: 'none',
-                        color: '#655BD3', background: '#F5F3FF',
+                        border: '1.5px solid var(--color-primary)', borderRadius: 6, outline: 'none',
+                        color: 'var(--color-primary)', background: 'var(--color-accent-bg)',
                       }}
                     />
                   ) : (
@@ -658,8 +693,8 @@ export default function VMSPage() {
                         height: 30, paddingLeft: 10, paddingRight: z !== 'all' ? 24 : 10,
                         border: 'none', cursor: 'pointer', background: 'transparent',
                         fontSize: 11.5, fontWeight: active ? 600 : 400,
-                        color: active ? '#655BD3' : '#6B7280',
-                        borderBottom: active ? '2px solid #655BD3' : '2px solid transparent',
+                        color: active ? 'var(--color-primary)' : 'var(--color-text-3)',
+                        borderBottom: active ? '2px solid var(--color-primary)' : '2px solid transparent',
                         transition: 'all 150ms ease', whiteSpace: 'nowrap',
                       }}
                     >
@@ -670,7 +705,7 @@ export default function VMSPage() {
                     <button
                       onClick={e => { e.stopPropagation(); setZoneEditValue(getZoneLabel(z)); setEditingZone(z); }}
                       className="absolute right-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9CA3AF', padding: 0, display: 'flex' }}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-4)', padding: 0, display: 'flex' }}
                     >
                       <Pencil size={9} strokeWidth={2} />
                     </button>
@@ -680,7 +715,7 @@ export default function VMSPage() {
             })}
           </div>
 
-          <div style={{ width: 1, height: 16, background: '#E5E7EB', flexShrink: 0 }} />
+          <div style={{ width: 1, height: 16, background: 'var(--color-border)', flexShrink: 0 }} />
 
           {/* STORE — multi-select dropdown */}
           <button
@@ -690,15 +725,15 @@ export default function VMSPage() {
             style={{
               display: 'flex', alignItems: 'center', gap: 6,
               height: 28, padding: '0 8px',
-              border: `1px solid ${storeDropOpen ? '#655BD3' : '#E5E7EB'}`,
-              borderRadius: 6, background: 'white',
-              color: '#111827', fontSize: 11.5, fontWeight: 400,
+              border: `1px solid ${storeDropOpen ? 'var(--color-primary)' : 'var(--color-border)'}`,
+              borderRadius: 6, background: 'var(--color-surface)',
+              color: 'var(--color-text-1)', fontSize: 11.5, fontWeight: 400,
               cursor: 'pointer', outline: 'none', flexShrink: 0, whiteSpace: 'nowrap',
               minWidth: 120,
               ...(storeDropOpen ? { boxShadow: '0 0 0 3px rgba(101,91,211,0.12)' } : {}),
             }}
             onMouseEnter={e => { if (!storeDropOpen) e.currentTarget.style.borderColor = '#C4B5FD'; }}
-            onMouseLeave={e => { if (!storeDropOpen) e.currentTarget.style.borderColor = '#E5E7EB'; }}
+            onMouseLeave={e => { if (!storeDropOpen) e.currentTarget.style.borderColor = 'var(--color-border)'; }}
           >
             <span style={{ flex: 1, textAlign: 'left', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {storeLabel}
@@ -706,7 +741,7 @@ export default function VMSPage() {
             <ChevronDown
               size={11} strokeWidth={2.5}
               style={{
-                color: '#9CA3AF', flexShrink: 0,
+                color: 'var(--color-text-4)', flexShrink: 0,
                 transform: storeDropOpen ? 'rotate(180deg)' : 'rotate(0)',
                 transition: 'transform 200ms ease',
               }}
@@ -718,8 +753,8 @@ export default function VMSPage() {
               ref={storeDropPanelRef}
               style={{
                 ...storeDropStyle,
-                background: 'white',
-                border: '1px solid #E5E7EB',
+                background: 'var(--color-surface)',
+                border: '1px solid var(--color-border)',
                 borderRadius: 10,
                 boxShadow: '0 8px 32px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06)',
                 padding: 4,
@@ -733,8 +768,8 @@ export default function VMSPage() {
                 style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                   width: '100%', padding: '6px 10px', borderRadius: 6, border: 'none',
-                  background: selectedStores.size === 0 ? '#EEE9FF' : 'transparent',
-                  color: selectedStores.size === 0 ? '#655BD3' : '#374151',
+                  background: selectedStores.size === 0 ? 'var(--color-primary-light)' : 'transparent',
+                  color: selectedStores.size === 0 ? 'var(--color-primary)' : 'var(--color-text-2)',
                   fontSize: 12, fontWeight: 400,
                   cursor: 'pointer', textAlign: 'left',
                 }}
@@ -742,10 +777,10 @@ export default function VMSPage() {
                 onMouseLeave={e => { if (selectedStores.size !== 0) e.currentTarget.style.background = 'transparent'; }}
               >
                 <span>All Stores</span>
-                {selectedStores.size === 0 && <Check size={12} strokeWidth={2.5} style={{ color: '#655BD3' }} />}
+                {selectedStores.size === 0 && <Check size={12} strokeWidth={2.5} style={{ color: 'var(--color-primary)' }} />}
               </button>
 
-              <div style={{ height: 1, background: '#F3F4F6', margin: '4px 0' }} />
+              <div style={{ height: 1, background: 'var(--color-border-subtle)', margin: '4px 0' }} />
 
               {STORE_NAMES.map(store => {
                 const checked = selectedStores.has(store);
@@ -757,8 +792,8 @@ export default function VMSPage() {
                     style={{
                       display: 'flex', alignItems: 'center', gap: 8,
                       width: '100%', padding: '6px 10px', borderRadius: 6, border: 'none',
-                      background: checked ? '#EEE9FF' : 'transparent',
-                      color: checked ? '#655BD3' : '#374151',
+                      background: checked ? 'var(--color-primary-light)' : 'transparent',
+                      color: checked ? 'var(--color-primary)' : 'var(--color-text-2)',
                       fontSize: 12, fontWeight: 400,
                       cursor: 'pointer', textAlign: 'left',
                     }}
@@ -767,8 +802,8 @@ export default function VMSPage() {
                   >
                     <span style={{
                       width: 14, height: 14, flexShrink: 0, borderRadius: 3,
-                      border: `1.5px solid ${checked ? '#655BD3' : '#D1D5DB'}`,
-                      background: checked ? '#655BD3' : 'white',
+                      border: `1.5px solid ${checked ? 'var(--color-primary)' : 'var(--color-border)'}`,
+                      background: checked ? 'var(--color-primary-emphasis)' : 'var(--color-surface)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                     }}>
                       {checked && <Check size={9} strokeWidth={3} style={{ color: 'white' }} />}
@@ -785,7 +820,7 @@ export default function VMSPage() {
         </div>
 
         {/* Camera count — right anchor */}
-        <span style={{ marginLeft: 'auto', fontSize: 11.5, color: '#9CA3AF', whiteSpace: 'nowrap' }}>
+        <span style={{ marginLeft: 'auto', fontSize: 11.5, color: 'var(--color-text-4)', whiteSpace: 'nowrap' }}>
           {filteredCameras.length} camera{filteredCameras.length !== 1 ? 's' : ''}
         </span>
       </div>
@@ -794,7 +829,7 @@ export default function VMSPage() {
       {selectMode && (
         <div
           className="flex-shrink-0 px-6 py-2.5 overflow-x-auto"
-          style={{ background: '#fff', borderBottom: '1px solid #E5E7EB' }}
+          style={{ background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)' }}
         >
           <div className="flex gap-1.5 items-center">
             {filteredCameras.map(cam => {
@@ -810,20 +845,20 @@ export default function VMSPage() {
                     paddingRight: sel ? 6 : 10,
                     paddingTop: 5,
                     paddingBottom: 5,
-                    background: sel ? '#EEE9FF' : '#F3F4F6',
-                    color: sel ? '#655BD3' : '#374151',
-                    border: `1px solid ${sel ? '#DDD6FE' : '#E5E7EB'}`,
+                    background: sel ? 'var(--color-primary-light)' : 'var(--color-surface-2)',
+                    color: sel ? 'var(--color-primary)' : 'var(--color-text-2)',
+                    border: `1px solid ${sel ? 'var(--color-accent-border)' : 'var(--color-border)'}`,
                   }}
                 >
                   <span style={{ color: st.color, display: 'flex', alignItems: 'center' }}>{st.icon}</span>
                   <span style={{ fontWeight: sel ? 600 : 400 }}>{cam.label}</span>
-                  <span style={{ color: sel ? '#9580E8' : '#9CA3AF', fontWeight: 400 }}>{cam.store.split(' ')[0]}</span>
+                  <span style={{ color: sel ? '#9580E8' : 'var(--color-text-4)', fontWeight: 400 }}>{cam.store.split(' ')[0]}</span>
                   {sel && (
                     <span
                       style={{
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         width: 16, height: 16, borderRadius: '50%',
-                        background: '#655BD3', color: '#fff', flexShrink: 0, marginLeft: 2,
+                        background: 'var(--color-primary-emphasis)', color: '#fff', flexShrink: 0, marginLeft: 2,
                       }}
                     >
                       <X size={9} strokeWidth={2.5} />
@@ -840,15 +875,15 @@ export default function VMSPage() {
       <div className="flex-1 overflow-y-auto p-4">
         {activeCams.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full gap-4">
-            <Monitor size={40} strokeWidth={1} style={{ color: '#D1D5DB' }} />
+            <Monitor size={40} strokeWidth={1} style={{ color: 'var(--color-border)' }} />
             <div className="text-center">
-              <p className="text-sm font-semibold" style={{ color: '#374151' }}>No cameras selected</p>
-              <p className="text-xs mt-1" style={{ color: '#9CA3AF' }}>Click "Select Cameras" to choose which feeds to display</p>
+              <p className="text-sm font-semibold" style={{ color: 'var(--color-text-2)' }}>No cameras selected</p>
+              <p className="text-xs mt-1" style={{ color: 'var(--color-text-4)' }}>Click "Select Cameras" to choose which feeds to display</p>
             </div>
             <button
               onClick={() => setSelectMode(true)}
               className="px-4 py-2 rounded-lg text-sm font-semibold text-white"
-              style={{ background: '#655BD3' }}
+              style={{ background: 'var(--color-primary-emphasis)' }}
             >Select Cameras</button>
           </div>
         ) : carouselMode ? (
@@ -866,7 +901,7 @@ export default function VMSPage() {
                   ) : (
                     <div className="w-full flex items-center justify-center" style={{ height: 540, background: '#1A1A2E' }}>
                       <div className="flex flex-col items-center gap-3">
-                        <WifiOff size={48} strokeWidth={1.5} style={{ color: '#374151' }} />
+                        <WifiOff size={48} strokeWidth={1.5} style={{ color: 'var(--color-text-2)' }} />
                         <span className="text-sm font-medium" style={{ color: '#4B5563' }}>Camera Offline</span>
                       </div>
                     </div>
@@ -917,12 +952,12 @@ export default function VMSPage() {
                   style={{
                     width: i === carouselIndex ? 20 : 8,
                     height: 8,
-                    background: i === carouselIndex ? '#655BD3' : '#D1D5DB',
+                    background: i === carouselIndex ? 'var(--color-primary)' : 'var(--color-border)',
                   }}
                 />
               ))}
             </div>
-            <p className="text-xs" style={{ color: '#9CA3AF' }}>
+            <p className="text-xs" style={{ color: 'var(--color-text-4)' }}>
               {carouselIndex + 1} / {activeCams.length} · Auto-advancing every {interval}s
             </p>
 
@@ -936,7 +971,7 @@ export default function VMSPage() {
                   style={{
                     width: 80,
                     height: 45,
-                    outline: i === carouselIndex ? '2px solid #655BD3' : 'none',
+                    outline: i === carouselIndex ? '2px solid var(--color-primary)' : 'none',
                     outlineOffset: 2,
                     background: '#111',
                   }}
@@ -949,7 +984,7 @@ export default function VMSPage() {
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center" style={{ background: '#1A1A2E' }}>
-                      <WifiOff size={14} strokeWidth={1.5} style={{ color: '#374151' }} />
+                      <WifiOff size={14} strokeWidth={1.5} style={{ color: 'var(--color-text-2)' }} />
                     </div>
                   )}
                 </button>
@@ -980,6 +1015,10 @@ export default function VMSPage() {
                       setRoiActive(false);
                     }
                   }}
+                  onRoiClick={() => {
+                    setExpandedCam(cam);
+                    setRoiActive(true);
+                  }}
                   gridMode={selectMode}
                 />
               ))}
@@ -992,9 +1031,11 @@ export default function VMSPage() {
                   onClick={() => setPage(p => Math.max(0, p - 1))}
                   disabled={page === 0}
                   style={{
-                    width: 30, height: 30, borderRadius: 8, border: '1px solid #E5E7EB',
-                    background: page === 0 ? '#F9FAFB' : 'white', cursor: page === 0 ? 'not-allowed' : 'pointer',
-                    color: page === 0 ? '#D1D5DB' : '#374151', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    width: 30, height: 30, borderRadius: 8, border: '1px solid var(--color-border)',
+                    background: page === 0 ? 'var(--color-surface-2)' : 'var(--color-surface)',
+                    cursor: page === 0 ? 'not-allowed' : 'pointer',
+                    color: page === 0 ? 'var(--color-border)' : 'var(--color-text-2)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
                   }}
                 >
                   <ChevronLeft size={14} strokeWidth={2} />
@@ -1005,9 +1046,9 @@ export default function VMSPage() {
                     onClick={() => setPage(i)}
                     style={{
                       width: 30, height: 30, borderRadius: 8, fontSize: 12, fontWeight: page === i ? 700 : 400,
-                      border: `1px solid ${page === i ? '#655BD3' : '#E5E7EB'}`,
-                      background: page === i ? '#655BD3' : 'white',
-                      color: page === i ? 'white' : '#374151', cursor: 'pointer',
+                      border: `1px solid ${page === i ? 'var(--color-primary-emphasis)' : 'var(--color-border)'}`,
+                      background: page === i ? 'var(--color-primary-emphasis)' : 'var(--color-surface)',
+                      color: page === i ? 'white' : 'var(--color-text-2)', cursor: 'pointer',
                     }}
                   >
                     {i + 1}
@@ -1017,16 +1058,16 @@ export default function VMSPage() {
                   onClick={() => setPage(p => Math.min(Math.ceil(activeCams.length / CAMS_PER_PAGE) - 1, p + 1))}
                   disabled={page >= Math.ceil(activeCams.length / CAMS_PER_PAGE) - 1}
                   style={{
-                    width: 30, height: 30, borderRadius: 8, border: '1px solid #E5E7EB',
-                    background: page >= Math.ceil(activeCams.length / CAMS_PER_PAGE) - 1 ? '#F9FAFB' : 'white',
+                    width: 30, height: 30, borderRadius: 8, border: '1px solid var(--color-border)',
+                    background: page >= Math.ceil(activeCams.length / CAMS_PER_PAGE) - 1 ? 'var(--color-surface-2)' : 'var(--color-surface)',
                     cursor: page >= Math.ceil(activeCams.length / CAMS_PER_PAGE) - 1 ? 'not-allowed' : 'pointer',
-                    color: page >= Math.ceil(activeCams.length / CAMS_PER_PAGE) - 1 ? '#D1D5DB' : '#374151',
+                    color: page >= Math.ceil(activeCams.length / CAMS_PER_PAGE) - 1 ? 'var(--color-border)' : 'var(--color-text-2)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                   }}
                 >
                   <ChevronRight size={14} strokeWidth={2} />
                 </button>
-                <span style={{ fontSize: 11, color: '#9CA3AF', marginLeft: 4 }}>
+                <span style={{ fontSize: 11, color: 'var(--color-text-4)', marginLeft: 4 }}>
                   {activeCams.length} camera{activeCams.length !== 1 ? 's' : ''}
                 </span>
               </div>
@@ -1068,7 +1109,7 @@ export default function VMSPage() {
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center" style={{ background: '#0a0a0a' }}>
-                <WifiOff size={48} strokeWidth={1.5} style={{ color: '#374151' }} />
+                <WifiOff size={48} strokeWidth={1.5} style={{ color: 'var(--color-text-2)' }} />
               </div>
             )}
             {/* Scanlines */}
@@ -1130,7 +1171,7 @@ export default function VMSPage() {
                   style={{
                     background: roiActive ? 'rgba(101,91,211,0.9)' : 'rgba(0,0,0,0.65)',
                     color: roiActive ? 'white' : '#E5E7EB',
-                    border: `1px solid ${roiActive ? '#655BD3' : 'rgba(255,255,255,0.2)'}`,
+                    border: `1px solid ${roiActive ? 'var(--color-primary)' : 'rgba(255,255,255,0.2)'}`,
                     backdropFilter: 'blur(4px)',
                   }}
                 >

@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { TrendingUp, BarChart2, Clock, X, ChevronRight } from 'lucide-react';
 
-const PURPLE = '#655BD3';
+const PURPLE = 'var(--color-primary)';
 
 // ── Preview components ─────────────────────────────────────────────────────────
 
@@ -18,7 +18,7 @@ function ZoneTrafficPreview({ compact = false }: { compact?: boolean }) {
   ];
   // 3 shades of brand purple — no rainbow
   const shade = (v: number) =>
-    v < 0.4 ? '#EEE9FF' : v < 0.75 ? '#9E8FE8' : '#655BD3';
+    v < 0.4 ? 'var(--color-heatmap-low)' : v < 0.75 ? 'var(--color-heatmap-mid)' : 'var(--color-heatmap-high)';
 
   const cellH = compact ? 14 : 18;
   const fs    = compact ? 8 : 8.5;
@@ -27,22 +27,22 @@ function ZoneTrafficPreview({ compact = false }: { compact?: boolean }) {
   return (
     <div style={{ padding: pad }}>
       <div style={{ display: 'flex', marginLeft: 38, marginBottom: 3 }}>
-        {hours.map(h => <div key={h} style={{ flex: 1, fontSize: fs, color: '#94A3B8', textAlign: 'center', fontWeight: 600 }}>{h}</div>)}
+        {hours.map(h => <div key={h} style={{ flex: 1, fontSize: fs, color: 'var(--color-text-4)', textAlign: 'center', fontWeight: 600 }}>{h}</div>)}
       </div>
       {zones.map((z, ri) => (
         <div key={z} style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: compact ? 2 : 3 }}>
-          <span style={{ width: 34, fontSize: fs, color: '#64748B', fontWeight: 600, flexShrink: 0 }}>{z}</span>
+          <span style={{ width: 34, fontSize: fs, color: 'var(--color-text-3)', fontWeight: 600, flexShrink: 0 }}>{z}</span>
           {data[ri].map((v, ci) => (
             <div key={ci} style={{ flex: 1, height: cellH, borderRadius: 3, background: shade(v) }} />
           ))}
         </div>
       ))}
       <div style={{ display: 'flex', alignItems: 'center', gap: 3, marginLeft: 38, marginTop: 4 }}>
-        <span style={{ fontSize: 8, color: '#94A3B8' }}>Low</span>
-        {['#EEE9FF', '#9E8FE8', '#655BD3'].map(c => (
+        <span style={{ fontSize: 8, color: 'var(--color-text-4)' }}>Low</span>
+        {['var(--color-heatmap-low)', 'var(--color-heatmap-mid)', 'var(--color-heatmap-high)'].map(c => (
           <div key={c} style={{ flex: 1, height: 4, borderRadius: 2, background: c }} />
         ))}
-        <span style={{ fontSize: 8, color: '#94A3B8' }}>High</span>
+        <span style={{ fontSize: 8, color: 'var(--color-text-4)' }}>High</span>
       </div>
     </div>
   );
@@ -68,7 +68,7 @@ function ForecastPreview({ compact = false }: { compact?: boolean }) {
           {[{ c: PURPLE, l: 'Historical' }, { c: '#00CE9C', l: 'AI Forecast', dash: true }].map(({ c, l, dash }) => (
             <div key={l} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
               <svg width="16" height="2"><line x1="0" y1="1" x2="16" y2="1" stroke={c} strokeWidth="2" strokeDasharray={dash ? '3,2' : undefined} /></svg>
-              <span style={{ fontSize: 8.5, color: '#64748B', fontWeight: 500 }}>{l}</span>
+              <span style={{ fontSize: 8.5, color: 'var(--color-text-3)', fontWeight: 500 }}>{l}</span>
             </div>
           ))}
         </div>
@@ -80,11 +80,11 @@ function ForecastPreview({ compact = false }: { compact?: boolean }) {
             <stop offset="100%" stopColor={PURPLE} stopOpacity="0" />
           </linearGradient>
         </defs>
-        {[0.25, 0.5, 0.75].map(p => <line key={p} x1={0} y1={H * p} x2={W} y2={H * p} stroke="#F1F5F9" strokeWidth="1" />)}
+        {[0.25, 0.5, 0.75].map(p => <line key={p} x1={0} y1={H * p} x2={W} y2={H * p} stroke="var(--color-border-subtle)" strokeWidth="1" />)}
         <path d={area} fill="url(#fg2)" />
         <polyline points={hPts} fill="none" stroke={PURPLE} strokeWidth="1.8" strokeLinejoin="round" />
         <polyline points={pPts} fill="none" stroke="#00CE9C" strokeWidth="1.8" strokeDasharray="4,3" strokeLinejoin="round" />
-        <line x1={tx(hist.length - 1, 18)} y1={0} x2={tx(hist.length - 1, 18)} y2={H} stroke="#E2E8F0" strokeWidth="1" strokeDasharray="2,2" />
+        <line x1={tx(hist.length - 1, 18)} y1={0} x2={tx(hist.length - 1, 18)} y2={H} stroke="var(--color-border)" strokeWidth="1" strokeDasharray="2,2" />
       </svg>
     </div>
   );
@@ -109,9 +109,9 @@ function ComparisonPreview({ compact = false }: { compact?: boolean }) {
           </div>
         ))}
       </div>
-      <div style={{ display: 'flex', gap: compact ? 5 : 7, borderTop: '1px solid #F1F5F9', paddingTop: 5 }}>
+      <div style={{ display: 'flex', gap: compact ? 5 : 7, borderTop: '1px solid var(--color-border-subtle)', paddingTop: 5 }}>
         {stores.map((s, i) => (
-          <div key={s} style={{ flex: 1, textAlign: 'center', fontSize: 7.5, color: '#94A3B8', fontWeight: 500 }}>{s}</div>
+          <div key={s} style={{ flex: 1, textAlign: 'center', fontSize: 7.5, color: 'var(--color-text-4)', fontWeight: 500 }}>{s}</div>
         ))}
       </div>
     </div>
@@ -135,11 +135,11 @@ function DwellTimePreview({ compact = false }: { compact?: boolean }) {
     <div style={{ padding: compact ? '8px 12px 4px' : '10px 14px 6px', display: 'flex', flexDirection: 'column', gap }}>
       {zones.map(z => (
         <div key={z.label} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ width: 42, fontSize: 8, color: '#64748B', fontWeight: 600, flexShrink: 0 }}>{z.label}</span>
-          <div style={{ flex: 1, height: barH, background: '#F1F5F9', borderRadius: 3, overflow: 'hidden' }}>
+          <span style={{ width: 42, fontSize: 8, color: 'var(--color-text-3)', fontWeight: 600, flexShrink: 0 }}>{z.label}</span>
+          <div style={{ flex: 1, height: barH, background: 'var(--color-border-subtle)', borderRadius: 3, overflow: 'hidden' }}>
             <div style={{ width: `${(z.avg / max) * 100}%`, height: '100%', background: z.color, borderRadius: 3 }} />
           </div>
-          <span style={{ width: 26, fontSize: 8, fontWeight: 700, color: '#374151', textAlign: 'right' }}>{z.avg}m</span>
+          <span style={{ width: 26, fontSize: 8, fontWeight: 700, color: 'var(--color-text-2)', textAlign: 'right' }}>{z.avg}m</span>
         </div>
       ))}
     </div>
@@ -199,22 +199,22 @@ function ViewAllModal({ onClose }: { onClose: () => void }) {
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div style={{
-        background: 'white', borderRadius: 16, width: '100%', maxWidth: 760,
+        background: 'var(--color-surface)', borderRadius: 16, width: '100%', maxWidth: 760,
         boxShadow: '0 24px 60px rgba(0,0,0,0.18)',
         overflow: 'hidden',
         maxHeight: '90vh', display: 'flex', flexDirection: 'column',
       }}>
         {/* Modal header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 24px 16px', borderBottom: '1px solid #F1F5F9' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 24px 16px', borderBottom: '1px solid var(--color-border-subtle)' }}>
           <div>
-            <p style={{ fontSize: 16, fontWeight: 700, color: '#0F172A' }}>What&apos;s New</p>
-            <p style={{ fontSize: 12, color: '#64748B', marginTop: 2 }}>Latest platform features &amp; updates</p>
+            <p style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-text-1)' }}>What&apos;s New</p>
+            <p style={{ fontSize: 12, color: 'var(--color-text-3)', marginTop: 2 }}>Latest platform features &amp; updates</p>
           </div>
           <button
             onClick={onClose}
-            style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid #E5E7EB', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#64748B', transition: 'background 120ms' }}
-            onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = '#F8FAFC'}
-            onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'white'}
+            style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid var(--color-border)', background: 'var(--color-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--color-text-3)', transition: 'background 120ms' }}
+            onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'var(--color-surface-2)'}
+            onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'var(--color-surface)'}
           >
             <X size={15} strokeWidth={1.5} />
           </button>
@@ -225,10 +225,10 @@ function ViewAllModal({ onClose }: { onClose: () => void }) {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
             {SLIDES.map(s => (
               <div key={s.id} style={{
-                border: '1px solid #F1F5F9',
+                border: '1px solid var(--color-border-subtle)',
                 borderRadius: 10,
                 overflow: 'hidden',
-                background: 'white',
+                background: 'var(--color-surface)',
                 boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
                 transition: 'box-shadow 150ms',
               }}
@@ -236,21 +236,21 @@ function ViewAllModal({ onClose }: { onClose: () => void }) {
                 onMouseLeave={e => (e.currentTarget as HTMLElement).style.boxShadow = '0 1px 4px rgba(0,0,0,0.04)'}
               >
                 {/* Preview */}
-                <div style={{ height: 110, background: '#FAFBFF', borderBottom: '1px solid #F1F5F9', overflow: 'hidden' }}>
+                <div style={{ height: 110, background: 'var(--color-surface-2)', borderBottom: '1px solid var(--color-border-subtle)', overflow: 'hidden' }}>
                   {s.previewCompact}
                 </div>
                 {/* Info */}
                 <div style={{ padding: '12px 14px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 5 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <div style={{ width: 20, height: 20, borderRadius: 5, background: '#EEE9FF', display: 'flex', alignItems: 'center', justifyContent: 'center', color: PURPLE }}>
+                      <div style={{ width: 20, height: 20, borderRadius: 5, background: 'var(--color-primary-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: PURPLE }}>
                         {s.icon}
                       </div>
-                      <p style={{ fontSize: 12.5, fontWeight: 700, color: '#1E293B' }}>{s.title}</p>
+                      <p style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--color-text-1)' }}>{s.title}</p>
                     </div>
-                    <span style={{ fontSize: 10, color: '#94A3B8' }}>{s.date}</span>
+                    <span style={{ fontSize: 10, color: 'var(--color-text-4)' }}>{s.date}</span>
                   </div>
-                  <p style={{ fontSize: 11, color: '#64748B', lineHeight: 1.55, paddingLeft: 26 }}>{s.desc}</p>
+                  <p style={{ fontSize: 11, color: 'var(--color-text-3)', lineHeight: 1.55, paddingLeft: 26 }}>{s.desc}</p>
                 </div>
               </div>
             ))}
@@ -288,8 +288,8 @@ export function WhatsNewCarousel() {
   return (
     <>
       {/* Header row — inside the card, matches Store Insights */}
-      <div style={{ padding: '14px 20px 12px', borderBottom: '1px solid #F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <p style={{ fontSize: 14, fontWeight: 700, color: '#0F172A' }}>What&apos;s New</p>
+      <div style={{ padding: '14px 20px 12px', borderBottom: '1px solid var(--color-border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-1)' }}>What&apos;s New</p>
         <button
           onClick={() => setModalOpen(true)}
           style={{ fontSize: 12, fontWeight: 600, color: PURPLE, background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 3 }}
@@ -303,7 +303,7 @@ export function WhatsNewCarousel() {
       {/* Carousel body */}
       <div onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
         {/* Preview — fixed height, all slides stacked, opacity fade */}
-        <div style={{ position: 'relative', height: 148, overflow: 'hidden', background: '#FAFBFF', borderBottom: '1px solid #F1F5F9' }}>
+        <div style={{ position: 'relative', height: 148, overflow: 'hidden', background: 'var(--color-surface-2)', borderBottom: '1px solid var(--color-border-subtle)' }}>
           {SLIDES.map((s, i) => (
             <div
               key={s.id}
@@ -323,14 +323,14 @@ export function WhatsNewCarousel() {
         <div style={{ padding: '10px 14px 12px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <div style={{ width: 20, height: 20, borderRadius: 5, background: '#EEE9FF', display: 'flex', alignItems: 'center', justifyContent: 'center', color: PURPLE, flexShrink: 0 }}>
+              <div style={{ width: 20, height: 20, borderRadius: 5, background: 'var(--color-primary-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: PURPLE, flexShrink: 0 }}>
                 {slide.icon}
               </div>
-              <p style={{ fontSize: 12, fontWeight: 700, color: '#1E293B' }}>{slide.title}</p>
+              <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text-1)' }}>{slide.title}</p>
             </div>
-            <span style={{ fontSize: 10, color: '#94A3B8', flexShrink: 0, marginLeft: 8 }}>{slide.date}</span>
+            <span style={{ fontSize: 10, color: 'var(--color-text-4)', flexShrink: 0, marginLeft: 8 }}>{slide.date}</span>
           </div>
-          <p style={{ fontSize: 10.5, color: '#64748B', lineHeight: 1.5, marginBottom: 10, paddingLeft: 26 }}>
+          <p style={{ fontSize: 10.5, color: 'var(--color-text-3)', lineHeight: 1.5, marginBottom: 10, paddingLeft: 26 }}>
             {slide.desc}
           </p>
 
@@ -361,12 +361,12 @@ export function WhatsNewCarousel() {
               style={{
                 display: 'flex', alignItems: 'center', gap: 3,
                 padding: 0, border: 'none', background: 'transparent',
-                cursor: 'pointer', color: '#94A3B8',
+                cursor: 'pointer', color: 'var(--color-text-4)',
                 fontSize: 11, fontWeight: 500,
                 transition: 'color 150ms',
               }}
               onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = PURPLE}
-              onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = '#94A3B8'}
+              onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = 'var(--color-text-4)'}
             >
               Next <ChevronRight size={11} strokeWidth={2} />
             </button>

@@ -243,8 +243,8 @@ function Lightbox({
           style={{
             display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)',
             padding: '14px 20px', gap: 0,
-            background: 'white',
-            borderTop: '1px solid #E5E7EB',
+            background: 'var(--color-surface)',
+            borderTop: '1px solid var(--color-border)',
           }}
         >
           {[
@@ -253,9 +253,9 @@ function Lightbox({
             { label: 'Confidence',  value: `${snap.confidence}%`, valueColor: snap.confidence >= 90 ? '#16A34A' : snap.confidence >= 80 ? '#D97706' : '#DC2626' },
             { label: 'Captured',    value: `${snap.timestamp} · ${snap.timeAgo}` },
           ].map(({ label, value, valueColor }) => (
-            <div key={label} style={{ padding: '0 16px', borderRight: '1px solid #E5E7EB' }}>
-              <div style={{ fontSize: 10, color: '#9CA3AF', marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.07em' }}>{label}</div>
-              <div style={{ fontSize: 13, fontWeight: 600, color: valueColor ?? '#111827' }}>{value}</div>
+            <div key={label} style={{ padding: '0 16px', borderRight: '1px solid var(--color-border)' }}>
+              <div style={{ fontSize: 10, color: 'var(--color-text-4)', marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.07em' }}>{label}</div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: valueColor ?? 'var(--color-text-1)' }}>{value}</div>
             </div>
           ))}
         </div>
@@ -265,8 +265,8 @@ function Lightbox({
           style={{
             display: 'flex', gap: 6, padding: '10px 20px 14px',
             overflowX: 'auto',
-            background: 'white',
-            borderTop: '1px solid #F3F4F6',
+            background: 'var(--color-surface)',
+            borderTop: '1px solid var(--color-border-subtle)',
           }}
         >
           {allSnaps.map((s) => (
@@ -276,7 +276,7 @@ function Lightbox({
               style={{
                 flexShrink: 0, width: 60, height: 40,
                 borderRadius: 6, overflow: 'hidden', border: 'none', padding: 0, cursor: 'pointer',
-                outline: s.id === snap.id ? '2px solid #655BD3' : '2px solid transparent',
+                outline: s.id === snap.id ? '2px solid var(--color-primary)' : '2px solid transparent',
                 outlineOffset: 1,
                 opacity: s.id === snap.id ? 1 : 0.5,
                 transition: 'opacity 150ms, outline 150ms',
@@ -373,8 +373,8 @@ export function VisitorSnapshots({
       {!hideHeader && <div className="flex items-center justify-between mb-5">
         {/* Title only — no subtitle */}
         <div className="flex items-center gap-2">
-          <Camera size={16} strokeWidth={1.5} style={{ color: '#655BD3' }} />
-          <h2 style={{ fontSize: 15, fontWeight: 700, color: '#111827' }}>Visitor Snapshots</h2>
+          <Camera size={16} strokeWidth={1.5} style={{ color: 'var(--color-primary)' }} />
+          <h2 style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-text-1)' }}>Visitor Snapshots</h2>
         </div>
 
         {/* Right controls */}
@@ -386,25 +386,25 @@ export function VisitorSnapshots({
             style={{
               display: 'flex', alignItems: 'center', gap: 6,
               height: 32, paddingLeft: 12, paddingRight: 14,
-              borderRadius: 8, border: '1px solid #E5E7EB',
-              background: '#fff', color: '#655BD3',
+              borderRadius: 8, border: '1px solid var(--color-border)',
+              background: 'var(--color-surface)', color: 'var(--color-primary)',
               fontSize: 13, fontWeight: 600,
               cursor: 'pointer', transition: 'background 150ms, border-color 150ms',
             }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#F9F7FF'; (e.currentTarget as HTMLElement).style.borderColor = '#C4B5FD'; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = '#fff'; (e.currentTarget as HTMLElement).style.borderColor = '#E5E7EB'; }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--color-primary-light)'; (e.currentTarget as HTMLElement).style.borderColor = '#C4B5FD'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'var(--color-surface)'; (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-border)'; }}
           >
             <RefreshCw
               size={13}
               strokeWidth={2.2}
               className={isRefreshing ? 'animate-spin' : ''}
             />
-            <span style={{ color: '#9CA3AF', fontWeight: 400, fontSize: 12 }}>Refreshes:</span>
-            <span style={{ color: '#655BD3', fontWeight: 700, fontSize: 13 }}>30 s</span>
+            <span style={{ color: 'var(--color-text-4)', fontWeight: 400, fontSize: 12 }}>Refreshes:</span>
+            <span style={{ color: 'var(--color-primary)', fontWeight: 700, fontSize: 13 }}>30 s</span>
           </button>
 
           {/* Divider */}
-          <div style={{ width: 1, height: 16, background: '#E5E7EB' }} />
+          <div style={{ width: 1, height: 16, background: 'var(--color-border)' }} />
 
           {/* Filter pills */}
           {(['all', 'entry', 'exit', 'passerby'] as const).map((f) => (
@@ -413,8 +413,8 @@ export function VisitorSnapshots({
               onClick={() => setEventFilter(f)}
               className="px-3 py-1.5 rounded-full text-xs font-medium capitalize transition-colors"
               style={{
-                background: eventFilter === f ? '#655BD3' : '#F3F4F6',
-                color: eventFilter === f ? 'white' : '#374151',
+                background: eventFilter === f ? 'var(--color-primary-emphasis)' : 'var(--color-surface-2)',
+                color: eventFilter === f ? 'white' : 'var(--color-text-2)',
                 border: 'none', cursor: 'pointer',
               }}
             >
@@ -423,7 +423,7 @@ export function VisitorSnapshots({
           ))}
 
           {/* Divider */}
-          <div style={{ width: 1, height: 16, background: '#E5E7EB' }} />
+          <div style={{ width: 1, height: 16, background: 'var(--color-border)' }} />
 
           {/* Info button — icon only, no background */}
           <div style={{ position: 'relative', display: 'inline-flex' }}>
@@ -433,7 +433,7 @@ export function VisitorSnapshots({
               style={{
                 background: 'none', border: 'none', cursor: 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                padding: 4, color: '#9CA3AF', transition: 'color 150ms',
+                padding: 4, color: 'var(--color-text-4)', transition: 'color 150ms',
               }}
               onFocus={() => setShowInfo(true)}
               onBlur={() => setShowInfo(false)}
@@ -447,8 +447,8 @@ export function VisitorSnapshots({
                 style={{
                   position: 'absolute', right: 0, top: 'calc(100% + 10px)',
                   width: 252,
-                  background: '#FFFFFF',
-                  border: '1px solid #E5E7EB',
+                  background: 'var(--color-surface)',
+                  border: '1px solid var(--color-border)',
                   borderRadius: 10,
                   padding: '14px 16px',
                   boxShadow: '0 4px 20px rgba(0,0,0,0.10)',
@@ -459,17 +459,17 @@ export function VisitorSnapshots({
                 <div style={{
                   position: 'absolute', top: -5, right: 10,
                   width: 10, height: 10,
-                  background: '#FFFFFF', border: '1px solid #E5E7EB',
+                  background: 'var(--color-surface)', border: '1px solid var(--color-border)',
                   borderBottom: 'none', borderRight: 'none',
                   transform: 'rotate(45deg)', borderRadius: 2,
                 }} />
-                <p style={{ fontSize: 12, fontWeight: 700, color: '#111827', marginBottom: 5 }}>
+                <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text-1)', marginBottom: 5 }}>
                   Live Visitor Snapshots
                 </p>
-                <p style={{ fontSize: 11, color: '#6B7280', lineHeight: 1.65 }}>
+                <p style={{ fontSize: 11, color: 'var(--color-text-3)', lineHeight: 1.65 }}>
                   Real-time frames captured by entrance cameras each time a visitor is detected. Shows event type, demographic match, and AI confidence score.
                 </p>
-                <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid #F3F4F6', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--color-border-subtle)', display: 'flex', flexDirection: 'column', gap: 6 }}>
                   {[
                     { dot: '#16A34A', label: 'Entry — visitor walked in' },
                     { dot: '#DC2626', label: 'Exit — visitor left' },
@@ -477,7 +477,7 @@ export function VisitorSnapshots({
                   ].map(({ dot, label }) => (
                     <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                       <span style={{ width: 6, height: 6, borderRadius: '50%', background: dot, flexShrink: 0 }} />
-                      <span style={{ fontSize: 11, color: '#374151' }}>{label}</span>
+                      <span style={{ fontSize: 11, color: 'var(--color-text-2)' }}>{label}</span>
                     </div>
                   ))}
                 </div>
@@ -504,7 +504,7 @@ export function VisitorSnapshots({
               style={{
                 padding: 0,
                 cursor: 'pointer',
-                outline: isMerging || isSelected ? '2px solid #655BD3' : 'none',
+                outline: isMerging || isSelected ? '2px solid var(--color-primary)' : 'none',
                 outlineOffset: 2,
                 transition: 'box-shadow 150ms, outline 150ms',
               }}
@@ -630,7 +630,7 @@ export function VisitorSnapshots({
               {/* Info */}
               <div className="p-3 flex flex-col gap-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold" style={{ color: '#111827' }}>{snap.visitorId}</span>
+                  <span className="text-xs font-bold" style={{ color: 'var(--color-text-1)' }}>{snap.visitorId}</span>
                   <span
                     className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full capitalize"
                     style={{ background: `${GENDER_COLORS[snap.gender]}20`, color: GENDER_COLORS[snap.gender] }}
@@ -639,18 +639,18 @@ export function VisitorSnapshots({
                   </span>
                 </div>
 
-                <div className="flex items-center gap-1.5" style={{ color: '#6B7280' }}>
+                <div className="flex items-center gap-1.5" style={{ color: 'var(--color-text-3)' }}>
                   <MapPin size={11} strokeWidth={1.5} style={{ flexShrink: 0 }} />
                   <span className="text-[11px] truncate">{snap.cameraLabel} · {snap.store.split(' ').slice(0, 2).join(' ')}</span>
                 </div>
 
-                <div className="flex items-center gap-1.5" style={{ color: '#9CA3AF' }}>
+                <div className="flex items-center gap-1.5" style={{ color: 'var(--color-text-4)' }}>
                   <Clock size={11} strokeWidth={1.5} style={{ flexShrink: 0 }} />
                   <span className="text-[11px]">{snap.timestamp} · {snap.timeAgo}</span>
                 </div>
 
                 <div className="flex items-center justify-between" style={{ marginTop: 2 }}>
-                  <span className="text-[10px]" style={{ color: '#9CA3AF' }}>Match confidence</span>
+                  <span className="text-[10px]" style={{ color: 'var(--color-text-4)' }}>Match confidence</span>
                   <span
                     className="text-[10px] font-bold"
                     style={{
@@ -669,8 +669,8 @@ export function VisitorSnapshots({
                     }}
                     className="flex items-center justify-center gap-1.5 w-full py-1.5 rounded-md text-[11px] font-semibold transition-colors"
                     style={{
-                      background: isMerging ? '#655BD3' : 'rgba(101,91,211,0.1)',
-                      color: isMerging ? 'white' : '#655BD3',
+                      background: isMerging ? 'var(--color-primary-emphasis)' : 'rgba(101,91,211,0.1)',
+                      color: isMerging ? 'white' : 'var(--color-primary)',
                       border: 'none',
                       cursor: 'pointer',
                       marginTop: 2,
@@ -688,9 +688,9 @@ export function VisitorSnapshots({
 
       {/* Pagination stub */}
       <div className="flex items-center justify-between mt-5">
-        <p className="text-xs" style={{ color: '#9CA3AF' }}>
-          Showing <span style={{ color: '#374151', fontWeight: 600 }}>{filtered.length}</span> of{' '}
-          <span style={{ color: '#374151', fontWeight: 600 }}>248</span> snapshots today
+        <p className="text-xs" style={{ color: 'var(--color-text-4)' }}>
+          Showing <span style={{ color: 'var(--color-text-2)', fontWeight: 600 }}>{filtered.length}</span> of{' '}
+          <span style={{ color: 'var(--color-text-2)', fontWeight: 600 }}>248</span> snapshots today
         </p>
         <div className="flex items-center gap-1">
           {[
@@ -701,9 +701,9 @@ export function VisitorSnapshots({
               key={label}
               aria-label={label}
               className="p-1.5 rounded-md transition-colors"
-              style={{ border: '1px solid #E5E7EB', background: 'white', color: '#374151', cursor: 'pointer' }}
-              onMouseEnter={(e) => (e.currentTarget as HTMLElement).style.background = '#F9FAFB'}
-              onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.background = 'white'}
+              style={{ border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: 'var(--color-text-2)', cursor: 'pointer' }}
+              onMouseEnter={(e) => (e.currentTarget as HTMLElement).style.background = 'var(--color-surface-2)'}
+              onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.background = 'var(--color-surface)'}
             >
               {icon}
             </button>

@@ -153,7 +153,7 @@ export default function TeamPage() {
                     key={member.id}
                     className="transition-colors"
                     style={{ borderTop: idx === 0 ? 'none' : '1px solid rgba(0,0,0,0.05)' }}
-                    onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = '#FAFAFA'}
+                    onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'var(--color-surface-2)'}
                     onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
                   >
                     <td className="px-6 py-4">
@@ -185,13 +185,13 @@ export default function TeamPage() {
                         </button>
                         {menuOpen === member.id && (
                           <div
-                            className="absolute right-0 z-20 bg-white rounded-lg shadow-lg border py-1"
-                            style={{ top: '100%', marginTop: 4, minWidth: 140, borderColor: '#E5E7EB' }}
+                            className="absolute right-0 z-20 rounded-lg shadow-lg border py-1"
+                            style={{ top: '100%', marginTop: 4, minWidth: 140, borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
                           >
                             <button
                               onClick={() => { setEditMember(member); setMenuOpen(null); }}
-                              className="flex items-center gap-2 w-full px-4 py-2 text-sm hover:bg-gray-50 text-left"
-                              style={{ color: '#374151' }}
+                              className="flex items-center gap-2 w-full px-4 py-2 text-sm text-left"
+                              style={{ color: 'var(--color-text-2)' }}
                             >
                               <Edit2 size={13} strokeWidth={1.5} /> Edit
                             </button>
@@ -222,42 +222,42 @@ export default function TeamPage() {
       {/* Add Member Modal */}
       {addOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(17,24,39,0.6)' }} onClick={() => setAddOpen(false)}>
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-7" onClick={e => e.stopPropagation()}>
+          <div className="rounded-2xl shadow-2xl w-full max-w-md p-7" style={{ background: 'var(--color-surface)' }} onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-5">
-              <h3 className="text-base font-bold" style={{ color: '#111827' }}>Add Team Member</h3>
-              <button onClick={() => setAddOpen(false)} className="p-1.5 rounded-lg hover:bg-gray-100" style={{ color: '#9CA3AF' }}><X size={16} /></button>
+              <h3 className="text-base font-bold" style={{ color: 'var(--color-text-1)' }}>Add Team Member</h3>
+              <button onClick={() => setAddOpen(false)} className="p-1.5 rounded-lg" style={{ color: 'var(--color-text-4)' }}><X size={16} /></button>
             </div>
             <form onSubmit={handleAdd} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold mb-1.5" style={{ color: '#374151' }}>Full Name</label>
-                <input type="text" required placeholder="e.g. Jane Smith" value={newForm.name} onChange={e => setNewForm(f => ({ ...f, name: e.target.value }))} className="w-full text-sm rounded-lg px-3 py-2.5 outline-none" style={{ border: '1px solid #E5E7EB', color: '#111827' }} autoFocus />
+                <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--color-text-2)' }}>Full Name</label>
+                <input type="text" required placeholder="e.g. Jane Smith" value={newForm.name} onChange={e => setNewForm(f => ({ ...f, name: e.target.value }))} className="w-full text-sm rounded-lg px-3 py-2.5 outline-none" style={{ border: '1px solid var(--color-border)', color: 'var(--color-text-1)', background: 'var(--color-surface)' }} autoFocus />
               </div>
               <div>
-                <label className="block text-xs font-semibold mb-1.5" style={{ color: '#374151' }}>Email Address</label>
-                <input type="email" required placeholder="e.g. jane.smith@olyretail.com" value={newForm.email} onChange={e => setNewForm(f => ({ ...f, email: e.target.value }))} className="w-full text-sm rounded-lg px-3 py-2.5 outline-none" style={{ border: '1px solid #E5E7EB', color: '#111827' }} />
+                <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--color-text-2)' }}>Email Address</label>
+                <input type="email" required placeholder="e.g. jane.smith@olyretail.com" value={newForm.email} onChange={e => setNewForm(f => ({ ...f, email: e.target.value }))} className="w-full text-sm rounded-lg px-3 py-2.5 outline-none" style={{ border: '1px solid var(--color-border)', color: 'var(--color-text-1)', background: 'var(--color-surface)' }} />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold mb-1.5" style={{ color: '#374151' }}>Role</label>
-                  <select value={newForm.role} onChange={e => setNewForm(f => ({ ...f, role: e.target.value }))} className="w-full text-sm rounded-lg px-3 py-2.5 outline-none" style={{ border: '1px solid #E5E7EB', color: '#111827', background: 'white' }}>
+                  <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--color-text-2)' }}>Role</label>
+                  <select value={newForm.role} onChange={e => setNewForm(f => ({ ...f, role: e.target.value }))} className="w-full text-sm rounded-lg px-3 py-2.5 outline-none" style={{ border: '1px solid var(--color-border)', color: 'var(--color-text-1)', background: 'var(--color-surface)' }}>
                     {ROLES.map(r => <option key={r}>{r}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold mb-1.5" style={{ color: '#374151' }}>Status</label>
-                  <select value={newForm.status} onChange={e => setNewForm(f => ({ ...f, status: e.target.value as Status }))} className="w-full text-sm rounded-lg px-3 py-2.5 outline-none" style={{ border: '1px solid #E5E7EB', color: '#111827', background: 'white' }}>
+                  <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--color-text-2)' }}>Status</label>
+                  <select value={newForm.status} onChange={e => setNewForm(f => ({ ...f, status: e.target.value as Status }))} className="w-full text-sm rounded-lg px-3 py-2.5 outline-none" style={{ border: '1px solid var(--color-border)', color: 'var(--color-text-1)', background: 'var(--color-surface)' }}>
                     {STATUSES.map(s => <option key={s}>{s}</option>)}
                   </select>
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-semibold mb-1.5" style={{ color: '#374151' }}>Location</label>
-                <select value={newForm.location} onChange={e => setNewForm(f => ({ ...f, location: e.target.value }))} className="w-full text-sm rounded-lg px-3 py-2.5 outline-none" style={{ border: '1px solid #E5E7EB', color: '#111827', background: 'white' }}>
+                <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--color-text-2)' }}>Location</label>
+                <select value={newForm.location} onChange={e => setNewForm(f => ({ ...f, location: e.target.value }))} className="w-full text-sm rounded-lg px-3 py-2.5 outline-none" style={{ border: '1px solid var(--color-border)', color: 'var(--color-text-1)', background: 'var(--color-surface)' }}>
                   {LOCATIONS.map(l => <option key={l}>{l}</option>)}
                 </select>
               </div>
               <div className="flex gap-3 pt-2">
-                <button type="button" onClick={() => setAddOpen(false)} className="flex-1 py-2.5 rounded-lg text-sm font-medium" style={{ border: '1px solid #E5E7EB', color: '#374151' }}>Cancel</button>
+                <button type="button" onClick={() => setAddOpen(false)} className="flex-1 py-2.5 rounded-lg text-sm font-medium" style={{ border: '1px solid var(--color-border)', color: 'var(--color-text-2)' }}>Cancel</button>
                 <button type="submit" className="flex-1 py-2.5 rounded-lg text-sm font-semibold text-white" style={{ background: 'var(--color-primary)' }}>Add Member</button>
               </div>
             </form>
@@ -268,42 +268,42 @@ export default function TeamPage() {
       {/* Edit Member Modal */}
       {editMember && (
         <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(17,24,39,0.6)' }} onClick={() => setEditMember(null)}>
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-7" onClick={e => e.stopPropagation()}>
+          <div className="rounded-2xl shadow-2xl w-full max-w-md p-7" style={{ background: 'var(--color-surface)' }} onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-5">
-              <h3 className="text-base font-bold" style={{ color: '#111827' }}>Edit Team Member</h3>
-              <button onClick={() => setEditMember(null)} className="p-1.5 rounded-lg hover:bg-gray-100" style={{ color: '#9CA3AF' }}><X size={16} /></button>
+              <h3 className="text-base font-bold" style={{ color: 'var(--color-text-1)' }}>Edit Team Member</h3>
+              <button onClick={() => setEditMember(null)} className="p-1.5 rounded-lg" style={{ color: 'var(--color-text-4)' }}><X size={16} /></button>
             </div>
             <form onSubmit={handleEditSave} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold mb-1.5" style={{ color: '#374151' }}>Full Name</label>
-                <input type="text" required value={editMember.name} onChange={e => setEditMember(m => m ? { ...m, name: e.target.value } : m)} className="w-full text-sm rounded-lg px-3 py-2.5 outline-none" style={{ border: '1px solid #E5E7EB', color: '#111827' }} />
+                <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--color-text-2)' }}>Full Name</label>
+                <input type="text" required value={editMember.name} onChange={e => setEditMember(m => m ? { ...m, name: e.target.value } : m)} className="w-full text-sm rounded-lg px-3 py-2.5 outline-none" style={{ border: '1px solid var(--color-border)', color: 'var(--color-text-1)', background: 'var(--color-surface)' }} />
               </div>
               <div>
-                <label className="block text-xs font-semibold mb-1.5" style={{ color: '#374151' }}>Email Address</label>
-                <input type="email" required value={editMember.email} onChange={e => setEditMember(m => m ? { ...m, email: e.target.value } : m)} className="w-full text-sm rounded-lg px-3 py-2.5 outline-none" style={{ border: '1px solid #E5E7EB', color: '#111827' }} />
+                <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--color-text-2)' }}>Email Address</label>
+                <input type="email" required value={editMember.email} onChange={e => setEditMember(m => m ? { ...m, email: e.target.value } : m)} className="w-full text-sm rounded-lg px-3 py-2.5 outline-none" style={{ border: '1px solid var(--color-border)', color: 'var(--color-text-1)', background: 'var(--color-surface)' }} />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold mb-1.5" style={{ color: '#374151' }}>Role</label>
-                  <select value={editMember.role} onChange={e => setEditMember(m => m ? { ...m, role: e.target.value } : m)} className="w-full text-sm rounded-lg px-3 py-2.5 outline-none" style={{ border: '1px solid #E5E7EB', color: '#111827', background: 'white' }}>
+                  <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--color-text-2)' }}>Role</label>
+                  <select value={editMember.role} onChange={e => setEditMember(m => m ? { ...m, role: e.target.value } : m)} className="w-full text-sm rounded-lg px-3 py-2.5 outline-none" style={{ border: '1px solid var(--color-border)', color: 'var(--color-text-1)', background: 'var(--color-surface)' }}>
                     {ROLES.map(r => <option key={r}>{r}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold mb-1.5" style={{ color: '#374151' }}>Status</label>
-                  <select value={editMember.status} onChange={e => setEditMember(m => m ? { ...m, status: e.target.value as Status } : m)} className="w-full text-sm rounded-lg px-3 py-2.5 outline-none" style={{ border: '1px solid #E5E7EB', color: '#111827', background: 'white' }}>
+                  <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--color-text-2)' }}>Status</label>
+                  <select value={editMember.status} onChange={e => setEditMember(m => m ? { ...m, status: e.target.value as Status } : m)} className="w-full text-sm rounded-lg px-3 py-2.5 outline-none" style={{ border: '1px solid var(--color-border)', color: 'var(--color-text-1)', background: 'var(--color-surface)' }}>
                     {STATUSES.map(s => <option key={s}>{s}</option>)}
                   </select>
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-semibold mb-1.5" style={{ color: '#374151' }}>Location</label>
-                <select value={editMember.location} onChange={e => setEditMember(m => m ? { ...m, location: e.target.value } : m)} className="w-full text-sm rounded-lg px-3 py-2.5 outline-none" style={{ border: '1px solid #E5E7EB', color: '#111827', background: 'white' }}>
+                <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--color-text-2)' }}>Location</label>
+                <select value={editMember.location} onChange={e => setEditMember(m => m ? { ...m, location: e.target.value } : m)} className="w-full text-sm rounded-lg px-3 py-2.5 outline-none" style={{ border: '1px solid var(--color-border)', color: 'var(--color-text-1)', background: 'var(--color-surface)' }}>
                   {LOCATIONS.map(l => <option key={l}>{l}</option>)}
                 </select>
               </div>
               <div className="flex gap-3 pt-2">
-                <button type="button" onClick={() => setEditMember(null)} className="flex-1 py-2.5 rounded-lg text-sm font-medium" style={{ border: '1px solid #E5E7EB', color: '#374151' }}>Cancel</button>
+                <button type="button" onClick={() => setEditMember(null)} className="flex-1 py-2.5 rounded-lg text-sm font-medium" style={{ border: '1px solid var(--color-border)', color: 'var(--color-text-2)' }}>Cancel</button>
                 <button type="submit" className="flex-1 py-2.5 rounded-lg text-sm font-semibold text-white" style={{ background: 'var(--color-primary)' }}>Save Changes</button>
               </div>
             </form>
@@ -314,18 +314,18 @@ export default function TeamPage() {
       {/* Delete Confirmation */}
       {deleteId !== null && (
         <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: 'rgba(17,24,39,0.6)' }} onClick={() => setDeleteId(null)}>
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-7" onClick={e => e.stopPropagation()}>
+          <div className="rounded-2xl shadow-2xl w-full max-w-sm p-7" style={{ background: 'var(--color-surface)' }} onClick={e => e.stopPropagation()}>
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: '#FEE2E2' }}>
+              <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'var(--color-error-light)' }}>
                 <Trash2 size={16} style={{ color: '#DC2626' }} />
               </div>
-              <h3 className="text-base font-bold" style={{ color: '#111827' }}>Remove Member</h3>
+              <h3 className="text-base font-bold" style={{ color: 'var(--color-text-1)' }}>Remove Member</h3>
             </div>
-            <p className="text-sm mb-6" style={{ color: '#6B7280' }}>
+            <p className="text-sm mb-6" style={{ color: 'var(--color-text-3)' }}>
               Are you sure you want to remove <strong>{members.find(m => m.id === deleteId)?.name}</strong> from the team? This cannot be undone.
             </p>
             <div className="flex gap-3">
-              <button onClick={() => setDeleteId(null)} className="flex-1 py-2.5 rounded-lg text-sm font-medium" style={{ border: '1px solid #E5E7EB', color: '#374151' }}>Cancel</button>
+              <button onClick={() => setDeleteId(null)} className="flex-1 py-2.5 rounded-lg text-sm font-medium" style={{ border: '1px solid var(--color-border)', color: 'var(--color-text-2)' }}>Cancel</button>
               <button onClick={handleDelete} className="flex-1 py-2.5 rounded-lg text-sm font-semibold text-white" style={{ background: '#DC2626' }}>Remove</button>
             </div>
           </div>

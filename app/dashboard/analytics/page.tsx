@@ -1,5 +1,6 @@
 'use client';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useLayoutEffect } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import {
   Plus, X, LayoutGrid, BarChart2, Users, Activity, Clock,
   Store, ChevronDown, GripVertical, Trash2, Settings,
@@ -25,7 +26,7 @@ const PASSERBY_DATA = [
   { month: 'Jan', v: 42000 }, { month: 'Feb', v: 38000 }, { month: 'Mar', v: 45000 },
   { month: 'Apr', v: 47000 }, { month: 'May', v: 43000 }, { month: 'Jun', v: 49000 },
 ];
-const DEMO_COLORS = ['#655BD3', '#00CE9C', '#F59E0B', '#3B82F6', '#EC4899', '#8B5CF6'];
+const DEMO_COLORS = ['var(--chart-1)', 'var(--chart-2)', 'var(--chart-3)', 'var(--chart-4)', 'var(--chart-5)', 'var(--chart-6)'];
 const DEMO_DATA = [
   { name: 'Male 22–35', value: 28 }, { name: 'Female 22–35', value: 20 },
   { name: 'Male 13–21', value: 15 }, { name: 'Female 13–21', value: 12 },
@@ -66,7 +67,7 @@ const MINI_AGE = [
   { group: '0–12', pct: 11 }, { group: '13–21', pct: 19 },
   { group: '22–35', pct: 34 }, { group: '35–50', pct: 24 },
 ];
-const MINI_COLORS = ['#655BD3', '#00CE9C', '#F59E0B', '#3B82F6', '#EC4899', '#8B5CF6'];
+const MINI_COLORS = ['var(--chart-1)', 'var(--chart-2)', 'var(--chart-3)', 'var(--chart-4)', 'var(--chart-5)', 'var(--chart-6)'];
 
 function MiniWidgetPreview({ id }: { id: string }) {
   const noAxis = { top: 4, right: 4, left: -52, bottom: -16 };
@@ -77,7 +78,7 @@ function MiniWidgetPreview({ id }: { id: string }) {
         <ResponsiveContainer width="100%" height={H}>
           <BarChart data={MINI_MONTHLY} margin={noAxis} barGap={1} barCategoryGap="28%">
             <defs>
-              <linearGradient id="mff1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#655BD3" stopOpacity={1}/><stop offset="100%" stopColor="#655BD3" stopOpacity={0.4}/></linearGradient>
+              <linearGradient id="mff1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="var(--chart-1)" stopOpacity={1}/><stop offset="100%" stopColor="var(--chart-1)" stopOpacity={0.4}/></linearGradient>
               <linearGradient id="mff2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#00CE9C" stopOpacity={1}/><stop offset="100%" stopColor="#00CE9C" stopOpacity={0.4}/></linearGradient>
             </defs>
             <Bar dataKey="footfall" fill="url(#mff1)" radius={[3,3,0,0]} />
@@ -91,10 +92,10 @@ function MiniWidgetPreview({ id }: { id: string }) {
           <AreaChart data={MINI_MONTHLY} margin={noAxis}>
             <defs>
               <linearGradient id="mpb1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#00CE9C" stopOpacity={0.25}/><stop offset="100%" stopColor="#00CE9C" stopOpacity={0}/></linearGradient>
-              <linearGradient id="mpb2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#655BD3" stopOpacity={0.15}/><stop offset="100%" stopColor="#655BD3" stopOpacity={0}/></linearGradient>
+              <linearGradient id="mpb2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="var(--chart-1)" stopOpacity={0.15}/><stop offset="100%" stopColor="var(--chart-1)" stopOpacity={0}/></linearGradient>
             </defs>
             <Area type="monotone" dataKey="passerby" stroke="#00CE9C" strokeWidth={2} fill="url(#mpb1)" dot={false} />
-            <Area type="monotone" dataKey="footfall" stroke="#655BD3" strokeWidth={1.5} strokeDasharray="4 3" fill="url(#mpb2)" dot={false} />
+            <Area type="monotone" dataKey="footfall" stroke="var(--chart-1)" strokeWidth={1.5} strokeDasharray="4 3" fill="url(#mpb2)" dot={false} />
           </AreaChart>
         </ResponsiveContainer>
       );
@@ -104,7 +105,7 @@ function MiniWidgetPreview({ id }: { id: string }) {
         <ResponsiveContainer width="100%" height={H}>
           <BarChart data={MINI_HOURLY} margin={noAxis} barCategoryGap="28%">
             <defs>
-              <linearGradient id="mpk" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#655BD3" stopOpacity={1}/><stop offset="100%" stopColor="#655BD3" stopOpacity={0.4}/></linearGradient>
+              <linearGradient id="mpk" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="var(--chart-1)" stopOpacity={1}/><stop offset="100%" stopColor="var(--chart-1)" stopOpacity={0.4}/></linearGradient>
             </defs>
             <Bar dataKey="v" radius={[3,3,0,0]}>
               {MINI_HOURLY.map((d, i) => <Cell key={i} fill={d.v === maxV ? 'url(#mpk)' : 'rgba(101,91,211,0.22)'} />)}
@@ -121,7 +122,7 @@ function MiniWidgetPreview({ id }: { id: string }) {
               <linearGradient id="mcv" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#F59E0B" stopOpacity={1}/><stop offset="100%" stopColor="#F59E0B" stopOpacity={0.4}/></linearGradient>
             </defs>
             <Bar dataKey="conv" fill="url(#mcv)" radius={[3,3,0,0]} />
-            <Line type="monotone" dataKey="target" stroke="#655BD3" strokeWidth={1.5} strokeDasharray="4 3" dot={false} />
+            <Line type="monotone" dataKey="target" stroke="var(--chart-1)" strokeWidth={1.5} strokeDasharray="4 3" dot={false} />
           </ComposedChart>
         </ResponsiveContainer>
       );
@@ -139,7 +140,7 @@ function MiniWidgetPreview({ id }: { id: string }) {
             {MINI_DONUT_DATA.map(d => (
               <div key={d.name} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                 <span style={{ width: 6, height: 6, borderRadius: '50%', background: d.color, flexShrink: 0 }} />
-                <span style={{ fontSize: 9.5, color: '#374151', flex: 1 }}>{d.name}</span>
+                <span style={{ fontSize: 9.5, color: 'var(--color-text-2)', flex: 1 }}>{d.name}</span>
               </div>
             ))}
           </div>
@@ -159,8 +160,8 @@ function MiniWidgetPreview({ id }: { id: string }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 7, height: H, justifyContent: 'center', padding: '2px 4px' }}>
           {MINI_AGE.map((d, i) => (
             <div key={d.group} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ fontSize: 9, color: '#6B7280', width: 28, flexShrink: 0 }}>{d.group}</span>
-              <div style={{ flex: 1, height: 7, background: '#F3F4F6', borderRadius: 99 }}>
+              <span style={{ fontSize: 9, color: 'var(--color-text-3)', width: 28, flexShrink: 0 }}>{d.group}</span>
+              <div style={{ flex: 1, height: 7, background: 'var(--color-surface-2)', borderRadius: 99 }}>
                 <div style={{ height: '100%', borderRadius: 99, width: `${d.pct * 2.6}%`, background: AGE_GROUP_COLORS[i % AGE_GROUP_COLORS.length] }} />
               </div>
             </div>
@@ -173,7 +174,7 @@ function MiniWidgetPreview({ id }: { id: string }) {
         <ResponsiveContainer width="100%" height={H}>
           <BarChart data={MINI_HOURLY} margin={noAxis} barCategoryGap="28%">
             <defs>
-              <linearGradient id="mqh" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#655BD3" stopOpacity={1}/><stop offset="100%" stopColor="#655BD3" stopOpacity={0.4}/></linearGradient>
+              <linearGradient id="mqh" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="var(--chart-1)" stopOpacity={1}/><stop offset="100%" stopColor="var(--chart-1)" stopOpacity={0.4}/></linearGradient>
             </defs>
             <Bar dataKey="q" radius={[3,3,0,0]}>
               {MINI_HOURLY.map((d, i) => <Cell key={i} fill={d.q === maxQ ? 'url(#mqh)' : 'rgba(101,91,211,0.22)'} />)}
@@ -200,9 +201,9 @@ function MiniWidgetPreview({ id }: { id: string }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6, height: H, justifyContent: 'center', padding: '2px 0' }}>
           {MINI_STORE_PERF.map((s, i) => (
             <div key={s.store} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ fontSize: 9.5, color: '#374151', width: 24, flexShrink: 0 }}>{s.store}</span>
-              <div style={{ flex: 1, height: 7, background: '#F3F4F6', borderRadius: 99 }}>
-                <div style={{ height: '100%', borderRadius: 99, width: `${(s.v / 15234) * 100}%`, background: '#655BD3' }} />
+              <span style={{ fontSize: 9.5, color: 'var(--color-text-2)', width: 24, flexShrink: 0 }}>{s.store}</span>
+              <div style={{ flex: 1, height: 7, background: 'var(--color-surface-2)', borderRadius: 99 }}>
+                <div style={{ height: '100%', borderRadius: 99, width: `${(s.v / 15234) * 100}%`, background: 'var(--color-primary-emphasis)' }} />
               </div>
             </div>
           ))}
@@ -213,8 +214,8 @@ function MiniWidgetPreview({ id }: { id: string }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6, height: H, justifyContent: 'center', padding: '2px 0' }}>
           {MINI_STORE_PERF.map((s) => (
             <div key={s.store} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ fontSize: 9.5, color: '#374151', width: 24, flexShrink: 0 }}>{s.store}</span>
-              <div style={{ flex: 1, height: 7, background: '#F3F4F6', borderRadius: 99 }}>
+              <span style={{ fontSize: 9.5, color: 'var(--color-text-2)', width: 24, flexShrink: 0 }}>{s.store}</span>
+              <div style={{ flex: 1, height: 7, background: 'var(--color-surface-2)', borderRadius: 99 }}>
                 <div style={{ height: '100%', borderRadius: 99, width: `${(s.conv / 20) * 100}%`, background: '#754C7F' }} />
               </div>
             </div>
@@ -237,7 +238,7 @@ function MiniWidgetPreview({ id }: { id: string }) {
       return (
         <ResponsiveContainer width="100%" height={H}>
           <ComposedChart data={INDIA_WALKIN_HOURLY.slice(0, 7)} margin={{ top: 4, right: 4, left: -52, bottom: -16 }}>
-            <Bar dataKey="walkins" fill="#655BD3" radius={[2,2,0,0]} fillOpacity={0.85} />
+            <Bar dataKey="walkins" fill="var(--chart-1)" radius={[2,2,0,0]} fillOpacity={0.85} />
             <Line type="monotone" dataKey="prev" stroke="#00CE9C" strokeWidth={1.5} dot={false} />
           </ComposedChart>
         </ResponsiveContainer>
@@ -247,7 +248,7 @@ function MiniWidgetPreview({ id }: { id: string }) {
         <ResponsiveContainer width="100%" height={H}>
           <BarChart data={AGE_GROUP_HOURLY.slice(0, 7)} margin={{ top: 4, right: 4, left: -52, bottom: -16 }} barCategoryGap="20%">
             <Bar dataKey="kids"   stackId="a" fill="#F59E0B" />
-            <Bar dataKey="teens"  stackId="a" fill="#655BD3" />
+            <Bar dataKey="teens"  stackId="a" fill="var(--chart-1)" />
             <Bar dataKey="youths" stackId="a" fill="#00CE9C" />
             <Bar dataKey="mature" stackId="a" fill="#EC4899" radius={[2,2,0,0]} />
           </BarChart>
@@ -263,12 +264,12 @@ function MiniWidgetPreview({ id }: { id: string }) {
         </ResponsiveContainer>
       );
     case 'footfall_heatmap': {
-      const colors = ['#7C3AED','#655BD3','#8B5CF6','#A78BFA','#C4B5FD','#DDD6FE','#EDE9FE','#F5F3FF'];
+      const colors = ['var(--chart-6)','var(--chart-1)','var(--chart-6)','#A78BFA','#C4B5FD','var(--color-accent-border)','var(--color-accent-bg-hover)','var(--color-accent-bg)'];
       return (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3, height: H, alignContent: 'flex-start' }}>
           {HEATMAP_TREEMAP_DATA.map((d, i) => (
             <div key={d.name} style={{ background: colors[i], borderRadius: 3, padding: '2px 4px', flexShrink: 0 }}>
-              <span style={{ fontSize: 8, color: i < 4 ? '#fff' : '#374151', fontWeight: 600 }}>{d.pct}%</span>
+              <span style={{ fontSize: 8, color: i < 4 ? '#fff' : 'var(--color-text-2)', fontWeight: 600 }}>{d.pct}%</span>
             </div>
           ))}
         </div>
@@ -300,7 +301,7 @@ function MiniWidgetPreview({ id }: { id: string }) {
             <div key={s.store}>
               <div style={{ display: 'flex', height: 6, borderRadius: 99, overflow: 'hidden' }}>
                 <div style={{ width: `${s.kids}%`, background: '#F59E0B' }} />
-                <div style={{ width: `${s.teens}%`, background: '#655BD3' }} />
+                <div style={{ width: `${s.teens}%`, background: 'var(--color-primary-emphasis)' }} />
                 <div style={{ width: `${s.youths}%`, background: '#00CE9C' }} />
                 <div style={{ width: `${s.mature}%`, background: '#EC4899' }} />
               </div>
@@ -313,7 +314,7 @@ function MiniWidgetPreview({ id }: { id: string }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6, height: H, justifyContent: 'center', padding: '2px 0' }}>
           {TOP5_STORES.map((s, i) => (
             <div key={s.store} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <div style={{ flex: 1, height: 6, background: '#F3F4F6', borderRadius: 99 }}>
+              <div style={{ flex: 1, height: 6, background: 'var(--color-surface-2)', borderRadius: 99 }}>
                 <div style={{ height: '100%', borderRadius: 99, width: `${(s.visitors/15234)*100}%`, background: i < 3 ? '#00CE9C' : '#93C5FD' }} />
               </div>
             </div>
@@ -376,7 +377,7 @@ const TEMPLATES: TemplateDef[] = [
     description: 'Footfall, passerby, peak hours & conversion',
     widgets: ['footfall_trend', 'passerby_trend', 'peak_hours', 'conversion_rate'],
     icon: <BarChart2 size={22} strokeWidth={2} />,
-    iconColor: '#655BD3',
+    iconColor: 'var(--color-primary)',
   },
   {
     id: 'tpl_demo',
@@ -695,10 +696,10 @@ const BOTTOM5_STORES = [
 
 // ── SKILL.md chart tokens ─────────────────────────────────────────────────────
 const CHART_COLORS = {
-  series: ['#655BD3', '#00CE9C', '#F59E0B', '#3B82F6', '#EC4899', '#8B5CF6'],
+  series: ['var(--chart-1)', '#00CE9C', '#F59E0B', '#3B82F6', '#EC4899', '#8B5CF6'],
   male:   '#3B82F6',
   female: '#EC4899',
-  highlight: '#655BD3',
+  highlight: 'var(--color-primary)',
   muted:     'rgba(101, 91, 211, 0.25)',
 };
 
@@ -717,7 +718,7 @@ const SEGMENT_COLORS: Record<string, string> = {
 };
 
 // Age-group only colors (gender-neutral, purple scale) for age_bar widget
-const AGE_GROUP_COLORS = ['#C4B5FD', '#A78BFA', '#7C3AED', '#655BD3', '#4C1D95'];
+const AGE_GROUP_COLORS = ['var(--chart-6)', 'var(--chart-5)', 'var(--chart-6)', 'var(--chart-1)', 'var(--chart-1)'];
 
 const WIDGET_INFO: Record<string, { title: string; description: string; calculation: string }> = {
   footfall_trend: {
@@ -880,13 +881,13 @@ const WIDGET_INFO: Record<string, { title: string; description: string; calculat
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null;
   return (
-    <div style={{ background: 'white', borderRadius: 10, padding: '10px 14px', boxShadow: '0 4px 20px rgba(0,0,0,0.10)', border: '1px solid #E5E7EB' }}>
-      <p style={{ fontSize: 11, color: '#9CA3AF', marginBottom: 5, fontWeight: 600 }}>{label}</p>
+    <div style={{ background: 'var(--color-surface)', borderRadius: 10, padding: '10px 14px', boxShadow: '0 4px 20px rgba(0,0,0,0.10)', border: '1px solid var(--color-border)' }}>
+      <p style={{ fontSize: 11, color: 'var(--color-text-4)', marginBottom: 5, fontWeight: 600 }}>{label}</p>
       {payload.map((entry: any, i: number) => (
         <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: i < payload.length - 1 ? 3 : 0 }}>
           <span style={{ width: 9, height: 9, borderRadius: 2, background: entry.color, flexShrink: 0 }} />
-          <span style={{ fontSize: 12, color: '#6B7280' }}>{entry.name}</span>
-          <span style={{ fontSize: 13, color: '#111827', fontWeight: 700, marginLeft: 'auto', paddingLeft: 16 }}>
+          <span style={{ fontSize: 12, color: 'var(--color-text-3)' }}>{entry.name}</span>
+          <span style={{ fontSize: 13, color: 'var(--color-text-1)', fontWeight: 700, marginLeft: 'auto', paddingLeft: 16 }}>
             {typeof entry.value === 'number' ? entry.value.toLocaleString() : entry.value}
           </span>
         </div>
@@ -899,7 +900,7 @@ const ChartLegend = ({ items }: { items: { color: string; label: string; dash?: 
   <div style={{
     display: 'flex', flexWrap: 'wrap', gap: '6px 24px',
     paddingTop: 10, marginTop: 8,
-    borderTop: '1px solid #F3F4F6', flexShrink: 0,
+    borderTop: '1px solid var(--color-border-subtle)', flexShrink: 0,
   }}>
     {items.map((item, i) => (
       <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
@@ -910,7 +911,7 @@ const ChartLegend = ({ items }: { items: { color: string; label: string; dash?: 
         ) : (
           <span style={{ width: 10, height: 10, borderRadius: 3, background: item.color, flexShrink: 0 }} />
         )}
-        <span style={{ fontSize: 12, color: '#374151', fontWeight: 500 }}>{item.label}</span>
+        <span style={{ fontSize: 12, color: 'var(--color-text-2)', fontWeight: 500 }}>{item.label}</span>
       </div>
     ))}
   </div>
@@ -919,7 +920,7 @@ const ChartLegend = ({ items }: { items: { color: string; label: string; dash?: 
 // ── Global Legend Table ───────────────────────────────────────────────────────
 function GlobalLegend() {
   const trafficItems = [
-    { color: '#655BD3', label: 'Footfall' },
+    { color: 'var(--color-primary)', label: 'Footfall' },
     { color: '#00CE9C', label: 'Passerby' },
     { color: '#F59E0B', label: 'Conversion %' },
   ];
@@ -945,14 +946,14 @@ function GlobalLegend() {
 
   const Section = ({ title, items }: { title: string; items: { color: string; label: string }[] }) => (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minWidth: 0 }}>
-      <span style={{ fontSize: 10, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+      <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--color-text-4)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
         {title}
       </span>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 16px' }}>
         {items.map(item => (
           <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <span style={{ width: 10, height: 10, borderRadius: 3, background: item.color, flexShrink: 0 }} />
-            <span style={{ fontSize: 12, color: '#374151', whiteSpace: 'nowrap', fontWeight: 500 }}>{item.label}</span>
+            <span style={{ fontSize: 12, color: 'var(--color-text-2)', whiteSpace: 'nowrap', fontWeight: 500 }}>{item.label}</span>
           </div>
         ))}
       </div>
@@ -970,9 +971,9 @@ function GlobalLegend() {
       marginLeft: -24,
       marginRight: -24,
       marginBottom: 16,
-      background: '#fff',
-      borderTop: '1px solid #E5E7EB',
-      borderBottom: '1px solid #E5E7EB',
+      background: 'var(--color-surface)',
+      borderTop: '1px solid var(--color-border)',
+      borderBottom: '1px solid var(--color-border)',
       padding: '12px 24px',
       display: 'flex',
       alignItems: 'flex-start',
@@ -980,11 +981,11 @@ function GlobalLegend() {
       flexWrap: 'wrap',
     }}>
       <Section title="Traffic" items={trafficItems} />
-      <div style={{ width: 1, alignSelf: 'stretch', background: '#F3F4F6', flexShrink: 0 }} />
+      <div style={{ width: 1, alignSelf: 'stretch', background: 'var(--color-border-subtle)', flexShrink: 0 }} />
       <Section title="Gender" items={genderItems} />
-      <div style={{ width: 1, alignSelf: 'stretch', background: '#F3F4F6', flexShrink: 0 }} />
+      <div style={{ width: 1, alignSelf: 'stretch', background: 'var(--color-border-subtle)', flexShrink: 0 }} />
       <Section title="Demographics (Age × Gender)" items={segmentItems} />
-      <div style={{ width: 1, alignSelf: 'stretch', background: '#F3F4F6', flexShrink: 0 }} />
+      <div style={{ width: 1, alignSelf: 'stretch', background: 'var(--color-border-subtle)', flexShrink: 0 }} />
       <Section title="Age Groups" items={ageItems} />
     </div>
   );
@@ -1003,38 +1004,38 @@ function InfoTooltip({ widgetId }: { widgetId: string }) {
         onBlur={() => setShow(false)}
         style={{
           width: 22, height: 22, borderRadius: '50%',
-          background: '#6B7280',
+          background: 'var(--color-text-3)',
           border: 'none',
           cursor: 'pointer', display: 'flex', alignItems: 'center',
           justifyContent: 'center', color: '#fff', flexShrink: 0,
           transition: 'background 150ms',
           padding: 0,
         }}
-        onMouseOver={e => { (e.currentTarget as HTMLElement).style.background = '#655BD3'; }}
-        onMouseOut={e => { (e.currentTarget as HTMLElement).style.background = '#6B7280'; }}
+        onMouseOver={e => { (e.currentTarget as HTMLElement).style.background = 'var(--color-primary-emphasis)'; }}
+        onMouseOut={e => { (e.currentTarget as HTMLElement).style.background = 'var(--color-text-3)'; }}
       >
         <Info size={12} strokeWidth={2} />
       </button>
       {show && (
         <div style={{
           position: 'absolute', right: 0, top: 'calc(100% + 8px)',
-          width: 272, background: '#fff',
-          border: '1px solid #E5E7EB', borderRadius: 12,
+          width: 272, background: 'var(--color-surface)',
+          border: '1px solid var(--color-border)', borderRadius: 12,
           padding: '14px 16px',
           boxShadow: '0 8px 32px rgba(0,0,0,0.11)',
           zIndex: 200,
         }}>
           <div style={{
             position: 'absolute', top: -5, right: 8,
-            width: 10, height: 10, background: '#fff',
-            border: '1px solid #E5E7EB', borderBottom: 'none', borderRight: 'none',
+            width: 10, height: 10, background: 'var(--color-surface)',
+            border: '1px solid var(--color-border)', borderBottom: 'none', borderRight: 'none',
             transform: 'rotate(45deg)',
           }} />
-          <p style={{ fontSize: 13, fontWeight: 700, color: '#111827', marginBottom: 6 }}>{info.title}</p>
-          <p style={{ fontSize: 11.5, color: '#374151', lineHeight: 1.6, marginBottom: 10 }}>{info.description}</p>
-          <div style={{ background: '#F9FAFB', borderRadius: 8, padding: '8px 10px' }}>
-            <p style={{ fontSize: 9.5, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 3 }}>How it&apos;s calculated</p>
-            <p style={{ fontSize: 11, color: '#6B7280', lineHeight: 1.6 }}>{info.calculation}</p>
+          <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text-1)', marginBottom: 6 }}>{info.title}</p>
+          <p style={{ fontSize: 11.5, color: 'var(--color-text-2)', lineHeight: 1.6, marginBottom: 10 }}>{info.description}</p>
+          <div style={{ background: 'var(--color-surface-2)', borderRadius: 8, padding: '8px 10px' }}>
+            <p style={{ fontSize: 9.5, fontWeight: 700, color: 'var(--color-text-4)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 3 }}>How it&apos;s calculated</p>
+            <p style={{ fontSize: 11, color: 'var(--color-text-3)', lineHeight: 1.6 }}>{info.calculation}</p>
           </div>
         </div>
       )}
@@ -1078,8 +1079,8 @@ function KpiSparkWidget({ value, label, color, data, suffix = '' }: {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: 12 }}>
       <div>
-        <div style={{ fontSize: 32, fontWeight: 700, color: '#111827', lineHeight: 1.1 }}>{value}{suffix}</div>
-        <div style={{ fontSize: 12, color: '#6B7280', marginTop: 3 }}>{label}</div>
+        <div style={{ fontSize: 32, fontWeight: 700, color: 'var(--color-text-1)', lineHeight: 1.1 }}>{value}{suffix}</div>
+        <div style={{ fontSize: 12, color: 'var(--color-text-3)', marginTop: 3 }}>{label}</div>
       </div>
       <div style={{ flex: 1, minHeight: 60 }}>
         <Sparkline data={data} color={color} h={70} />
@@ -1090,20 +1091,20 @@ function KpiSparkWidget({ value, label, color, data, suffix = '' }: {
 
 // ── Widget accent colours (module-level so the chip strip can use them too) ───
 const WIDGET_ACCENT: Record<string, string> = {
-  footfall_trend: '#655BD3', passerby_trend: '#00CE9C', peak_hours: '#655BD3',
-  conversion_rate: '#F59E0B', demographics_donut: '#655BD3', gender_trend: '#3B82F6',
-  age_bar: '#EC4899', queue_length: '#DC2626', wait_time: '#D97706',
-  top_stores: '#3B82F6', store_conversion: '#655BD3', store_heatmap: '#8B5CF6',
-  overall_footfall_trends: '#655BD3', footfall_age_groups: '#F59E0B',
-  footfall_gender: '#3B82F6', footfall_heatmap: '#7C3AED',
-  demographics_breakdown: '#EC4899', store_performance_footfall: '#00CE9C',
-  store_performance_overall: '#3B82F6',
-  india_walkin_chart: '#655BD3', region_compare_chart: '#7C3AED',
-  age_grp_hourly: '#F59E0B', age_grp_regional: '#F59E0B',
-  gender_by_hour: '#3B82F6', gender_by_region: '#3B82F6',
-  gender_breakdown_pie: '#3B82F6', age_breakdown_pie: '#1D4ED8',
-  store_demo_ranking: '#00CE9C', store_staff_assist: '#655BD3',
-  top5_performers: '#00CE9C', bottom5_performers: '#EF4444',
+  footfall_trend: 'var(--chart-1)', passerby_trend: 'var(--chart-2)', peak_hours: 'var(--chart-1)',
+  conversion_rate: 'var(--chart-3)', demographics_donut: 'var(--chart-1)', gender_trend: 'var(--chart-4)',
+  age_bar: 'var(--chart-5)', queue_length: 'var(--color-error)', wait_time: 'var(--color-warning)',
+  top_stores: 'var(--chart-4)', store_conversion: 'var(--chart-1)', store_heatmap: 'var(--chart-6)',
+  overall_footfall_trends: 'var(--chart-1)', footfall_age_groups: 'var(--chart-3)',
+  footfall_gender: 'var(--chart-4)', footfall_heatmap: 'var(--chart-6)',
+  demographics_breakdown: 'var(--chart-5)', store_performance_footfall: 'var(--chart-2)',
+  store_performance_overall: 'var(--chart-4)',
+  india_walkin_chart: 'var(--chart-1)', region_compare_chart: 'var(--chart-6)',
+  age_grp_hourly: 'var(--chart-3)', age_grp_regional: 'var(--chart-3)',
+  gender_by_hour: 'var(--chart-4)', gender_by_region: 'var(--chart-4)',
+  gender_breakdown_pie: 'var(--chart-4)', age_breakdown_pie: 'var(--chart-4)',
+  store_demo_ranking: 'var(--chart-2)', store_staff_assist: 'var(--chart-1)',
+  top5_performers: 'var(--chart-2)', bottom5_performers: 'var(--color-error)',
 };
 
 // ── Chart height overrides for tall/complex widgets ───────────────────────────
@@ -1122,47 +1123,6 @@ const FULL_WIDTH_IDS = new Set([
   'footfall_heatmap',
 ]);
 
-/**
- * Ensures half-width widgets are never stranded alone in a row.
- * When a half-width widget would sit alone before a full-width widget (or at the
- * very end with nothing to pair it), the next available half-width is pulled
- * forward to complete the pair.  Full-width widgets always occupy a full row and
- * are unaffected.
- */
-function balanceWidgetLayout(widgets: string[]): string[] {
-  const arr = [...widgets];
-  let col = 0; // 0 = start of row, 1 = first half-width placed in current row
-  let i = 0;
-
-  while (i < arr.length) {
-    const isFull = FULL_WIDTH_IDS.has(arr[i]);
-
-    if (isFull) {
-      if (col === 1) {
-        // arr[i-1] is a lone half-width — find the next half-width after i and pull it forward
-        let nextHalfIdx = -1;
-        for (let j = i + 1; j < arr.length; j++) {
-          if (!FULL_WIDTH_IDS.has(arr[j])) { nextHalfIdx = j; break; }
-        }
-        if (nextHalfIdx !== -1) {
-          const [item] = arr.splice(nextHalfIdx, 1);
-          arr.splice(i, 0, item); // insert before the full-width
-          col = 0;                // pair is now complete
-          i++;                    // advance past the newly-inserted half-width
-          continue;               // loop back — arr[i] is now the full-width
-        }
-        // No half-width available to pair — leave orphan at the end and continue
-      }
-      col = 0; // full-width always resets to start of a new row
-    } else {
-      col = col === 0 ? 1 : 0;
-    }
-    i++;
-  }
-
-  return arr;
-}
-
 // ── Widget renderer ───────────────────────────────────────────────────────────
 function PlacedWidget({
   widgetId,
@@ -1173,6 +1133,7 @@ function PlacedWidget({
   onDragEnter,
   onDragEnd,
   timeframe = 'M',
+  autoOpenSnapshots = false,
 }: {
   widgetId: string;
   onRemove: () => void;
@@ -1182,10 +1143,16 @@ function PlacedWidget({
   onDragEnter?: (i: number) => void;
   onDragEnd?: () => void;
   timeframe?: Timeframe;
+  autoOpenSnapshots?: boolean;
 }) {
   // All hooks must be unconditional — early return comes AFTER
-  const color = WIDGET_ACCENT[widgetId] ?? '#655BD3';
+  const color = WIDGET_ACCENT[widgetId] ?? 'var(--chart-1)';
   const [showSnapshots, setShowSnapshots] = useState(false);
+
+  // Auto-open snapshots when triggered from Quick Actions
+  useEffect(() => {
+    if (autoOpenSnapshots) setShowSnapshots(true);
+  }, [autoOpenSnapshots]);
   // Snapshot modal controls (lifted from VisitorSnapshots when modal is open)
   const [snapEventFilter, setSnapEventFilter] = useState<'all' | 'entry' | 'exit' | 'passerby'>('all');
   const [snapRefreshing, setSnapRefreshing] = useState(false);
@@ -1259,17 +1226,17 @@ function PlacedWidget({
                 <BarChart data={tfData} margin={{ top: 8, right: 0, left: -20, bottom: 0 }} barCategoryGap="35%">
                   <defs>
                     <linearGradient id="ffGrad1" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#7C3AED" stopOpacity={1} />
-                      <stop offset="100%" stopColor="#655BD3" stopOpacity={1} />
+                      <stop offset="0%" stopColor="var(--chart-6)" stopOpacity={1} />
+                      <stop offset="100%" stopColor="var(--chart-1)" stopOpacity={1} />
                     </linearGradient>
                     <linearGradient id="ffGrad2" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor="#059669" stopOpacity={1} />
                       <stop offset="100%" stopColor="#00CE9C" stopOpacity={1} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="4 4" stroke="#F3F4F6" vertical={false} />
-                  <XAxis dataKey="m" axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} />
-                  <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} tickFormatter={(v: any) => v >= 1000 ? `${(v/1000).toFixed(0)}K` : v} />
+                  <CartesianGrid strokeDasharray="4 4" stroke="var(--color-border)" vertical={false} />
+                  <XAxis dataKey="m" axisLine={false} tickLine={false} tick={{ fill: 'var(--color-text-3)', fontSize: 11 }} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fill: 'var(--color-text-3)', fontSize: 11 }} tickFormatter={(v: any) => v >= 1000 ? `${(v/1000).toFixed(0)}K` : v} />
                   <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(101,91,211,0.06)' }} />
                   <Bar dataKey="footfall" name="Footfall" fill="url(#ffGrad1)" radius={[6,6,0,0]} />
                   <Bar dataKey="passerby" name="Passerby" fill="url(#ffGrad2)" radius={[6,6,0,0]} />
@@ -1292,16 +1259,16 @@ function PlacedWidget({
                       <stop offset="100%" stopColor="#00CE9C" stopOpacity={0.04} />
                     </linearGradient>
                     <linearGradient id="pbGrad2" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#655BD3" stopOpacity={0.14} />
-                      <stop offset="100%" stopColor="#655BD3" stopOpacity={0.03} />
+                      <stop offset="0%" stopColor="var(--chart-1)" stopOpacity={0.14} />
+                      <stop offset="100%" stopColor="var(--chart-1)" stopOpacity={0.03} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="4 4" stroke="#F3F4F6" vertical={false} />
-                  <XAxis dataKey="m" axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} />
-                  <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} tickFormatter={(v: any) => `${(v/1000).toFixed(0)}K`} />
+                  <CartesianGrid strokeDasharray="4 4" stroke="var(--color-border)" vertical={false} />
+                  <XAxis dataKey="m" axisLine={false} tickLine={false} tick={{ fill: 'var(--color-text-3)', fontSize: 11 }} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fill: 'var(--color-text-3)', fontSize: 11 }} tickFormatter={(v: any) => `${(v/1000).toFixed(0)}K`} />
                   <Tooltip content={<CustomTooltip />} />
                   <Area type="monotone" dataKey="passerby" name="This month" stroke="#00CE9C" strokeWidth={2.5} fill="url(#pbGrad1)" dot={false} activeDot={{ r: 5, fill: '#00CE9C', stroke: '#fff', strokeWidth: 2 }} />
-                  <Area type="monotone" dataKey="prev" name="Prev month" stroke="#655BD3" strokeWidth={1.5} strokeDasharray="4 3" fill="url(#pbGrad2)" dot={false} activeDot={{ r: 5, fill: '#655BD3', stroke: '#fff', strokeWidth: 2 }} />
+                  <Area type="monotone" dataKey="prev" name="Prev month" stroke="var(--chart-1)" strokeWidth={1.5} strokeDasharray="4 3" fill="url(#pbGrad2)" dot={false} activeDot={{ r: 5, fill: 'var(--color-primary)', stroke: '#fff', strokeWidth: 2 }} />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
@@ -1322,12 +1289,12 @@ function PlacedWidget({
                       <stop offset="100%" stopColor="#F59E0B" stopOpacity={1} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="4 4" stroke="#F3F4F6" vertical={false} />
-                  <XAxis dataKey="m" axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} />
-                  <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} tickFormatter={(v: any) => `${v}%`} domain={[0, 20]} />
+                  <CartesianGrid strokeDasharray="4 4" stroke="var(--color-border)" vertical={false} />
+                  <XAxis dataKey="m" axisLine={false} tickLine={false} tick={{ fill: 'var(--color-text-3)', fontSize: 11 }} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fill: 'var(--color-text-3)', fontSize: 11 }} tickFormatter={(v: any) => `${v}%`} domain={[0, 20]} />
                   <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(245,158,11,0.06)' }} />
                   <Bar dataKey="conv" name="Conversion %" fill="url(#convGrad)" radius={[6,6,0,0]} />
-                  <Line type="monotone" dataKey="target" name="Target" stroke="#655BD3" strokeWidth={1.5} strokeDasharray="6 3" dot={false} activeDot={{ r: 5, fill: '#655BD3', stroke: '#fff', strokeWidth: 2 }} />
+                  <Line type="monotone" dataKey="target" name="Target" stroke="var(--chart-1)" strokeWidth={1.5} strokeDasharray="6 3" dot={false} activeDot={{ r: 5, fill: 'var(--color-primary)', stroke: '#fff', strokeWidth: 2 }} />
                 </ComposedChart>
               </ResponsiveContainer>
             </div>
@@ -1345,9 +1312,9 @@ function PlacedWidget({
                   <stop offset="100%" stopColor="#D97706" stopOpacity={0.04} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="4 4" stroke="#F3F4F6" vertical={false} />
-              <XAxis dataKey="h" axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} />
-              <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} tickFormatter={(v: any) => `${v}m`} />
+              <CartesianGrid strokeDasharray="4 4" stroke="var(--color-border)" vertical={false} />
+              <XAxis dataKey="h" axisLine={false} tickLine={false} tick={{ fill: 'var(--color-text-3)', fontSize: 11 }} />
+              <YAxis axisLine={false} tickLine={false} tick={{ fill: 'var(--color-text-3)', fontSize: 11 }} tickFormatter={(v: any) => `${v}m`} />
               <Tooltip content={<CustomTooltip />} />
               <Area type="monotone" dataKey="wait" name="Avg wait" stroke="#D97706" strokeWidth={2.5} fill="url(#wtGrad)" dot={false} activeDot={{ r: 5, fill: '#D97706', stroke: '#fff', strokeWidth: 2 }} />
             </AreaChart>
@@ -1362,13 +1329,13 @@ function PlacedWidget({
             <BarChart data={cd.peakHours} margin={{ top: 8, right: 0, left: -20, bottom: 0 }} barCategoryGap="35%">
               <defs>
                 <linearGradient id="peakHigh" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#7C3AED" stopOpacity={1} />
-                  <stop offset="100%" stopColor="#655BD3" stopOpacity={1} />
+                  <stop offset="0%" stopColor="var(--chart-6)" stopOpacity={1} />
+                  <stop offset="100%" stopColor="var(--chart-1)" stopOpacity={1} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="4 4" stroke="#F3F4F6" vertical={false} />
-              <XAxis dataKey="h" axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} />
-              <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} />
+              <CartesianGrid strokeDasharray="4 4" stroke="var(--color-border)" vertical={false} />
+              <XAxis dataKey="h" axisLine={false} tickLine={false} tick={{ fill: 'var(--color-text-3)', fontSize: 11 }} />
+              <YAxis axisLine={false} tickLine={false} tick={{ fill: 'var(--color-text-3)', fontSize: 11 }} />
               <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(101,91,211,0.06)' }} />
               <Bar dataKey="v" name="Visitors" radius={[6,6,0,0]}>
                 {cd.peakHours.map((d: any, i: number) => (
@@ -1405,8 +1372,8 @@ function PlacedWidget({
               {DONUT_DATA.map(d => (
                 <div key={d.name} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                   <span style={{ width: 9, height: 9, borderRadius: '50%', background: d.color, flexShrink: 0 }} />
-                  <span style={{ fontSize: 11.5, color: '#374151', whiteSpace: 'nowrap' }}>{d.name}</span>
-                  <span style={{ fontSize: 11.5, fontWeight: 700, color: '#111827', marginLeft: 'auto', paddingLeft: 8 }}>{d.value}%</span>
+                  <span style={{ fontSize: 11.5, color: 'var(--color-text-2)', whiteSpace: 'nowrap' }}>{d.name}</span>
+                  <span style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--color-text-1)', marginLeft: 'auto', paddingLeft: 8 }}>{d.value}%</span>
                 </div>
               ))}
             </div>
@@ -1419,9 +1386,9 @@ function PlacedWidget({
             <div style={{ flex: 1 }}>
               <ResponsiveContainer width={700} height="100%">
                 <LineChart data={tfData} margin={{ top: 8, right: 0, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="4 4" stroke="#F3F4F6" vertical={false} />
-                  <XAxis dataKey="m" axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} />
-                  <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} />
+                  <CartesianGrid strokeDasharray="4 4" stroke="var(--color-border)" vertical={false} />
+                  <XAxis dataKey="m" axisLine={false} tickLine={false} tick={{ fill: 'var(--color-text-3)', fontSize: 11 }} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fill: 'var(--color-text-3)', fontSize: 11 }} />
                   <Tooltip content={<CustomTooltip />} />
                   <Line type="monotone" dataKey="male" name="Male" stroke={CHART_COLORS.male} strokeWidth={2.5} dot={false} activeDot={{ r: 5, fill: CHART_COLORS.male, stroke: '#fff', strokeWidth: 2 }} />
                   <Line type="monotone" dataKey="female" name="Female" stroke={CHART_COLORS.female} strokeWidth={2.5} dot={false} activeDot={{ r: 5, fill: CHART_COLORS.female, stroke: '#fff', strokeWidth: 2 }} />
@@ -1433,14 +1400,14 @@ function PlacedWidget({
 
       case 'age_bar': {
         const CustomLabel = ({ x, y, width, height, value }: any) => (
-          <text x={x + width + 8} y={y + height / 2 + 1} fill="#374151" fontSize={12} fontWeight={600} dominantBaseline="middle">{value}%</text>
+          <text x={x + width + 8} y={y + height / 2 + 1} fill="var(--color-text-2)" fontSize={12} fontWeight={600} dominantBaseline="middle">{value}%</text>
         );
         const ageBarData = AGE_DATA.map(d => ({ ...d, value: d.pct }));
         return (
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={ageBarData} layout="vertical" margin={{ top: 0, right: 48, left: 0, bottom: 0 }} barCategoryGap="30%">
               <XAxis type="number" hide />
-              <YAxis dataKey="group" type="category" axisLine={false} tickLine={false} tick={{ fill: '#374151', fontSize: 12, fontWeight: 500 }} width={50} />
+              <YAxis dataKey="group" type="category" axisLine={false} tickLine={false} tick={{ fill: 'var(--color-text-2)', fontSize: 12, fontWeight: 500 }} width={50} />
               <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(101,91,211,0.06)' }} />
               <Bar dataKey="value" radius={[0,6,6,0]} label={<CustomLabel />}>
                 {ageBarData.map((_, i) => <Cell key={i} fill={AGE_GROUP_COLORS[i % AGE_GROUP_COLORS.length]} />)}
@@ -1457,13 +1424,13 @@ function PlacedWidget({
             <BarChart data={cd.peakHours} margin={{ top: 8, right: 0, left: -20, bottom: 0 }} barCategoryGap="35%">
               <defs>
                 <linearGradient id="queueHigh" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#7C3AED" stopOpacity={1} />
-                  <stop offset="100%" stopColor="#655BD3" stopOpacity={1} />
+                  <stop offset="0%" stopColor="var(--chart-6)" stopOpacity={1} />
+                  <stop offset="100%" stopColor="var(--chart-1)" stopOpacity={1} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="4 4" stroke="#F3F4F6" vertical={false} />
-              <XAxis dataKey="h" axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} />
-              <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} />
+              <CartesianGrid strokeDasharray="4 4" stroke="var(--color-border)" vertical={false} />
+              <XAxis dataKey="h" axisLine={false} tickLine={false} tick={{ fill: 'var(--color-text-3)', fontSize: 11 }} />
+              <YAxis axisLine={false} tickLine={false} tick={{ fill: 'var(--color-text-3)', fontSize: 11 }} />
               <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(101,91,211,0.06)' }} />
               <Bar dataKey="q" name="Queue depth" radius={[6,6,0,0]}>
                 {cd.peakHours.map((d: any, i: number) => (
@@ -1480,13 +1447,13 @@ function PlacedWidget({
         return (
           <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
             {cd.storePerfData.map((s: any, i: number) => (
-              <div key={s.store} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', borderBottom: i < cd.storePerfData.length - 1 ? '1px solid #F3F4F6' : 'none' }}>
-                <span style={{ fontSize: 12, color: '#9CA3AF', width: 16, flexShrink: 0 }}>{i + 1}</span>
-                <span style={{ fontSize: 13, color: '#374151', width: 148, flexShrink: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.store}</span>
-                <div style={{ flex: 1, minWidth: 0, height: 6, background: '#F3F4F6', borderRadius: 99 }}>
-                  <div style={{ height: '100%', borderRadius: 99, width: `${(s.v / spMax) * 100}%`, backgroundColor: '#655BD3' }} />
+              <div key={s.store} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', borderBottom: i < cd.storePerfData.length - 1 ? '1px solid var(--color-border-subtle)' : 'none' }}>
+                <span style={{ fontSize: 12, color: 'var(--color-text-4)', width: 16, flexShrink: 0 }}>{i + 1}</span>
+                <span style={{ fontSize: 13, color: 'var(--color-text-2)', width: 148, flexShrink: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.store}</span>
+                <div style={{ flex: 1, minWidth: 0, height: 6, background: 'var(--color-surface-2)', borderRadius: 99 }}>
+                  <div style={{ height: '100%', borderRadius: 99, width: `${(s.v / spMax) * 100}%`, backgroundColor: 'var(--color-primary)' }} />
                 </div>
-                <span style={{ fontSize: 13, fontWeight: 600, color: '#111827', width: 48, textAlign: 'right', flexShrink: 0 }}>
+                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-1)', width: 48, textAlign: 'right', flexShrink: 0 }}>
                   {s.v >= 1000 ? (s.v / 1000).toFixed(1) + 'K' : s.v}
                 </span>
               </div>
@@ -1499,12 +1466,12 @@ function PlacedWidget({
         return (
           <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
             {cd.storePerfData.map((s: any, i: number) => (
-              <div key={s.store} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', borderBottom: i < cd.storePerfData.length - 1 ? '1px solid #F3F4F6' : 'none' }}>
-                <span style={{ fontSize: 13, color: '#374151', width: 148, flexShrink: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.store}</span>
-                <div style={{ flex: 1, minWidth: 0, height: 6, background: '#F3F4F6', borderRadius: 99 }}>
+              <div key={s.store} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', borderBottom: i < cd.storePerfData.length - 1 ? '1px solid var(--color-border-subtle)' : 'none' }}>
+                <span style={{ fontSize: 13, color: 'var(--color-text-2)', width: 148, flexShrink: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.store}</span>
+                <div style={{ flex: 1, minWidth: 0, height: 6, background: 'var(--color-surface-2)', borderRadius: 99 }}>
                   <div style={{ height: '100%', borderRadius: 99, width: `${(s.conv / 20) * 100}%`, backgroundColor: '#754C7F' }} />
                 </div>
-                <span style={{ fontSize: 13, fontWeight: 600, color: '#111827', width: 48, textAlign: 'right', flexShrink: 0 }}>{s.conv}%</span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-1)', width: 48, textAlign: 'right', flexShrink: 0 }}>{s.conv}%</span>
               </div>
             ))}
           </div>
@@ -1512,11 +1479,11 @@ function PlacedWidget({
 
       case 'store_heatmap': {
         const HEATMAP_COLORS = [
-          { min: 0,  max: 20,  bg: '#EEE9FF', text: '#655BD3' },
+          { min: 0,  max: 20,  bg: 'var(--color-heatmap-low)', text: 'var(--color-primary)' },
           { min: 20, max: 40,  bg: '#DDD6FF', text: '#5549C0' },
           { min: 40, max: 60,  bg: '#C4B5FD', text: '#4A3FAD' },
           { min: 60, max: 80,  bg: '#A78BFA', text: '#fff' },
-          { min: 80, max: 100, bg: '#655BD3', text: '#fff' },
+          { min: 80, max: 100, bg: 'var(--color-primary)', text: '#fff' },
         ];
         const getHeatColor = (val: number) =>
           HEATMAP_COLORS.find(c => val >= c.min && val < c.max) ?? HEATMAP_COLORS[0];
@@ -1528,16 +1495,16 @@ function PlacedWidget({
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11 }}>
               <thead>
                 <tr>
-                  <th style={{ width: 48, textAlign: 'left', color: '#6B7280', fontWeight: 500, paddingBottom: 6 }} />
+                  <th style={{ width: 48, textAlign: 'left', color: 'var(--color-text-3)', fontWeight: 500, paddingBottom: 6 }} />
                   {hmCols.map(col => (
-                    <th key={col} style={{ textAlign: 'center', color: '#6B7280', fontWeight: 500, paddingBottom: 6, paddingLeft: 4, paddingRight: 4 }}>{col}</th>
+                    <th key={col} style={{ textAlign: 'center', color: 'var(--color-text-3)', fontWeight: 500, paddingBottom: 6, paddingLeft: 4, paddingRight: 4 }}>{col}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {hmRows.map((row, ri) => (
                   <tr key={row}>
-                    <td style={{ color: '#374151', fontWeight: 500, paddingRight: 6, paddingTop: 3, paddingBottom: 3, whiteSpace: 'nowrap' }}>{row}</td>
+                    <td style={{ color: 'var(--color-text-2)', fontWeight: 500, paddingRight: 6, paddingTop: 3, paddingBottom: 3, whiteSpace: 'nowrap' }}>{row}</td>
                     {hmCols.map((_, ci) => {
                       const val = hmData[ri][ci];
                       const { bg, text } = getHeatColor(val);
@@ -1567,53 +1534,53 @@ function PlacedWidget({
           <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: 10 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-                <span style={{ fontSize: 24, fontWeight: 700, color: '#111827' }}>{cd.totalFootfall}</span>
+                <span style={{ fontSize: 24, fontWeight: 700, color: 'var(--color-text-1)' }}>{cd.totalFootfall}</span>
                 <span style={{ fontSize: 12, fontWeight: 600, color: '#16A34A', background: '#DCFCE7', padding: '2px 8px', borderRadius: 6 }}>▲ {cd.totalChange}% vs Last Period</span>
               </div>
               <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ fontSize: 11, color: '#6B7280' }}>Gender:</span>
-                <select value={genderFilter} onChange={e => setGenderFilter(e.target.value)} style={{ fontSize: 12, padding: '3px 8px', borderRadius: 6, border: '1px solid #E5E7EB', background: 'white', color: '#374151', cursor: 'pointer' }}>
+                <span style={{ fontSize: 11, color: 'var(--color-text-3)' }}>Gender:</span>
+                <select value={genderFilter} onChange={e => setGenderFilter(e.target.value)} style={{ fontSize: 12, padding: '3px 8px', borderRadius: 6, border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: 'var(--color-text-2)', cursor: 'pointer' }}>
                   <option>All</option><option>Male</option><option>Female</option>
                 </select>
               </div>
             </div>
             <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, minHeight: 0 }}>
               <div style={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-                <p style={{ fontSize: 11, fontWeight: 600, color: '#374151', marginBottom: 6, flexShrink: 0 }}>Pan India Walk-in Traffic</p>
+                <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-text-2)', marginBottom: 6, flexShrink: 0 }}>Pan India Walk-in Traffic</p>
                 <div style={{ flex: 1 }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <ComposedChart data={cd.indiaWalkin} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="4 4" stroke="#F3F4F6" vertical={false} />
-                      <XAxis dataKey="h" axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 10 }} />
-                      <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 10 }} />
+                      <CartesianGrid strokeDasharray="4 4" stroke="var(--color-border)" vertical={false} />
+                      <XAxis dataKey="h" axisLine={false} tickLine={false} tick={{ fill: 'var(--color-text-3)', fontSize: 10 }} />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fill: 'var(--color-text-3)', fontSize: 10 }} />
                       <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(101,91,211,0.06)' }} />
-                      <Bar dataKey="walkins" name="Walk-ins" fill="#655BD3" radius={[4,4,0,0]} fillOpacity={0.88} />
+                      <Bar dataKey="walkins" name="Walk-ins" fill="var(--chart-1)" radius={[4,4,0,0]} fillOpacity={0.88} />
                       <Line type="monotone" dataKey="prev" name="Previous Period" stroke="#00CE9C" strokeWidth={2} dot={false} activeDot={{ r: 4, fill: '#00CE9C', stroke: '#fff', strokeWidth: 2 }} />
                     </ComposedChart>
                   </ResponsiveContainer>
                 </div>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-                <p style={{ fontSize: 11, fontWeight: 600, color: '#374151', marginBottom: 6, flexShrink: 0 }}>Location Wise Walk-in Traffic (Regions)</p>
+                <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-text-2)', marginBottom: 6, flexShrink: 0 }}>Location Wise Walk-in Traffic (Regions)</p>
                 <div style={{ flex: 1 }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={cd.regionCompare} margin={{ top: 4, right: 8, left: -20, bottom: 0 }} barGap={4} barCategoryGap="30%">
-                      <CartesianGrid strokeDasharray="4 4" stroke="#F3F4F6" vertical={false} />
-                      <XAxis dataKey="region" axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 10 }} />
-                      <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 10 }} tickFormatter={(v: any) => `${(v/1000).toFixed(0)}K`} />
+                      <CartesianGrid strokeDasharray="4 4" stroke="var(--color-border)" vertical={false} />
+                      <XAxis dataKey="region" axisLine={false} tickLine={false} tick={{ fill: 'var(--color-text-3)', fontSize: 10 }} />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fill: 'var(--color-text-3)', fontSize: 10 }} tickFormatter={(v: any) => `${(v/1000).toFixed(0)}K`} />
                       <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(101,91,211,0.04)' }} />
                       <Bar dataKey="lastYear" name="Last Year" fill="#A78BFA" radius={[4,4,0,0]} />
-                      <Bar dataKey="thisYear" name="This Year" fill="#655BD3" radius={[4,4,0,0]} />
+                      <Bar dataKey="thisYear" name="This Year" fill="var(--chart-1)" radius={[4,4,0,0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
               </div>
             </div>
-            <div style={{ display: 'flex', gap: 16, paddingTop: 6, borderTop: '1px solid #F3F4F6', flexShrink: 0 }}>
-              {[['Walk-ins', '#655BD3'], ['Previous Period', '#00CE9C'], ['Last Year', '#A78BFA'], ['This Year', '#655BD3']].map(([label, color]) => (
+            <div style={{ display: 'flex', gap: 16, paddingTop: 6, borderTop: '1px solid var(--color-border-subtle)', flexShrink: 0 }}>
+              {[['Walk-ins', 'var(--chart-1)'], ['Previous Period', '#00CE9C'], ['Last Year', '#A78BFA'], ['This Year', 'var(--chart-1)']].map(([label, color]) => (
                 <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                   <span style={{ width: 8, height: 8, borderRadius: '50%', background: color, flexShrink: 0 }} />
-                  <span style={{ fontSize: 10.5, color: '#6B7280' }}>{label}</span>
+                  <span style={{ fontSize: 10.5, color: 'var(--color-text-3)' }}>{label}</span>
                 </div>
               ))}
             </div>
@@ -1622,24 +1589,24 @@ function PlacedWidget({
       }
 
       case 'footfall_age_groups': {
-        const AGE_COLORS = { kids: '#F59E0B', teens: '#655BD3', youths: '#00CE9C', mature: '#EC4899' };
+        const AGE_COLORS = { kids: '#F59E0B', teens: 'var(--color-primary)', youths: '#00CE9C', mature: '#EC4899' };
         return (
           <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: 10 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-              <span style={{ fontSize: 11, color: '#6B7280', fontWeight: 500 }}>Filter by Gender:</span>
-              <select value={agGenderFilter} onChange={e => setAgGenderFilter(e.target.value)} style={{ fontSize: 12, padding: '3px 8px', borderRadius: 6, border: '1px solid #E5E7EB', background: 'white', color: '#374151' }}>
+              <span style={{ fontSize: 11, color: 'var(--color-text-3)', fontWeight: 500 }}>Filter by Gender:</span>
+              <select value={agGenderFilter} onChange={e => setAgGenderFilter(e.target.value)} style={{ fontSize: 12, padding: '3px 8px', borderRadius: 6, border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: 'var(--color-text-2)' }}>
                 <option>All</option><option>Male</option><option>Female</option>
               </select>
             </div>
             <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, minHeight: 0 }}>
               <div style={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-                <p style={{ fontSize: 11, fontWeight: 600, color: '#374151', marginBottom: 6, flexShrink: 0 }}>Pan India Walk-in Age-Group Traffic</p>
+                <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-text-2)', marginBottom: 6, flexShrink: 0 }}>Pan India Walk-in Age-Group Traffic</p>
                 <div style={{ flex: 1 }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={cd.ageGroupTime} margin={{ top: 4, right: 8, left: -20, bottom: 0 }} barCategoryGap="20%">
-                      <CartesianGrid strokeDasharray="4 4" stroke="#F3F4F6" vertical={false} />
-                      <XAxis dataKey="h" axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 10 }} />
-                      <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 10 }} />
+                      <CartesianGrid strokeDasharray="4 4" stroke="var(--color-border)" vertical={false} />
+                      <XAxis dataKey="h" axisLine={false} tickLine={false} tick={{ fill: 'var(--color-text-3)', fontSize: 10 }} />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fill: 'var(--color-text-3)', fontSize: 10 }} />
                       <Tooltip content={<CustomTooltip />} />
                       <Bar dataKey="kids"   name="Kids 3–12"    stackId="a" fill={AGE_COLORS.kids} />
                       <Bar dataKey="teens"  name="Teens 13–21"  stackId="a" fill={AGE_COLORS.teens} />
@@ -1650,13 +1617,13 @@ function PlacedWidget({
                 </div>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-                <p style={{ fontSize: 11, fontWeight: 600, color: '#374151', marginBottom: 6, flexShrink: 0 }}>Location Wise Walk-in Age-Group Traffic (Regions)</p>
+                <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-text-2)', marginBottom: 6, flexShrink: 0 }}>Location Wise Walk-in Age-Group Traffic (Regions)</p>
                 <div style={{ flex: 1 }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={cd.ageGroupRegional} margin={{ top: 4, right: 8, left: -20, bottom: 0 }} barCategoryGap="20%">
-                      <CartesianGrid strokeDasharray="4 4" stroke="#F3F4F6" vertical={false} />
-                      <XAxis dataKey="region" axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 10 }} />
-                      <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 10 }} tickFormatter={(v: any) => `${(v/1000).toFixed(0)}K`} />
+                      <CartesianGrid strokeDasharray="4 4" stroke="var(--color-border)" vertical={false} />
+                      <XAxis dataKey="region" axisLine={false} tickLine={false} tick={{ fill: 'var(--color-text-3)', fontSize: 10 }} />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fill: 'var(--color-text-3)', fontSize: 10 }} tickFormatter={(v: any) => `${(v/1000).toFixed(0)}K`} />
                       <Tooltip content={<CustomTooltip />} />
                       <Bar dataKey="kids"   name="Kids 3–12"    stackId="a" fill={AGE_COLORS.kids} />
                       <Bar dataKey="teens"  name="Teens 13–21"  stackId="a" fill={AGE_COLORS.teens} />
@@ -1667,11 +1634,11 @@ function PlacedWidget({
                 </div>
               </div>
             </div>
-            <div style={{ display: 'flex', gap: 16, paddingTop: 6, borderTop: '1px solid #F3F4F6', flexShrink: 0 }}>
+            <div style={{ display: 'flex', gap: 16, paddingTop: 6, borderTop: '1px solid var(--color-border-subtle)', flexShrink: 0 }}>
               {([['Kids 3–12', AGE_COLORS.kids], ['Teens 13–21', AGE_COLORS.teens], ['Youths 22–35', AGE_COLORS.youths], ['Mature 35+', AGE_COLORS.mature]] as [string, string][]).map(([label, c]) => (
                 <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                   <span style={{ width: 8, height: 8, borderRadius: '50%', background: c, flexShrink: 0 }} />
-                  <span style={{ fontSize: 10.5, color: '#6B7280' }}>{label}</span>
+                  <span style={{ fontSize: 10.5, color: 'var(--color-text-3)' }}>{label}</span>
                 </div>
               ))}
             </div>
@@ -1683,20 +1650,20 @@ function PlacedWidget({
         return (
           <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: 10 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-              <span style={{ fontSize: 11, color: '#6B7280', fontWeight: 500 }}>Filter by Age Group:</span>
-              <select value={ageGrpFilter} onChange={e => setAgeGrpFilter(e.target.value)} style={{ fontSize: 12, padding: '3px 8px', borderRadius: 6, border: '1px solid #E5E7EB', background: 'white', color: '#374151' }}>
+              <span style={{ fontSize: 11, color: 'var(--color-text-3)', fontWeight: 500 }}>Filter by Age Group:</span>
+              <select value={ageGrpFilter} onChange={e => setAgeGrpFilter(e.target.value)} style={{ fontSize: 12, padding: '3px 8px', borderRadius: 6, border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: 'var(--color-text-2)' }}>
                 <option>All</option><option>Kids 3–12</option><option>Teens 13–21</option><option>Youths 22–35</option><option>Mature 35+</option>
               </select>
             </div>
             <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, minHeight: 0 }}>
               <div style={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-                <p style={{ fontSize: 11, fontWeight: 600, color: '#374151', marginBottom: 6, flexShrink: 0 }}>Pan India Walk-in Gender Traffic</p>
+                <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-text-2)', marginBottom: 6, flexShrink: 0 }}>Pan India Walk-in Gender Traffic</p>
                 <div style={{ flex: 1 }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={cd.genderTime} margin={{ top: 4, right: 8, left: -20, bottom: 0 }} barGap={3} barCategoryGap="28%">
-                      <CartesianGrid strokeDasharray="4 4" stroke="#F3F4F6" vertical={false} />
-                      <XAxis dataKey="h" axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 10 }} />
-                      <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 10 }} />
+                      <CartesianGrid strokeDasharray="4 4" stroke="var(--color-border)" vertical={false} />
+                      <XAxis dataKey="h" axisLine={false} tickLine={false} tick={{ fill: 'var(--color-text-3)', fontSize: 10 }} />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fill: 'var(--color-text-3)', fontSize: 10 }} />
                       <Tooltip content={<CustomTooltip />} />
                       <Bar dataKey="male"   name="Male"   fill="#3B82F6" radius={[4,4,0,0]} />
                       <Bar dataKey="female" name="Female" fill="#EC4899" radius={[4,4,0,0]} />
@@ -1705,13 +1672,13 @@ function PlacedWidget({
                 </div>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-                <p style={{ fontSize: 11, fontWeight: 600, color: '#374151', marginBottom: 6, flexShrink: 0 }}>Location Wise Walk-in Gender Traffic (Regions)</p>
+                <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-text-2)', marginBottom: 6, flexShrink: 0 }}>Location Wise Walk-in Gender Traffic (Regions)</p>
                 <div style={{ flex: 1 }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={cd.genderRegional} margin={{ top: 4, right: 8, left: -20, bottom: 0 }} barGap={4} barCategoryGap="30%">
-                      <CartesianGrid strokeDasharray="4 4" stroke="#F3F4F6" vertical={false} />
-                      <XAxis dataKey="region" axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 10 }} />
-                      <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 10 }} tickFormatter={(v: any) => `${(v/1000).toFixed(0)}K`} />
+                      <CartesianGrid strokeDasharray="4 4" stroke="var(--color-border)" vertical={false} />
+                      <XAxis dataKey="region" axisLine={false} tickLine={false} tick={{ fill: 'var(--color-text-3)', fontSize: 10 }} />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fill: 'var(--color-text-3)', fontSize: 10 }} tickFormatter={(v: any) => `${(v/1000).toFixed(0)}K`} />
                       <Tooltip content={<CustomTooltip />} />
                       <Bar dataKey="male"   name="Male"   fill="#3B82F6" radius={[4,4,0,0]} />
                       <Bar dataKey="female" name="Female" fill="#EC4899" radius={[4,4,0,0]} />
@@ -1720,11 +1687,11 @@ function PlacedWidget({
                 </div>
               </div>
             </div>
-            <div style={{ display: 'flex', gap: 16, paddingTop: 6, borderTop: '1px solid #F3F4F6', flexShrink: 0 }}>
+            <div style={{ display: 'flex', gap: 16, paddingTop: 6, borderTop: '1px solid var(--color-border-subtle)', flexShrink: 0 }}>
               {[['Male', '#3B82F6'], ['Female', '#EC4899']].map(([label, c]) => (
                 <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                   <span style={{ width: 8, height: 8, borderRadius: '50%', background: c, flexShrink: 0 }} />
-                  <span style={{ fontSize: 10.5, color: '#6B7280' }}>{label}</span>
+                  <span style={{ fontSize: 10.5, color: 'var(--color-text-3)' }}>{label}</span>
                 </div>
               ))}
             </div>
@@ -1764,7 +1731,7 @@ function PlacedWidget({
         return (
           <div style={{ display: 'flex', height: '100%', gap: 24 }}>
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <p style={{ fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 8, flexShrink: 0 }}>Gender Breakdown</p>
+              <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-2)', marginBottom: 8, flexShrink: 0 }}>Gender Breakdown</p>
               <div style={{ flex: 1, minHeight: 0, width: '100%' }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
@@ -1779,14 +1746,14 @@ function PlacedWidget({
                 {GENDER_PIE_DATA.map(d => (
                   <div key={d.name} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                     <span style={{ width: 8, height: 8, borderRadius: '50%', background: d.color }} />
-                    <span style={{ fontSize: 11, color: '#6B7280' }}>{d.name} ({d.value}%)</span>
+                    <span style={{ fontSize: 11, color: 'var(--color-text-3)' }}>{d.name} ({d.value}%)</span>
                   </div>
                 ))}
               </div>
             </div>
-            <div style={{ width: 1, background: '#F3F4F6', flexShrink: 0 }} />
+            <div style={{ width: 1, background: 'var(--color-surface-2)', flexShrink: 0 }} />
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <p style={{ fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 8, flexShrink: 0 }}>Age Range Breakdown</p>
+              <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-2)', marginBottom: 8, flexShrink: 0 }}>Age Range Breakdown</p>
               <div style={{ flex: 1, minHeight: 0, width: '100%' }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
@@ -1801,7 +1768,7 @@ function PlacedWidget({
                 {AGE_RANGE_PIE_DATA.map(d => (
                   <div key={d.name} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                     <span style={{ width: 8, height: 8, borderRadius: '50%', background: d.color }} />
-                    <span style={{ fontSize: 11, color: '#6B7280' }}>{d.name} ({d.value}%)</span>
+                    <span style={{ fontSize: 11, color: 'var(--color-text-3)' }}>{d.name} ({d.value}%)</span>
                   </div>
                 ))}
               </div>
@@ -1810,21 +1777,22 @@ function PlacedWidget({
         );
 
       case 'store_performance_footfall': {
-        const ASSIST_COLORS = ['#655BD3', '#8B5CF6', '#A78BFA', '#C4B5FD', '#E5E7EB'];
+        const ASSIST_COLORS = ['var(--chart-1)', 'var(--chart-6)', 'var(--chart-5)', 'var(--chart-6)', 'var(--color-border)'];
         return (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, height: '100%' }}>
             <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <p style={{ fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 10, flexShrink: 0 }}>Store Performance by Footfall</p>
+              <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-2)', marginBottom: 10, flexShrink: 0 }}>Store Performance by Footfall</p>
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                 {cd.storeDemoPerf.map((s: any, i: number) => (
-                  <div key={s.store} style={{ padding: '6px 0', borderBottom: i < cd.storeDemoPerf.length - 1 ? '1px solid #F3F4F6' : 'none' }}>
+                  <div key={s.store} style={{ padding: '6px 0', borderBottom: i < cd.storeDemoPerf.length - 1 ? '1px solid var(--color-border-subtle)' : 'none' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                      <span style={{ fontSize: 12, color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{s.store}</span>
-                      <span style={{ fontSize: 12, fontWeight: 700, color: '#111827', flexShrink: 0, marginLeft: 8 }}>{(s.visitors/1000).toFixed(1)}K</span>
+                      <span style={{ fontSize: 12, color: 'var(--color-text-2)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{s.store}</span>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text-1)', flexShrink: 0, marginLeft: 8 }}>{(s.visitors/1000).toFixed(1)}K</span>
                     </div>
                     <div style={{ display: 'flex', height: 7, borderRadius: 99, overflow: 'hidden' }}>
+
                       <div style={{ width: `${s.kids}%`,   background: '#F59E0B' }} />
-                      <div style={{ width: `${s.teens}%`,  background: '#655BD3' }} />
+                      <div style={{ width: `${s.teens}%`,  background: 'var(--color-primary-emphasis)' }} />
                       <div style={{ width: `${s.youths}%`, background: '#00CE9C' }} />
                       <div style={{ width: `${s.mature}%`, background: '#EC4899' }} />
                     </div>
@@ -1833,13 +1801,13 @@ function PlacedWidget({
               </div>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-              <p style={{ fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 10, flexShrink: 0 }}>Store Performance by Assist</p>
+              <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-2)', marginBottom: 10, flexShrink: 0 }}>Store Performance by Assist</p>
               <div style={{ flex: 1 }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={STORE_ASSIST_DATA} margin={{ top: 4, right: 8, left: -20, bottom: 0 }} barCategoryGap="22%">
-                    <CartesianGrid strokeDasharray="4 4" stroke="#F3F4F6" vertical={false} />
-                    <XAxis dataKey="store" axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 10 }} />
-                    <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 10 }} />
+                    <CartesianGrid strokeDasharray="4 4" stroke="var(--color-border)" vertical={false} />
+                    <XAxis dataKey="store" axisLine={false} tickLine={false} tick={{ fill: 'var(--color-text-3)', fontSize: 10 }} />
+                    <YAxis axisLine={false} tickLine={false} tick={{ fill: 'var(--color-text-3)', fontSize: 10 }} />
                     <Tooltip content={<CustomTooltip />} />
                     <Bar dataKey="s10"        name="0–10s"       stackId="a" fill={ASSIST_COLORS[0]} />
                     <Bar dataKey="s30"        name="11–30s"      stackId="a" fill={ASSIST_COLORS[1]} />
@@ -1849,11 +1817,11 @@ function PlacedWidget({
                   </BarChart>
                 </ResponsiveContainer>
               </div>
-              <div style={{ display: 'flex', gap: 12, paddingTop: 6, borderTop: '1px solid #F3F4F6', flexShrink: 0, flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', gap: 12, paddingTop: 6, borderTop: '1px solid var(--color-border-subtle)', flexShrink: 0, flexWrap: 'wrap' }}>
                 {(['0–10s','11–30s','31–59s','1–2min','Unattended'] as const).map((label, i) => (
                   <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                     <span style={{ width: 7, height: 7, borderRadius: 2, background: ASSIST_COLORS[i], flexShrink: 0 }} />
-                    <span style={{ fontSize: 10, color: '#6B7280' }}>{label}</span>
+                    <span style={{ fontSize: 10, color: 'var(--color-text-3)' }}>{label}</span>
                   </div>
                 ))}
               </div>
@@ -1870,13 +1838,13 @@ function PlacedWidget({
                 <span style={{ fontSize: 11, fontWeight: 700, color: '#16A34A', background: '#DCFCE7', padding: '3px 10px', borderRadius: 20 }}>▲ Top 5 Stores</span>
               </div>
               {cd.top5.map((s: any, i: number) => (
-                <div key={s.store} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 0', borderBottom: i < cd.top5.length - 1 ? '1px solid #F3F4F6' : 'none' }}>
-                  <span style={{ fontSize: 11, color: '#9CA3AF', width: 14, flexShrink: 0 }}>{i+1}</span>
-                  <span style={{ fontSize: 12, color: '#374151', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.store}</span>
-                  <div style={{ width: 70, height: 5, background: '#F3F4F6', borderRadius: 99, flexShrink: 0 }}>
+                <div key={s.store} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 0', borderBottom: i < cd.top5.length - 1 ? '1px solid var(--color-border-subtle)' : 'none' }}>
+                  <span style={{ fontSize: 11, color: 'var(--color-text-4)', width: 14, flexShrink: 0 }}>{i+1}</span>
+                  <span style={{ fontSize: 12, color: 'var(--color-text-2)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.store}</span>
+                  <div style={{ width: 70, height: 5, background: 'var(--color-surface-2)', borderRadius: 99, flexShrink: 0 }}>
                     <div style={{ height: '100%', borderRadius: 99, width: `${(s.visitors / cd.top5Max) * 100}%`, background: '#00CE9C' }} />
                   </div>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: '#111827', width: 38, textAlign: 'right', flexShrink: 0 }}>{s.visitors >= 1000 ? (s.visitors/1000).toFixed(1) + 'K' : s.visitors}</span>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text-1)', width: 38, textAlign: 'right', flexShrink: 0 }}>{s.visitors >= 1000 ? (s.visitors/1000).toFixed(1) + 'K' : s.visitors}</span>
                 </div>
               ))}
             </div>
@@ -1885,13 +1853,13 @@ function PlacedWidget({
                 <span style={{ fontSize: 11, fontWeight: 700, color: '#DC2626', background: '#FEE2E2', padding: '3px 10px', borderRadius: 20 }}>▼ Bottom 5 Stores</span>
               </div>
               {cd.bottom5.map((s: any, i: number) => (
-                <div key={s.store} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 0', borderBottom: i < cd.bottom5.length - 1 ? '1px solid #F3F4F6' : 'none' }}>
-                  <span style={{ fontSize: 11, color: '#9CA3AF', width: 14, flexShrink: 0 }}>{i+1}</span>
-                  <span style={{ fontSize: 12, color: '#374151', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.store}</span>
-                  <div style={{ width: 70, height: 5, background: '#F3F4F6', borderRadius: 99, flexShrink: 0 }}>
+                <div key={s.store} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 0', borderBottom: i < cd.bottom5.length - 1 ? '1px solid var(--color-border-subtle)' : 'none' }}>
+                  <span style={{ fontSize: 11, color: 'var(--color-text-4)', width: 14, flexShrink: 0 }}>{i+1}</span>
+                  <span style={{ fontSize: 12, color: 'var(--color-text-2)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.store}</span>
+                  <div style={{ width: 70, height: 5, background: 'var(--color-surface-2)', borderRadius: 99, flexShrink: 0 }}>
                     <div style={{ height: '100%', borderRadius: 99, width: `${(s.visitors / cd.top5Max) * 100}%`, background: '#EF4444' }} />
                   </div>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: '#111827', width: 38, textAlign: 'right', flexShrink: 0 }}>{s.visitors >= 1000 ? (s.visitors/1000).toFixed(1) + 'K' : s.visitors}</span>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text-1)', width: 38, textAlign: 'right', flexShrink: 0 }}>{s.visitors >= 1000 ? (s.visitors/1000).toFixed(1) + 'K' : s.visitors}</span>
                 </div>
               ))}
             </div>
@@ -1904,13 +1872,13 @@ function PlacedWidget({
             <ComposedChart data={cd.indiaWalkin} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id="iwGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#7C3AED" stopOpacity={1} />
-                  <stop offset="100%" stopColor="#655BD3" stopOpacity={1} />
+                  <stop offset="0%" stopColor="var(--chart-6)" stopOpacity={1} />
+                  <stop offset="100%" stopColor="var(--chart-1)" stopOpacity={1} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="4 4" stroke="#F3F4F6" vertical={false} />
-              <XAxis dataKey="h" axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} />
-              <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} />
+              <CartesianGrid strokeDasharray="4 4" stroke="var(--color-border)" vertical={false} />
+              <XAxis dataKey="h" axisLine={false} tickLine={false} tick={{ fill: 'var(--color-text-3)', fontSize: 11 }} />
+              <YAxis axisLine={false} tickLine={false} tick={{ fill: 'var(--color-text-3)', fontSize: 11 }} />
               <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(101,91,211,0.05)' }} />
               <Bar dataKey="walkins" name="Walk-ins" fill="url(#iwGrad)" radius={[6,6,0,0]} />
               <Line type="monotone" dataKey="prev" name="Previous Period" stroke="#00CE9C" strokeWidth={2.5} dot={false} activeDot={{ r: 5, fill: '#00CE9C', stroke: '#fff', strokeWidth: 2 }} />
@@ -1924,17 +1892,17 @@ function PlacedWidget({
             <BarChart data={cd.regionCompare} margin={{ top: 8, right: 8, left: -20, bottom: 0 }} barGap={4} barCategoryGap="30%">
               <defs>
                 <linearGradient id="rcLY" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#7C3AED" stopOpacity={1} />
+                  <stop offset="0%" stopColor="var(--chart-6)" stopOpacity={1} />
                   <stop offset="100%" stopColor="#A78BFA" stopOpacity={1} />
                 </linearGradient>
                 <linearGradient id="rcTY" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="#4C1D95" stopOpacity={1} />
-                  <stop offset="100%" stopColor="#655BD3" stopOpacity={1} />
+                  <stop offset="100%" stopColor="var(--chart-1)" stopOpacity={1} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="4 4" stroke="#F3F4F6" vertical={false} />
-              <XAxis dataKey="region" axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} />
-              <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} tickFormatter={(v: any) => `${(v/1000).toFixed(0)}K`} />
+              <CartesianGrid strokeDasharray="4 4" stroke="var(--color-border)" vertical={false} />
+              <XAxis dataKey="region" axisLine={false} tickLine={false} tick={{ fill: 'var(--color-text-3)', fontSize: 11 }} />
+              <YAxis axisLine={false} tickLine={false} tick={{ fill: 'var(--color-text-3)', fontSize: 11 }} tickFormatter={(v: any) => `${(v/1000).toFixed(0)}K`} />
               <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(101,91,211,0.04)' }} />
               <Bar dataKey="lastYear" name="Last Year" fill="url(#rcLY)" radius={[6,6,0,0]} />
               <Bar dataKey="thisYear" name="This Year" fill="url(#rcTY)" radius={[6,6,0,0]} />
@@ -1943,13 +1911,13 @@ function PlacedWidget({
         );
 
       case 'age_grp_hourly': {
-        const AGE_C = { kids: '#F59E0B', teens: '#655BD3', youths: '#00CE9C', mature: '#EC4899' };
+        const AGE_C = { kids: '#F59E0B', teens: 'var(--color-primary)', youths: '#00CE9C', mature: '#EC4899' };
         return (
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={cd.ageGroupTime} margin={{ top: 8, right: 8, left: -20, bottom: 0 }} barCategoryGap="22%">
-              <CartesianGrid strokeDasharray="4 4" stroke="#F3F4F6" vertical={false} />
-              <XAxis dataKey="h" axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} />
-              <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} />
+              <CartesianGrid strokeDasharray="4 4" stroke="var(--color-border)" vertical={false} />
+              <XAxis dataKey="h" axisLine={false} tickLine={false} tick={{ fill: 'var(--color-text-3)', fontSize: 11 }} />
+              <YAxis axisLine={false} tickLine={false} tick={{ fill: 'var(--color-text-3)', fontSize: 11 }} />
               <Tooltip content={<CustomTooltip />} />
               <Bar dataKey="kids"   name="Kids 3–12"    stackId="a" fill={AGE_C.kids} />
               <Bar dataKey="teens"  name="Teens 13–21"  stackId="a" fill={AGE_C.teens} />
@@ -1961,13 +1929,13 @@ function PlacedWidget({
       }
 
       case 'age_grp_regional': {
-        const AGE_C2 = { kids: '#F59E0B', teens: '#655BD3', youths: '#00CE9C', mature: '#EC4899' };
+        const AGE_C2 = { kids: '#F59E0B', teens: 'var(--color-primary)', youths: '#00CE9C', mature: '#EC4899' };
         return (
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={cd.ageGroupRegional} margin={{ top: 8, right: 8, left: -20, bottom: 0 }} barCategoryGap="22%">
-              <CartesianGrid strokeDasharray="4 4" stroke="#F3F4F6" vertical={false} />
-              <XAxis dataKey="region" axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} />
-              <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} tickFormatter={(v: any) => `${(v/1000).toFixed(0)}K`} />
+              <CartesianGrid strokeDasharray="4 4" stroke="var(--color-border)" vertical={false} />
+              <XAxis dataKey="region" axisLine={false} tickLine={false} tick={{ fill: 'var(--color-text-3)', fontSize: 11 }} />
+              <YAxis axisLine={false} tickLine={false} tick={{ fill: 'var(--color-text-3)', fontSize: 11 }} tickFormatter={(v: any) => `${(v/1000).toFixed(0)}K`} />
               <Tooltip content={<CustomTooltip />} />
               <Bar dataKey="kids"   name="Kids 3–12"    stackId="a" fill={AGE_C2.kids} />
               <Bar dataKey="teens"  name="Teens 13–21"  stackId="a" fill={AGE_C2.teens} />
@@ -1992,9 +1960,9 @@ function PlacedWidget({
                   <stop offset="100%" stopColor="#EC4899" stopOpacity={1} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="4 4" stroke="#F3F4F6" vertical={false} />
-              <XAxis dataKey="h" axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} />
-              <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} />
+              <CartesianGrid strokeDasharray="4 4" stroke="var(--color-border)" vertical={false} />
+              <XAxis dataKey="h" axisLine={false} tickLine={false} tick={{ fill: 'var(--color-text-3)', fontSize: 11 }} />
+              <YAxis axisLine={false} tickLine={false} tick={{ fill: 'var(--color-text-3)', fontSize: 11 }} />
               <Tooltip content={<CustomTooltip />} />
               <Bar dataKey="male"   name="Male"   fill="url(#ghmGrad)" radius={[5,5,0,0]} />
               <Bar dataKey="female" name="Female" fill="url(#ghfGrad)" radius={[5,5,0,0]} />
@@ -2016,9 +1984,9 @@ function PlacedWidget({
                   <stop offset="100%" stopColor="#EC4899" stopOpacity={1} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="4 4" stroke="#F3F4F6" vertical={false} />
-              <XAxis dataKey="region" axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} />
-              <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} tickFormatter={(v: any) => `${(v/1000).toFixed(0)}K`} />
+              <CartesianGrid strokeDasharray="4 4" stroke="var(--color-border)" vertical={false} />
+              <XAxis dataKey="region" axisLine={false} tickLine={false} tick={{ fill: 'var(--color-text-3)', fontSize: 11 }} />
+              <YAxis axisLine={false} tickLine={false} tick={{ fill: 'var(--color-text-3)', fontSize: 11 }} tickFormatter={(v: any) => `${(v/1000).toFixed(0)}K`} />
               <Tooltip content={<CustomTooltip />} />
               <Bar dataKey="male"   name="Male"   fill="url(#grmGrad)" radius={[5,5,0,0]} />
               <Bar dataKey="female" name="Female" fill="url(#grfGrad)" radius={[5,5,0,0]} />
@@ -2039,11 +2007,11 @@ function PlacedWidget({
                 </PieChart>
               </ResponsiveContainer>
             </div>
-            <div style={{ display: 'flex', gap: 16, flexShrink: 0, paddingTop: 8, borderTop: '1px solid #F3F4F6', width: '100%', justifyContent: 'center' }}>
+            <div style={{ display: 'flex', gap: 16, flexShrink: 0, paddingTop: 8, borderTop: '1px solid var(--color-border-subtle)', width: '100%', justifyContent: 'center' }}>
               {GENDER_PIE_DATA.map(d => (
                 <div key={d.name} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <span style={{ width: 10, height: 10, borderRadius: 3, background: d.color }} />
-                  <span style={{ fontSize: 12, color: '#374151', fontWeight: 500 }}>{d.name} ({d.value}%)</span>
+                  <span style={{ fontSize: 12, color: 'var(--color-text-2)', fontWeight: 500 }}>{d.name} ({d.value}%)</span>
                 </div>
               ))}
             </div>
@@ -2063,11 +2031,11 @@ function PlacedWidget({
                 </PieChart>
               </ResponsiveContainer>
             </div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 14px', flexShrink: 0, paddingTop: 8, borderTop: '1px solid #F3F4F6', width: '100%', justifyContent: 'center' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 14px', flexShrink: 0, paddingTop: 8, borderTop: '1px solid var(--color-border-subtle)', width: '100%', justifyContent: 'center' }}>
               {AGE_RANGE_PIE_DATA.map(d => (
                 <div key={d.name} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <span style={{ width: 10, height: 10, borderRadius: 3, background: d.color }} />
-                  <span style={{ fontSize: 12, color: '#374151', fontWeight: 500 }}>{d.name} ({d.value}%)</span>
+                  <span style={{ fontSize: 12, color: 'var(--color-text-2)', fontWeight: 500 }}>{d.name} ({d.value}%)</span>
                 </div>
               ))}
             </div>
@@ -2078,14 +2046,14 @@ function PlacedWidget({
         return (
           <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '100%' }}>
             {cd.storeDemoPerf.map((s: any, i: number) => (
-              <div key={s.store} style={{ padding: '6px 0', borderBottom: i < cd.storeDemoPerf.length - 1 ? '1px solid #F3F4F6' : 'none' }}>
+              <div key={s.store} style={{ padding: '6px 0', borderBottom: i < cd.storeDemoPerf.length - 1 ? '1px solid var(--color-border-subtle)' : 'none' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                  <span style={{ fontSize: 12, color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{s.store}</span>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: '#111827', flexShrink: 0, marginLeft: 8 }}>{(s.visitors/1000).toFixed(1)}K</span>
+                  <span style={{ fontSize: 12, color: 'var(--color-text-2)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{s.store}</span>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text-1)', flexShrink: 0, marginLeft: 8 }}>{(s.visitors/1000).toFixed(1)}K</span>
                 </div>
                 <div style={{ display: 'flex', height: 7, borderRadius: 99, overflow: 'hidden' }}>
                   <div style={{ width: `${s.kids}%`,   background: '#F59E0B' }} />
-                  <div style={{ width: `${s.teens}%`,  background: '#655BD3' }} />
+                  <div style={{ width: `${s.teens}%`,  background: 'var(--color-primary-emphasis)' }} />
                   <div style={{ width: `${s.youths}%`, background: '#00CE9C' }} />
                   <div style={{ width: `${s.mature}%`, background: '#EC4899' }} />
                 </div>
@@ -2095,15 +2063,15 @@ function PlacedWidget({
         );
 
       case 'store_staff_assist': {
-        const ASSIST_C = ['#655BD3', '#8B5CF6', '#A78BFA', '#C4B5FD', '#E5E7EB'];
+        const ASSIST_C = ['var(--chart-1)', 'var(--chart-6)', 'var(--chart-5)', 'var(--chart-6)', 'var(--color-border)'];
         return (
           <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
             <div style={{ flex: 1 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={STORE_ASSIST_DATA} margin={{ top: 8, right: 8, left: -20, bottom: 0 }} barCategoryGap="22%">
-                  <CartesianGrid strokeDasharray="4 4" stroke="#F3F4F6" vertical={false} />
-                  <XAxis dataKey="store" axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} />
-                  <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 11 }} />
+                  <CartesianGrid strokeDasharray="4 4" stroke="var(--color-border)" vertical={false} />
+                  <XAxis dataKey="store" axisLine={false} tickLine={false} tick={{ fill: 'var(--color-text-3)', fontSize: 11 }} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fill: 'var(--color-text-3)', fontSize: 11 }} />
                   <Tooltip content={<CustomTooltip />} />
                   <Bar dataKey="s10"        name="0–10s"      stackId="a" fill={ASSIST_C[0]} />
                   <Bar dataKey="s30"        name="11–30s"     stackId="a" fill={ASSIST_C[1]} />
@@ -2113,11 +2081,11 @@ function PlacedWidget({
                 </BarChart>
               </ResponsiveContainer>
             </div>
-            <div style={{ display: 'flex', gap: '6px 14px', paddingTop: 8, borderTop: '1px solid #F3F4F6', flexShrink: 0, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '6px 14px', paddingTop: 8, borderTop: '1px solid var(--color-border-subtle)', flexShrink: 0, flexWrap: 'wrap' }}>
               {(['0–10s','11–30s','31–59s','1–2min','Unattended'] as const).map((label, i) => (
                 <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                   <span style={{ width: 10, height: 10, borderRadius: 3, background: ASSIST_C[i], flexShrink: 0 }} />
-                  <span style={{ fontSize: 11.5, color: '#374151', fontWeight: 500 }}>{label}</span>
+                  <span style={{ fontSize: 11.5, color: 'var(--color-text-2)', fontWeight: 500 }}>{label}</span>
                 </div>
               ))}
             </div>
@@ -2129,13 +2097,13 @@ function PlacedWidget({
         return (
           <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
             {cd.top5.map((s: any, i: number) => (
-              <div key={s.store} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', borderBottom: i < cd.top5.length - 1 ? '1px solid #F3F4F6' : 'none' }}>
-                <span style={{ fontSize: 11, fontWeight: 700, color: i === 0 ? '#F59E0B' : '#9CA3AF', width: 18, flexShrink: 0 }}>#{i+1}</span>
-                <span style={{ fontSize: 13, color: '#374151', width: 130, flexShrink: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.store}</span>
-                <div style={{ flex: 1, minWidth: 0, height: 6, background: '#F3F4F6', borderRadius: 99 }}>
+              <div key={s.store} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', borderBottom: i < cd.top5.length - 1 ? '1px solid var(--color-border-subtle)' : 'none' }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: i === 0 ? '#F59E0B' : 'var(--color-text-4)', width: 18, flexShrink: 0 }}>#{i+1}</span>
+                <span style={{ fontSize: 13, color: 'var(--color-text-2)', width: 130, flexShrink: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.store}</span>
+                <div style={{ flex: 1, minWidth: 0, height: 6, background: 'var(--color-surface-2)', borderRadius: 99 }}>
                   <div style={{ height: '100%', borderRadius: 99, width: `${(s.visitors / cd.top5Max) * 100}%`, background: '#00CE9C' }} />
                 </div>
-                <span style={{ fontSize: 13, fontWeight: 700, color: '#111827', width: 44, textAlign: 'right', flexShrink: 0 }}>{(s.visitors/1000).toFixed(1)}K</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text-1)', width: 44, textAlign: 'right', flexShrink: 0 }}>{(s.visitors/1000).toFixed(1)}K</span>
               </div>
             ))}
           </div>
@@ -2145,13 +2113,13 @@ function PlacedWidget({
         return (
           <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
             {cd.bottom5.map((s: any, i: number) => (
-              <div key={s.store} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', borderBottom: i < cd.bottom5.length - 1 ? '1px solid #F3F4F6' : 'none' }}>
+              <div key={s.store} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', borderBottom: i < cd.bottom5.length - 1 ? '1px solid var(--color-border-subtle)' : 'none' }}>
                 <span style={{ fontSize: 11, fontWeight: 700, color: '#EF4444', width: 18, flexShrink: 0 }}>#{i+1}</span>
-                <span style={{ fontSize: 13, color: '#374151', width: 130, flexShrink: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.store}</span>
-                <div style={{ flex: 1, minWidth: 0, height: 6, background: '#F3F4F6', borderRadius: 99 }}>
+                <span style={{ fontSize: 13, color: 'var(--color-text-2)', width: 130, flexShrink: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.store}</span>
+                <div style={{ flex: 1, minWidth: 0, height: 6, background: 'var(--color-surface-2)', borderRadius: 99 }}>
                   <div style={{ height: '100%', borderRadius: 99, width: `${(s.visitors / cd.top5Max) * 100}%`, background: '#EF4444' }} />
                 </div>
-                <span style={{ fontSize: 13, fontWeight: 700, color: '#111827', width: 44, textAlign: 'right', flexShrink: 0 }}>{(s.visitors/1000).toFixed(1)}K</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text-1)', width: 44, textAlign: 'right', flexShrink: 0 }}>{(s.visitors/1000).toFixed(1)}K</span>
               </div>
             ))}
           </div>
@@ -2182,10 +2150,10 @@ function PlacedWidget({
       <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           {editMode && (
-            <GripVertical size={14} strokeWidth={2} style={{ color: '#9CA3AF', marginRight: 4, flexShrink: 0, cursor: 'grab' }} />
+            <GripVertical size={14} strokeWidth={2} style={{ color: 'var(--color-text-4)', marginRight: 4, flexShrink: 0, cursor: 'grab' }} />
           )}
           <span style={{ width: 3, height: 14, borderRadius: 2, background: color, flexShrink: 0 }} />
-          <p style={{ fontSize: 13, fontWeight: 700, color: '#111827' }}>{def.label}</p>
+          <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text-1)' }}>{def.label}</p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           {!editMode && widgetId === 'footfall_trend' && (
@@ -2194,13 +2162,13 @@ function PlacedWidget({
               style={{
                 display: 'inline-flex', alignItems: 'center', gap: 5,
                 padding: '4px 10px', height: 26, borderRadius: 6,
-                background: 'transparent', border: '1px solid #DDD6FE',
-                color: '#655BD3', cursor: 'pointer',
+                background: 'transparent', border: '1px solid var(--color-accent-border)',
+                color: 'var(--color-primary)', cursor: 'pointer',
                 fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap',
                 transition: 'background 150ms, border-color 150ms',
               }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#EEE9FF'; (e.currentTarget as HTMLElement).style.borderColor = '#655BD3'; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.borderColor = '#DDD6FE'; }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--color-accent-bg)'; (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-primary)'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-accent-border)'; }}
             >
               <Eye size={12} strokeWidth={1.5} />
               View Snapshots
@@ -2246,7 +2214,7 @@ function PlacedWidget({
           <div
             onClick={e => e.stopPropagation()}
             style={{
-              background: '#F9FAFB',
+              background: 'var(--color-page-bg)',
               borderRadius: 16,
               width: '100%',
               maxWidth: 1100,
@@ -2261,25 +2229,25 @@ function PlacedWidget({
             <div style={{
               display: 'flex', alignItems: 'center', gap: 8,
               padding: '14px 20px',
-              background: 'white',
-              borderBottom: '1px solid #E5E7EB',
+              background: 'var(--color-surface)',
+              borderBottom: '1px solid var(--color-border)',
               flexShrink: 0,
             }}>
-              <Bell size={14} strokeWidth={2} style={{ color: '#655BD3', flexShrink: 0 }} />
-              <span style={{ fontSize: 13, fontWeight: 700, color: '#111827' }}>Visitor Snapshots</span>
+              <Bell size={14} strokeWidth={2} style={{ color: 'var(--color-primary)', flexShrink: 0 }} />
+              <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text-1)' }}>Visitor Snapshots</span>
               <span style={{
                 fontSize: 10, fontWeight: 600,
                 padding: '2px 7px', borderRadius: 999,
-                background: 'rgba(101,91,211,0.1)', color: '#655BD3',
+                background: 'rgba(101,91,211,0.1)', color: 'var(--color-primary)',
               }}>Live</span>
               <div style={{ flex: 1 }} />
               <button
                 onClick={() => setShowSnapshots(false)}
                 style={{
                   width: 28, height: 28, borderRadius: 7,
-                  border: '1px solid #E5E7EB', background: 'white',
+                  border: '1px solid var(--color-border)', background: 'var(--color-surface)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  cursor: 'pointer', color: '#9CA3AF', flexShrink: 0,
+                  cursor: 'pointer', color: 'var(--color-text-4)', flexShrink: 0,
                   transition: 'background 150ms, border-color 150ms, color 150ms',
                 }}
                 onMouseEnter={e => {
@@ -2290,9 +2258,9 @@ function PlacedWidget({
                 }}
                 onMouseLeave={e => {
                   const el = e.currentTarget as HTMLElement;
-                  el.style.background = 'white';
-                  el.style.borderColor = '#E5E7EB';
-                  el.style.color = '#9CA3AF';
+                  el.style.background = 'var(--color-surface)';
+                  el.style.borderColor = 'var(--color-border)';
+                  el.style.color = 'var(--color-text-4)';
                 }}
               >
                 <X size={13} strokeWidth={2.5} />
@@ -2303,7 +2271,7 @@ function PlacedWidget({
             <div style={{
               display: 'flex', alignItems: 'center',
               padding: '10px 20px',
-              background: '#FAFAFA',
+              background: 'var(--color-surface-2)',
               flexShrink: 0,
             }}>
               {/* Filter pills — left-aligned */}
@@ -2318,21 +2286,21 @@ function PlacedWidget({
                       border: snapEventFilter === f ? 'none' : '1px solid #E5E7EB',
                       cursor: 'pointer',
                       fontSize: 12, fontWeight: 500,
-                      background: snapEventFilter === f ? '#655BD3' : 'white',
-                      color: snapEventFilter === f ? 'white' : '#6B7280',
+                      background: snapEventFilter === f ? 'var(--color-primary)' : 'var(--color-surface)',
+                      color: snapEventFilter === f ? 'white' : 'var(--color-text-3)',
                       flexShrink: 0,
                       transition: 'background 150ms, color 150ms',
                     }}
                     onMouseEnter={e => {
                       if (snapEventFilter !== f) {
                         (e.currentTarget as HTMLElement).style.background = '#F9F7FF';
-                        (e.currentTarget as HTMLElement).style.color = '#655BD3';
+                        (e.currentTarget as HTMLElement).style.color = 'var(--color-primary)';
                       }
                     }}
                     onMouseLeave={e => {
                       if (snapEventFilter !== f) {
-                        (e.currentTarget as HTMLElement).style.background = 'white';
-                        (e.currentTarget as HTMLElement).style.color = '#6B7280';
+                        (e.currentTarget as HTMLElement).style.background = 'var(--color-surface)';
+                        (e.currentTarget as HTMLElement).style.color = 'var(--color-text-3)';
                       }
                     }}
                   >
@@ -2352,9 +2320,9 @@ function PlacedWidget({
                   style={{
                     display: 'flex', alignItems: 'center', gap: 5,
                     height: 28, paddingLeft: 10, paddingRight: 10,
-                    borderRadius: 7, border: '1px solid #E5E7EB',
-                    background: '#fff',
-                    fontSize: 11, fontWeight: 500, color: '#6B7280',
+                    borderRadius: 7, border: '1px solid var(--color-border)',
+                    background: 'var(--color-surface)',
+                    fontSize: 11, fontWeight: 500, color: 'var(--color-text-3)',
                     cursor: 'pointer', flexShrink: 0,
                     transition: 'background 150ms',
                   }}
@@ -2363,13 +2331,13 @@ function PlacedWidget({
                 >
                   <RefreshCw
                     size={12} strokeWidth={2.2}
-                    style={{ color: '#655BD3', animation: snapRefreshing ? 'spin 0.9s linear infinite' : 'none' }}
+                    style={{ color: 'var(--color-primary)', animation: snapRefreshing ? 'spin 0.9s linear infinite' : 'none' }}
                   />
                   Refresh
                 </button>
 
                 {/* Divider — equal 8px gap on both sides */}
-                <div style={{ width: 1, height: 16, background: '#E5E7EB', flexShrink: 0, margin: '0 8px' }} />
+                <div style={{ width: 1, height: 16, background: 'var(--color-border)', flexShrink: 0, margin: '0 8px' }} />
 
                 {/* Info button */}
                 <div style={{ position: 'relative', flexShrink: 0 }}>
@@ -2381,7 +2349,7 @@ function PlacedWidget({
                     style={{
                       background: 'none', border: 'none', cursor: 'pointer',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      width: 28, height: 28, color: '#9CA3AF',
+                      width: 28, height: 28, color: 'var(--color-text-4)',
                       transition: 'color 150ms',
                     }}
                   >
@@ -2390,18 +2358,18 @@ function PlacedWidget({
                   {snapShowInfo && (
                     <div style={{
                       position: 'absolute', right: 0, top: 'calc(100% + 8px)',
-                      width: 240, background: '#FFFFFF',
-                      border: '1px solid #E5E7EB', borderRadius: 10,
+                      width: 240, background: 'var(--color-surface)',
+                      border: '1px solid var(--color-border)', borderRadius: 10,
                       padding: '12px 14px',
                       boxShadow: '0 4px 20px rgba(0,0,0,0.10)',
                       zIndex: 100,
                     }}>
-                      <div style={{ position: 'absolute', top: -5, right: 10, width: 10, height: 10, background: '#FFFFFF', border: '1px solid #E5E7EB', borderBottom: 'none', borderRight: 'none', transform: 'rotate(45deg)', borderRadius: 2 }} />
-                      <p style={{ fontSize: 12, fontWeight: 700, color: '#111827', marginBottom: 4 }}>Live Visitor Snapshots</p>
-                      <p style={{ fontSize: 11, color: '#6B7280', lineHeight: 1.65 }}>
+                      <div style={{ position: 'absolute', top: -5, right: 10, width: 10, height: 10, background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderBottom: 'none', borderRight: 'none', transform: 'rotate(45deg)', borderRadius: 2 }} />
+                      <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text-1)', marginBottom: 4 }}>Live Visitor Snapshots</p>
+                      <p style={{ fontSize: 11, color: 'var(--color-text-3)', lineHeight: 1.65 }}>
                         Real-time frames captured by entrance cameras each time a visitor is detected. Shows event type, demographic match, and AI confidence score.
                       </p>
-                      <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid #F3F4F6', display: 'flex', flexDirection: 'column', gap: 5 }}>
+                      <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid var(--color-border-subtle)', display: 'flex', flexDirection: 'column', gap: 5 }}>
                         {[
                           { dot: '#16A34A', label: 'Entry — visitor walked in' },
                           { dot: '#DC2626', label: 'Exit — visitor left' },
@@ -2409,7 +2377,7 @@ function PlacedWidget({
                         ].map(({ dot, label }) => (
                           <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                             <span style={{ width: 6, height: 6, borderRadius: '50%', background: dot, flexShrink: 0 }} />
-                            <span style={{ fontSize: 11, color: '#374151' }}>{label}</span>
+                            <span style={{ fontSize: 11, color: 'var(--color-text-2)' }}>{label}</span>
                           </div>
                         ))}
                       </div>
@@ -2484,12 +2452,12 @@ function AddWidgetsModal({
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 pt-6 pb-4" style={{ borderBottom: '1px solid #F3F4F6' }}>
+        <div className="flex items-center justify-between px-6 pt-6 pb-4" style={{ borderBottom: '1px solid var(--color-border-subtle)' }}>
           <div>
-            <h3 className="text-base font-bold" style={{ color: '#111827' }}>Add Widgets</h3>
-            <p className="text-xs mt-0.5" style={{ color: '#6B7280' }}>Select one or more charts to add to this page</p>
+            <h3 className="text-base font-bold" style={{ color: 'var(--color-text-1)' }}>Add Widgets</h3>
+            <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-3)' }}>Select one or more charts to add to this page</p>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-md" style={{ color: '#9CA3AF' }}>
+          <button onClick={onClose} className="p-1.5 rounded-md" style={{ color: 'var(--color-text-4)' }}>
             <X size={18} strokeWidth={2} />
           </button>
         </div>
@@ -2499,7 +2467,7 @@ function AddWidgetsModal({
           <div className="space-y-5">
             {groups.map(group => (
               <div key={group}>
-                <p className="text-xs font-bold uppercase mb-2.5" style={{ color: '#9CA3AF', letterSpacing: '0.07em' }}>{group}</p>
+                <p className="text-xs font-bold uppercase mb-2.5" style={{ color: 'var(--color-text-4)', letterSpacing: '0.07em' }}>{group}</p>
                 <div className="grid grid-cols-2 gap-3">
                   {ALL_WIDGETS.filter(w => w.group === group).map(widget => {
                     const isAdded = currentWidgets.includes(widget.id);
@@ -2510,15 +2478,15 @@ function AddWidgetsModal({
                         onClick={() => toggleWidget(widget.id)}
                         className="text-left rounded-xl overflow-hidden transition-all"
                         style={{
-                          border: `1.5px solid ${isAdded ? '#D1FAE5' : isSelected ? '#655BD3' : '#E5E7EB'}`,
-                          background: isAdded ? '#F9FAFB' : 'white',
-                          boxShadow: isSelected && !isAdded ? '0 0 0 3px #EEE9FF' : 'none',
+                          border: `1.5px solid ${isAdded ? '#D1FAE5' : isSelected ? 'var(--color-primary)' : 'var(--color-border)'}`,
+                          background: isAdded ? 'var(--color-page-bg)' : 'var(--color-surface)',
+                          boxShadow: isSelected && !isAdded ? '0 0 0 3px var(--color-focus-ring)' : 'none',
                           cursor: isAdded ? 'default' : 'pointer',
                         }}
                       >
                         <div style={{
-                          background: isAdded ? '#F3F4F6' : '#F8F7FF',
-                          borderBottom: `1px solid ${isAdded ? '#E5E7EB' : isSelected ? '#DDD6FE' : '#F3F4F6'}`,
+                          background: isAdded ? 'var(--color-surface-2)' : 'var(--color-widget-preview-bg)',
+                          borderBottom: `1px solid ${isAdded ? 'var(--color-border)' : isSelected ? 'var(--color-accent-border)' : 'var(--color-border-subtle)'}`,
                           padding: '12px 12px 8px',
                           pointerEvents: 'none',
                           position: 'relative',
@@ -2548,8 +2516,8 @@ function AddWidgetsModal({
                           )}
                         </div>
                         <div style={{ padding: '8px 10px 9px' }}>
-                          <p style={{ fontSize: 11.5, fontWeight: 600, color: isAdded ? '#9CA3AF' : isSelected ? '#655BD3' : '#111827' }}>{widget.label}</p>
-                          <p style={{ fontSize: 10.5, color: '#9CA3AF', marginTop: 2 }}>{widget.description}</p>
+                          <p style={{ fontSize: 11.5, fontWeight: 600, color: isAdded ? 'var(--color-text-4)' : isSelected ? 'var(--color-primary)' : 'var(--color-text-1)' }}>{widget.label}</p>
+                          <p style={{ fontSize: 10.5, color: 'var(--color-text-4)', marginTop: 2 }}>{widget.description}</p>
                         </div>
                       </button>
                     );
@@ -2563,22 +2531,22 @@ function AddWidgetsModal({
         {/* Footer */}
         <div
           className="flex items-center justify-between px-6 py-4"
-          style={{ borderTop: '1px solid #F3F4F6' }}
+          style={{ borderTop: '1px solid var(--color-border-subtle)' }}
         >
-          <span className="text-sm" style={{ color: '#6B7280' }}>
+          <span className="text-sm" style={{ color: 'var(--color-text-3)' }}>
             {selected.size > 0 ? `${selected.size} widget${selected.size > 1 ? 's' : ''} selected` : 'No widgets selected'}
           </span>
           <div className="flex gap-3">
             <button
               onClick={onClose}
               className="px-4 py-2 rounded-lg text-sm font-medium"
-              style={{ border: '1px solid #E5E7EB', color: '#374151' }}
+              style={{ border: '1px solid var(--color-border)', color: 'var(--color-text-2)' }}
             >Cancel</button>
             <button
               onClick={handleAdd}
               disabled={selected.size === 0}
               className="px-4 py-2 rounded-lg text-sm font-semibold text-white transition-opacity"
-              style={{ background: '#655BD3', opacity: selected.size === 0 ? 0.5 : 1 }}
+              style={{ background: 'var(--color-primary-emphasis)', opacity: selected.size === 0 ? 0.5 : 1 }}
             >Add {selected.size > 0 ? `(${selected.size})` : ''}</button>
           </div>
         </div>
@@ -2601,9 +2569,9 @@ function TrafficPreview({ color }: { color: string }) {
       {/* KPI chips */}
       {[['15.2K', 'Footfall', 0], ['45.6K', 'Passerby', 55], ['12.4%', 'Conv.', 110]].map(([val, lbl, x]) => (
         <g key={lbl as string}>
-          <rect x={Number(x)} y={0} width={46} height={22} rx={5} fill="white" stroke="#E5E7EB" strokeWidth={1} />
-          <text x={Number(x) + 7} y={9} fontSize={6} fill="#9CA3AF">{lbl as string}</text>
-          <text x={Number(x) + 7} y={18} fontSize={8} fontWeight="700" fill="#111827">{val as string}</text>
+          <rect x={Number(x)} y={0} width={46} height={22} rx={5} fill="var(--color-surface)" stroke="var(--color-border)" strokeWidth={1} />
+          <text x={Number(x) + 7} y={9} fontSize={6} fill="var(--color-text-4)">{lbl as string}</text>
+          <text x={Number(x) + 7} y={18} fontSize={8} fontWeight="700" fill="var(--color-text-1)">{val as string}</text>
           <rect x={Number(x) + 34} y={12} width={6} height={3} rx={1} fill={color} opacity={0.6} />
         </g>
       ))}
@@ -2619,7 +2587,7 @@ function TrafficPreview({ color }: { color: string }) {
         <path d={linePath} fill="none" stroke={color} strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
         {/* X axis labels */}
         {['M','T','W','T','F','S','S'].map((d, i) => (
-          <text key={i} x={i * 18 + 2} y={70} fontSize={6} fill="#9CA3AF" textAnchor="middle">{d}</text>
+          <text key={i} x={i * 18 + 2} y={70} fontSize={6} fill="var(--color-text-4)" textAnchor="middle">{d}</text>
         ))}
       </g>
     </svg>
@@ -2630,7 +2598,7 @@ function DemoPreview({ color }: { color: string }) {
   // Donut + horizontal bars
   const R = 20, cx = 34, cy = 42, sw = 7;
   const segments = [
-    { pct: 0.30, c: '#655BD3' }, { pct: 0.22, c: color },
+    { pct: 0.30, c: 'var(--color-primary)' }, { pct: 0.22, c: color },
     { pct: 0.18, c: '#F59E0B' }, { pct: 0.14, c: '#3B82F6' },
     { pct: 0.10, c: '#EC4899' }, { pct: 0.06, c: '#9CA3AF' },
   ];
@@ -2648,7 +2616,7 @@ function DemoPreview({ color }: { color: string }) {
   });
 
   const bars = [
-    { label: 'Male 22–35', pct: 0.30, c: '#655BD3' },
+    { label: 'Male 22–35', pct: 0.30, c: 'var(--color-primary)' },
     { label: 'Female 22–35', pct: 0.22, c: color },
     { label: 'Male 13–21', pct: 0.18, c: '#F59E0B' },
     { label: 'Female 13–21', pct: 0.14, c: '#3B82F6' },
@@ -2657,19 +2625,19 @@ function DemoPreview({ color }: { color: string }) {
   return (
     <svg width="100%" viewBox="0 0 160 90" style={{ display: 'block' }}>
       {/* Donut */}
-      <circle cx={cx} cy={cy} r={R} fill="none" stroke="#F3F4F6" strokeWidth={sw} />
+      <circle cx={cx} cy={cy} r={R} fill="none" stroke="var(--color-border)" strokeWidth={sw} />
       {arcs.map((a, i) => (
         <path key={i} d={a.d} fill="none" stroke={a.c} strokeWidth={sw} strokeLinecap="butt" />
       ))}
-      <text x={cx} y={cy - 3} textAnchor="middle" fontSize={8} fontWeight="700" fill="#111827">15.2K</text>
-      <text x={cx} y={cy + 7} textAnchor="middle" fontSize={5.5} fill="#9CA3AF">visitors</text>
+      <text x={cx} y={cy - 3} textAnchor="middle" fontSize={8} fontWeight="700" fill="var(--color-text-1)">15.2K</text>
+      <text x={cx} y={cy + 7} textAnchor="middle" fontSize={5.5} fill="var(--color-text-4)">visitors</text>
       {/* Bars */}
       {bars.map((b, i) => (
         <g key={b.label} transform={`translate(74, ${8 + i * 19})`}>
-          <text y={7} fontSize={6} fill="#6B7280">{b.label}</text>
-          <rect y={10} width={80} height={5} rx={2} fill="#F3F4F6" />
+          <text y={7} fontSize={6} fill="var(--color-text-3)">{b.label}</text>
+          <rect y={10} width={80} height={5} rx={2} fill="var(--color-surface-2)" />
           <rect y={10} width={80 * b.pct} height={5} rx={2} fill={b.c} />
-          <text x={84} y={15} fontSize={6} fill="#374151" fontWeight="600">{Math.round(b.pct * 100)}%</text>
+          <text x={84} y={15} fontSize={6} fill="var(--color-text-2)" fontWeight="600">{Math.round(b.pct * 100)}%</text>
         </g>
       ))}
     </svg>
@@ -2688,9 +2656,9 @@ function QueuePreview({ color }: { color: string }) {
       {/* KPI chips */}
       {[['4.2 min', 'Avg Wait', 0], ['18', 'Peak Queue', 82]].map(([val, lbl, x]) => (
         <g key={lbl as string}>
-          <rect x={Number(x)} y={0} width={72} height={22} rx={5} fill="white" stroke="#E5E7EB" strokeWidth={1} />
-          <text x={Number(x) + 8} y={9} fontSize={6} fill="#9CA3AF">{lbl as string}</text>
-          <text x={Number(x) + 8} y={18} fontSize={9} fontWeight="700" fill="#111827">{val as string}</text>
+          <rect x={Number(x)} y={0} width={72} height={22} rx={5} fill="var(--color-surface)" stroke="var(--color-border)" strokeWidth={1} />
+          <text x={Number(x) + 8} y={9} fontSize={6} fill="var(--color-text-4)">{lbl as string}</text>
+          <text x={Number(x) + 8} y={18} fontSize={9} fontWeight="700" fill="var(--color-text-1)">{val as string}</text>
         </g>
       ))}
       {/* Bar chart */}
@@ -2703,7 +2671,7 @@ function QueuePreview({ color }: { color: string }) {
           <g key={i}>
             <rect x={x} y={y} width={bw} height={bh} rx={2}
               fill={isPeak ? color : `${color}55`} />
-            <text x={x + bw / 2} y={chartY + chartH + 9} textAnchor="middle" fontSize={5.5} fill="#9CA3AF">{hours[i]}</text>
+            <text x={x + bw / 2} y={chartY + chartH + 9} textAnchor="middle" fontSize={5.5} fill="var(--color-text-4)">{hours[i]}</text>
           </g>
         );
       })}
@@ -2774,18 +2742,18 @@ function CreatePageModal({ onClose, onCreate }: { onClose: () => void; onCreate:
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="px-6 pt-6 pb-4" style={{ borderBottom: '1px solid #F3F4F6', flexShrink: 0 }}>
+        <div className="px-6 pt-6 pb-4" style={{ borderBottom: '1px solid var(--color-border-subtle)', flexShrink: 0 }}>
           <div className="flex items-start justify-between mb-1">
-            <h3 className="text-base font-bold" style={{ color: '#111827' }}>Create New Page</h3>
-            <button onClick={onClose} className="p-1.5 rounded-md" style={{ color: '#9CA3AF' }}>
+            <h3 className="text-base font-bold" style={{ color: 'var(--color-text-1)' }}>Create New Page</h3>
+            <button onClick={onClose} className="p-1.5 rounded-md" style={{ color: 'var(--color-text-4)' }}>
               <X size={18} strokeWidth={2} />
             </button>
           </div>
-          <p className="text-xs" style={{ color: '#6B7280' }}>Choose a template or build from scratch</p>
+          <p className="text-xs" style={{ color: 'var(--color-text-3)' }}>Choose a template or build from scratch</p>
 
           {/* Page title input */}
           <div className="mt-4">
-            <label className="text-xs font-semibold block mb-1.5" style={{ color: '#374151' }}>Page Title</label>
+            <label className="text-xs font-semibold block mb-1.5" style={{ color: 'var(--color-text-2)' }}>Page Title</label>
             <input
               type="text"
               placeholder="e.g. Traffic Overview, Store Performance…"
@@ -2793,9 +2761,9 @@ function CreatePageModal({ onClose, onCreate }: { onClose: () => void; onCreate:
               onChange={e => setPageTitle(e.target.value)}
               autoFocus
               className="w-full text-sm rounded-xl px-4 py-2.5 outline-none"
-              style={{ border: '1.5px solid #E5E7EB', color: '#111827', transition: 'border-color 0.15s' }}
-              onFocus={e => { e.currentTarget.style.borderColor = '#655BD3'; }}
-              onBlur={e => { e.currentTarget.style.borderColor = '#E5E7EB'; }}
+              style={{ border: '1.5px solid var(--color-border)', color: 'var(--color-text-1)', transition: 'border-color 0.15s' }}
+              onFocus={e => { e.currentTarget.style.borderColor = 'var(--color-primary)'; }}
+              onBlur={e => { e.currentTarget.style.borderColor = 'var(--color-border)'; }}
             />
           </div>
 
@@ -2813,8 +2781,8 @@ function CreatePageModal({ onClose, onCreate }: { onClose: () => void; onCreate:
                 }}
                 className="px-4 py-2 text-sm font-medium capitalize transition-colors"
                 style={{
-                  color: activeTab === tab ? '#655BD3' : '#6B7280',
-                  borderBottom: activeTab === tab ? '2px solid #655BD3' : '2px solid transparent',
+                  color: activeTab === tab ? 'var(--color-primary)' : 'var(--color-text-3)',
+                  borderBottom: activeTab === tab ? '2px solid var(--color-primary)' : '2px solid transparent',
                 }}
               >
                 {tab === 'templates' ? 'Templates' : 'Custom'}
@@ -2835,21 +2803,21 @@ function CreatePageModal({ onClose, onCreate }: { onClose: () => void; onCreate:
                     onClick={() => handleSelectTemplate(tpl.id)}
                     className="text-left rounded-xl overflow-hidden transition-all"
                     style={{
-                      border: `2px solid ${isSelected ? '#655BD3' : '#E5E7EB'}`,
-                      background: 'white',
-                      boxShadow: isSelected ? '0 0 0 3px #EEE9FF' : 'none',
+                      border: `2px solid ${isSelected ? 'var(--color-primary)' : 'var(--color-border)'}`,
+                      background: 'var(--color-surface)',
+                      boxShadow: isSelected ? '0 0 0 3px var(--color-focus-ring)' : 'none',
                     }}
                   >
                     {/* Mini dashboard preview */}
-                    <div style={{ background: '#F8F7FF', borderBottom: `1px solid ${isSelected ? '#DDD6FE' : '#F3F4F6'}`, padding: '14px 14px 10px' }}>
+                    <div style={{ background: 'var(--color-widget-preview-bg)', borderBottom: `1px solid ${isSelected ? 'var(--color-accent-border)' : 'var(--color-border-subtle)'}`, padding: '14px 14px 10px' }}>
                       {tpl.id === 'tpl_traffic' && <TrafficPreview color={tpl.iconColor} />}
                       {tpl.id === 'tpl_demo'    && <DemoPreview    color={tpl.iconColor} />}
                       {tpl.id === 'tpl_queue'   && <QueuePreview   color={tpl.iconColor} />}
                     </div>
                     {/* Label */}
                     <div className="px-4 py-3">
-                      <p className="text-sm font-semibold" style={{ color: isSelected ? '#655BD3' : '#111827' }}>{tpl.label}</p>
-                      <p className="text-[11px] mt-0.5 leading-snug" style={{ color: '#9CA3AF' }}>{tpl.description}</p>
+                      <p className="text-sm font-semibold" style={{ color: isSelected ? 'var(--color-primary)' : 'var(--color-text-1)' }}>{tpl.label}</p>
+                      <p className="text-[11px] mt-0.5 leading-snug" style={{ color: 'var(--color-text-4)' }}>{tpl.description}</p>
                     </div>
                   </button>
                 );
@@ -2860,7 +2828,7 @@ function CreatePageModal({ onClose, onCreate }: { onClose: () => void; onCreate:
             <div className="space-y-5">
               {groups.map(group => (
                 <div key={group}>
-                  <p className="text-xs font-bold uppercase mb-2.5" style={{ color: '#9CA3AF', letterSpacing: '0.07em' }}>{group}</p>
+                  <p className="text-xs font-bold uppercase mb-2.5" style={{ color: 'var(--color-text-4)', letterSpacing: '0.07em' }}>{group}</p>
                   <div className="grid grid-cols-2 gap-3">
                     {ALL_WIDGETS.filter(w => w.group === group).map(widget => {
                       const isSelected = customSelected.has(widget.id);
@@ -2870,22 +2838,22 @@ function CreatePageModal({ onClose, onCreate }: { onClose: () => void; onCreate:
                           onClick={() => toggleCustomWidget(widget.id)}
                           className="text-left rounded-xl overflow-hidden transition-all"
                           style={{
-                            border: `1.5px solid ${isSelected ? '#655BD3' : '#E5E7EB'}`,
-                            background: 'white',
-                            boxShadow: isSelected ? '0 0 0 3px #EEE9FF' : 'none',
+                            border: `1.5px solid ${isSelected ? 'var(--color-primary)' : 'var(--color-border)'}`,
+                            background: 'var(--color-surface)',
+                            boxShadow: isSelected ? '0 0 0 3px var(--color-focus-ring)' : 'none',
                           }}
                         >
                           <div style={{
-                            background: '#F8F7FF',
-                            borderBottom: `1px solid ${isSelected ? '#DDD6FE' : '#F3F4F6'}`,
+                            background: 'var(--color-widget-preview-bg)',
+                            borderBottom: `1px solid ${isSelected ? 'var(--color-accent-border)' : 'var(--color-border-subtle)'}`,
                             padding: '12px 12px 8px',
                             pointerEvents: 'none',
                           }}>
                             {widget.preview}
                           </div>
                           <div style={{ padding: '8px 10px 9px' }}>
-                            <p style={{ fontSize: 11.5, fontWeight: 600, color: isSelected ? '#655BD3' : '#111827' }}>{widget.label}</p>
-                            <p style={{ fontSize: 10.5, color: '#9CA3AF', marginTop: 2 }}>{widget.description}</p>
+                            <p style={{ fontSize: 11.5, fontWeight: 600, color: isSelected ? 'var(--color-primary)' : 'var(--color-text-1)' }}>{widget.label}</p>
+                            <p style={{ fontSize: 10.5, color: 'var(--color-text-4)', marginTop: 2 }}>{widget.description}</p>
                           </div>
                         </button>
                       );
@@ -2900,18 +2868,18 @@ function CreatePageModal({ onClose, onCreate }: { onClose: () => void; onCreate:
         {/* Footer */}
         <div
           className="flex items-center justify-between px-6 py-4"
-          style={{ borderTop: '1px solid #F3F4F6', flexShrink: 0 }}
+          style={{ borderTop: '1px solid var(--color-border-subtle)', flexShrink: 0 }}
         >
           <button
             onClick={onClose}
             className="px-4 py-2 rounded-lg text-sm font-medium"
-            style={{ border: '1px solid #E5E7EB', color: '#374151' }}
+            style={{ border: '1px solid var(--color-border)', color: 'var(--color-text-2)' }}
           >Cancel</button>
           <button
             onClick={handleCreate}
             disabled={!canCreate}
             className="px-5 py-2 rounded-lg text-sm font-semibold text-white transition-opacity"
-            style={{ background: '#655BD3', opacity: canCreate ? 1 : 0.4, cursor: canCreate ? 'pointer' : 'not-allowed' }}
+            style={{ background: 'var(--color-primary-emphasis)', opacity: canCreate ? 1 : 0.4, cursor: canCreate ? 'pointer' : 'not-allowed' }}
           >Create Page</button>
         </div>
       </div>
@@ -2929,14 +2897,12 @@ const DEFAULT_TABS: AnalyticsTab[] = [
       'footfall_trend', 'passerby_trend',
       'india_walkin_chart', 'region_compare_chart',
       'peak_hours', 'conversion_rate',
-      'overall_footfall_trends',
       'footfall_heatmap',
       // Queue
       'queue_length', 'wait_time',
       // Demographics
       'demographics_donut', 'gender_trend',
-      'footfall_age_groups', 'footfall_gender',
-      'age_bar', 'demographics_breakdown',
+      'age_bar',
       'gender_by_hour', 'gender_by_region',
       'age_grp_hourly', 'age_grp_regional',
       'gender_breakdown_pie', 'age_breakdown_pie',
@@ -2944,7 +2910,6 @@ const DEFAULT_TABS: AnalyticsTab[] = [
       'top5_performers', 'bottom5_performers',
       'top_stores', 'store_conversion',
       'store_heatmap', 'store_demo_ranking',
-      'store_performance_footfall', 'store_performance_overall',
       'store_staff_assist',
     ],
   },
@@ -2963,9 +2928,17 @@ const DEFAULT_TABS: AnalyticsTab[] = [
     label: 'Store Performance',
     widgets: ['top5_performers', 'bottom5_performers', 'store_demo_ranking', 'store_staff_assist', 'store_conversion', 'footfall_heatmap'],
   },
+  {
+    id: 'tab_queue',
+    label: 'Queue Management',
+    widgets: ['queue_length', 'wait_time', 'peak_hours', 'conversion_rate'],
+  },
 ];
 
 export default function AnalyticsPage() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
   const [tabs, setTabs] = useState<AnalyticsTab[]>(DEFAULT_TABS);
   const [activeTab, setActiveTab] = useState<string | null>('tab_overview');
   const [showAddWidgets, setShowAddWidgets] = useState(false);
@@ -2973,8 +2946,23 @@ export default function AnalyticsPage() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [draftWidgets, setDraftWidgets] = useState<string[]>([]);
   const [timeframe, setTimeframe] = useState<Timeframe>('M');
+  const [autoSnapshots, setAutoSnapshots] = useState(false);
   const dragItem = useRef<number | null>(null);
   const dragOver = useRef<number | null>(null);
+
+  // Handle Quick Action deep-links
+  useEffect(() => {
+    const action = searchParams.get('action');
+    if (action === 'new-page') {
+      setShowCreatePage(true);
+      router.replace('/dashboard/analytics');
+    } else if (action === 'view-snapshots') {
+      setAutoSnapshots(true);
+      router.replace('/dashboard/analytics');
+      // Reset flag after one tick so it doesn't re-fire on rerenders
+      setTimeout(() => setAutoSnapshots(false), 100);
+    }
+  }, [searchParams, router]);
 
   const currentTab = tabs.find(t => t.id === activeTab) ?? null;
 
@@ -3053,7 +3041,7 @@ export default function AnalyticsPage() {
       {/* Top tab bar — only shown when pages exist */}
       {tabs.length > 0 && (
         <div
-          style={{ display: 'flex', alignItems: 'stretch', padding: '0 24px', borderBottom: '1px solid #E5E7EB', background: 'white', flexShrink: 0, height: 52 }}
+          style={{ display: 'flex', alignItems: 'stretch', padding: '0 24px', borderBottom: '1px solid var(--color-border)', background: 'var(--color-surface)', flexShrink: 0, height: 52 }}
         >
           {/* Page tabs */}
           {tabs.map(tab => (
@@ -3064,8 +3052,8 @@ export default function AnalyticsPage() {
                   display: 'flex', alignItems: 'center',
                   padding: '0 14px',
                   fontSize: 13, fontWeight: activeTab === tab.id ? 600 : 500,
-                  color: activeTab === tab.id ? '#655BD3' : '#6B7280',
-                  borderBottom: activeTab === tab.id ? '2px solid #655BD3' : '2px solid transparent',
+                  color: activeTab === tab.id ? 'var(--color-primary)' : 'var(--color-text-3)',
+                  borderBottom: activeTab === tab.id ? '2px solid var(--color-primary)' : '2px solid transparent',
                   borderTop: 'none', borderLeft: 'none', borderRight: 'none',
                   marginBottom: -1,
                   background: 'transparent', cursor: 'pointer',
@@ -3077,7 +3065,7 @@ export default function AnalyticsPage() {
               <button
                 onClick={() => deleteTab(tab.id)}
                 className="opacity-0 group-hover:opacity-100 ml-0.5 p-0.5 rounded transition-opacity"
-                style={{ color: '#9CA3AF' }}
+                style={{ color: 'var(--color-text-4)' }}
               >
                 <X size={12} strokeWidth={2.5} />
               </button>
@@ -3087,9 +3075,9 @@ export default function AnalyticsPage() {
           {/* New Page button */}
           <button
             onClick={() => setShowCreatePage(true)}
-            style={{ display: 'flex', alignItems: 'center', gap: 5, marginLeft: 8, alignSelf: 'center', height: 32, padding: '0 14px', borderRadius: 6, fontSize: 12.5, fontWeight: 500, color: '#655BD3', border: '1px solid #DDD6FE', background: '#F5F3FF', cursor: 'pointer', whiteSpace: 'nowrap' }}
-            onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = '#EDE9FE'}
-            onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = '#F5F3FF'}
+            style={{ display: 'flex', alignItems: 'center', gap: 5, marginLeft: 8, alignSelf: 'center', height: 32, padding: '0 14px', borderRadius: 6, fontSize: 12.5, fontWeight: 500, color: 'var(--color-primary)', border: '1px solid var(--color-accent-border)', background: 'var(--color-accent-bg)', cursor: 'pointer', whiteSpace: 'nowrap' }}
+            onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'var(--color-accent-bg-hover)'}
+            onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'var(--color-accent-bg)'}
           >
             <Plus size={13} strokeWidth={2} />
             New Page
@@ -3102,7 +3090,7 @@ export default function AnalyticsPage() {
             style={{
               display: 'flex', alignItems: 'center', alignSelf: 'center',
               marginRight: 8,
-              background: '#F3F4F6',
+              background: 'var(--color-surface-2)',
               borderRadius: 6,
               padding: 3,
               gap: 2,
@@ -3117,9 +3105,9 @@ export default function AnalyticsPage() {
                   height: 26,
                   borderRadius: 6,
                   border: 'none',
-                  background: timeframe === tf ? 'white' : 'transparent',
+                  background: timeframe === tf ? 'var(--color-surface)' : 'transparent',
                   boxShadow: timeframe === tf ? '0 1px 3px rgba(0,0,0,0.10)' : 'none',
-                  color: timeframe === tf ? '#655BD3' : '#6B7280',
+                  color: timeframe === tf ? 'var(--color-primary)' : 'var(--color-text-3)',
                   fontSize: 12,
                   fontWeight: 700,
                   cursor: 'pointer',
@@ -3131,7 +3119,7 @@ export default function AnalyticsPage() {
             ))}
           </div>
 
-          <div style={{ width: 1, height: 20, background: '#E5E7EB', flexShrink: 0, alignSelf: 'center' }} />
+          <div style={{ width: 1, height: 20, background: 'var(--color-border)', flexShrink: 0, alignSelf: 'center' }} />
 
           {/* Add Widgets + Edit Layout — shown when a page is active */}
           {activeTab && (
@@ -3153,15 +3141,15 @@ export default function AnalyticsPage() {
                     style={{
                       display: 'flex', alignItems: 'center', gap: 6, height: 34, padding: '0 14px',
                       borderRadius: 6, fontSize: 12.5, fontWeight: 600,
-                      background: addWidgetsDisabled ? '#E5E7EB' : '#655BD3',
-                      color: addWidgetsDisabled ? '#9CA3AF' : 'white',
+                      background: addWidgetsDisabled ? 'var(--color-border)' : 'var(--color-primary)',
+                      color: addWidgetsDisabled ? 'var(--color-text-4)' : 'white',
                       border: 'none',
                       cursor: addWidgetsDisabled ? 'not-allowed' : 'pointer',
                       opacity: addWidgetsDisabled ? 0.7 : 1,
                       transition: 'background 150ms, opacity 150ms',
                     }}
-                    onMouseEnter={e => { if (!addWidgetsDisabled) (e.currentTarget as HTMLElement).style.background = '#5549C0'; }}
-                    onMouseLeave={e => { if (!addWidgetsDisabled) (e.currentTarget as HTMLElement).style.background = '#655BD3'; }}
+                    onMouseEnter={e => { if (!addWidgetsDisabled) (e.currentTarget as HTMLElement).style.background = 'var(--color-primary-emphasis-hover)'; }}
+                    onMouseLeave={e => { if (!addWidgetsDisabled) (e.currentTarget as HTMLElement).style.background = 'var(--color-primary-emphasis)'; }}
                   >
                     <Plus size={13} strokeWidth={2.5} />
                     Add Widgets
@@ -3169,9 +3157,9 @@ export default function AnalyticsPage() {
                   {currentTab && currentTab.widgets.length > 0 && (
                     <button
                       onClick={enterEditMode}
-                      style={{ display: 'flex', alignItems: 'center', gap: 6, height: 34, padding: '0 14px', borderRadius: 6, fontSize: 12.5, fontWeight: 600, background: '#F3F4F6', color: '#374151', border: '1px solid #E5E7EB', cursor: 'pointer' }}
-                      onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = '#E9EAEC'}
-                      onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = '#F3F4F6'}
+                      style={{ display: 'flex', alignItems: 'center', gap: 6, height: 34, padding: '0 14px', borderRadius: 6, fontSize: 12.5, fontWeight: 600, background: 'var(--color-surface-2)', color: 'var(--color-text-2)', border: '1px solid var(--color-border)', cursor: 'pointer' }}
+                      onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'var(--color-surface-2)'}
+                      onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'var(--color-surface-2)'}
                     >
                       <Edit2 size={12} strokeWidth={2} />
                       Edit Layout
@@ -3189,8 +3177,8 @@ export default function AnalyticsPage() {
       {isEditMode && (
         <div
           style={{
-            background: '#EEE9FF',
-            borderBottom: '1px solid #DDD6FE',
+            background: 'var(--color-primary-light)',
+            borderBottom: '1px solid var(--color-accent-border)',
             padding: '10px 24px',
             display: 'flex',
             alignItems: 'center',
@@ -3199,9 +3187,9 @@ export default function AnalyticsPage() {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Edit2 size={13} strokeWidth={2} style={{ color: '#655BD3' }} />
-            <span style={{ fontSize: 13, fontWeight: 600, color: '#655BD3' }}>Editing Analytics Layout</span>
-            <span style={{ fontSize: 12, color: '#9CA3AF', marginLeft: 4 }}>
+            <Edit2 size={13} strokeWidth={2} style={{ color: 'var(--color-primary)' }} />
+            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-primary)' }}>Editing Analytics Layout</span>
+            <span style={{ fontSize: 12, color: 'var(--color-text-4)', marginLeft: 4 }}>
               · Drag to reorder · × to remove
             </span>
           </div>
@@ -3210,8 +3198,8 @@ export default function AnalyticsPage() {
               onClick={cancelEditMode}
               style={{
                 padding: '6px 16px', borderRadius: 6,
-                border: '1px solid #DDD6FE',
-                background: 'white', color: '#655BD3',
+                border: '1px solid var(--color-accent-border)',
+                background: 'var(--color-surface)', color: 'var(--color-primary)',
                 fontSize: 12.5, fontWeight: 500, cursor: 'pointer',
               }}
             >Cancel</button>
@@ -3220,7 +3208,7 @@ export default function AnalyticsPage() {
               style={{
                 padding: '6px 16px', borderRadius: 6,
                 border: 'none',
-                background: '#655BD3', color: 'white',
+                background: 'var(--color-primary-emphasis)', color: 'white',
                 fontSize: 12.5, fontWeight: 600, cursor: 'pointer',
               }}
             >Save Layout</button>
@@ -3229,24 +3217,24 @@ export default function AnalyticsPage() {
       )}
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto px-6 pb-6" style={{ background: '#F9FAFB' }}>
+      <div className="flex-1 overflow-y-auto px-6 pb-6" style={{ background: 'var(--color-page-bg)' }}>
         {tabs.length === 0 ? (
           /* ── Empty state: no pages ── */
           <div className="flex flex-col items-center justify-center h-full" style={{ minHeight: 400 }}>
             <div
               className="w-24 h-24 rounded-2xl flex items-center justify-center mb-5"
-              style={{ background: '#EEE9FF' }}
+              style={{ background: 'var(--color-primary-light)' }}
             >
-              <BarChart2 size={40} strokeWidth={1.5} style={{ color: '#655BD3' }} />
+              <BarChart2 size={40} strokeWidth={1.5} style={{ color: 'var(--color-primary)' }} />
             </div>
-            <h3 className="text-xl font-bold mb-2" style={{ color: '#111827' }}>No analytics pages yet</h3>
-            <p className="text-sm mb-6 text-center max-w-xs" style={{ color: '#6B7280' }}>
+            <h3 className="text-xl font-bold mb-2" style={{ color: 'var(--color-text-1)' }}>No analytics pages yet</h3>
+            <p className="text-sm mb-6 text-center max-w-xs" style={{ color: 'var(--color-text-3)' }}>
               Create your first page and start adding widgets, charts, and metrics tailored to your stores.
             </p>
             <button
               onClick={() => setShowCreatePage(true)}
               className="px-6 py-3 rounded-xl text-sm font-semibold text-white transition-colors"
-              style={{ background: '#655BD3' }}
+              style={{ background: 'var(--color-primary-emphasis)' }}
             >
               + Create First Page
             </button>
@@ -3257,16 +3245,16 @@ export default function AnalyticsPage() {
             <div className="flex flex-col items-center justify-center" style={{ minHeight: 300 }}>
               <div
                 className="w-14 h-14 rounded-xl flex items-center justify-center mb-4"
-                style={{ background: '#F3F4F6' }}
+                style={{ background: 'var(--color-surface-2)' }}
               >
-                <LayoutGrid size={24} strokeWidth={1.5} style={{ color: '#9CA3AF' }} />
+                <LayoutGrid size={24} strokeWidth={1.5} style={{ color: 'var(--color-text-4)' }} />
               </div>
-              <p className="text-sm font-semibold mb-1" style={{ color: '#374151' }}>This page is empty</p>
-              <p className="text-xs mb-4" style={{ color: '#9CA3AF' }}>Add widgets to start building your analytics view</p>
+              <p className="text-sm font-semibold mb-1" style={{ color: 'var(--color-text-2)' }}>This page is empty</p>
+              <p className="text-xs mb-4" style={{ color: 'var(--color-text-4)' }}>Add widgets to start building your analytics view</p>
               <button
                 onClick={() => setShowAddWidgets(true)}
                 className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold text-white"
-                style={{ background: '#655BD3' }}
+                style={{ background: 'var(--color-primary-emphasis)' }}
               >
                 <Plus size={14} strokeWidth={2} />
                 Add Widgets
@@ -3276,7 +3264,7 @@ export default function AnalyticsPage() {
             <>
             <GlobalLegend />
             <div className="grid grid-cols-2 gap-4">
-              {balanceWidgetLayout(isEditMode ? draftWidgets : currentTab.widgets).map((widgetId, index) => (
+              {(isEditMode ? draftWidgets : currentTab.widgets).map((widgetId, index) => (
                 <div key={widgetId} style={{ gridColumn: FULL_WIDTH_IDS.has(widgetId) ? 'span 2' : 'span 1' }}>
                   <PlacedWidget
                     widgetId={widgetId}
@@ -3293,6 +3281,7 @@ export default function AnalyticsPage() {
                     onDragEnter={(i) => { dragOver.current = i; }}
                     onDragEnd={handleDragSort}
                     timeframe={timeframe}
+                    autoOpenSnapshots={widgetId === 'footfall_trend' && autoSnapshots}
                   />
                 </div>
               ))}

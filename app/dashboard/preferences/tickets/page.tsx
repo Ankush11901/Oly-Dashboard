@@ -1,5 +1,6 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import {
   Ticket, Plus, ChevronDown, ChevronUp, X,
   AlertTriangle, CheckCircle2, Clock, MessageSquare,
@@ -79,20 +80,20 @@ const TICKETS: SupportTicket[] = [
 
 // ── Config ────────────────────────────────────────────────────────────────────
 const CATEGORY_CFG: Record<TicketCategory, { label: string; color: string; bg: string; icon: React.ReactNode }> = {
-  accuracy:    { label: 'Accuracy',    color: '#D97706', bg: '#FEF3C7', icon: <AlertTriangle size={11} strokeWidth={2.5} /> },
-  requirement: { label: 'Requirement', color: '#00CE9C', bg: '#CCFBF1', icon: <Sparkles      size={11} strokeWidth={2.5} /> },
-  technical:   { label: 'Technical',   color: '#3B82F6', bg: '#DBEAFE', icon: <Layers        size={11} strokeWidth={2.5} /> },
-  other:       { label: 'Other',       color: '#6B7280', bg: '#F3F4F6', icon: <BarChart2     size={11} strokeWidth={2.5} /> },
+  accuracy:    { label: 'Accuracy',    color: '#D97706', bg: 'var(--color-warning-light)', icon: <AlertTriangle size={11} strokeWidth={2.5} /> },
+  requirement: { label: 'Requirement', color: '#00CE9C', bg: '#CCFBF1',                    icon: <Sparkles      size={11} strokeWidth={2.5} /> },
+  technical:   { label: 'Technical',   color: '#3B82F6', bg: 'var(--color-info-light)',    icon: <Layers        size={11} strokeWidth={2.5} /> },
+  other:       { label: 'Other',       color: 'var(--color-text-3)', bg: 'var(--color-surface-2)', icon: <BarChart2 size={11} strokeWidth={2.5} /> },
 };
 
 const STATUS_CFG: Record<TicketStatus, { label: string; color: string; bg: string; border: string; icon: React.ReactNode }> = {
-  open:      { label: 'Open',      color: '#655BD3', bg: '#F5F3FF', border: '#DDD6FE', icon: <Clock         size={11} strokeWidth={2} /> },
-  in_review: { label: 'In Review', color: '#D97706', bg: '#FFFBEB', border: '#FDE68A', icon: <MessageSquare size={11} strokeWidth={2} /> },
-  resolved:  { label: 'Resolved',  color: '#16A34A', bg: '#F0FDF4', border: '#BBF7D0', icon: <CheckCircle2  size={11} strokeWidth={2} /> },
+  open:      { label: 'Open',      color: 'var(--color-primary)', bg: 'var(--color-accent-bg)', border: 'var(--color-accent-border)', icon: <Clock         size={11} strokeWidth={2} /> },
+  in_review: { label: 'In Review', color: 'var(--color-warning)', bg: 'var(--color-warning-light)', border: 'var(--color-border)', icon: <MessageSquare size={11} strokeWidth={2} /> },
+  resolved:  { label: 'Resolved',  color: 'var(--color-success)', bg: 'var(--color-success-light)', border: 'var(--color-border)', icon: <CheckCircle2  size={11} strokeWidth={2} /> },
 };
 
 const STATUS_ACCENT: Record<TicketStatus, string> = {
-  open:      '#655BD3',
+  open:      'var(--chart-1)',
   in_review: '#D97706',
   resolved:  '#16A34A',
 };
@@ -137,9 +138,9 @@ function SupportAvatar({ from }: { from: 'user' | 'support' }) {
   return (
     <div style={{
       width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
-      background: isSupport ? '#655BD3' : '#E5E7EB',
+      background: isSupport ? 'var(--color-primary-emphasis)' : 'var(--color-border)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      fontSize: 10, fontWeight: 700, color: isSupport ? 'white' : '#6B7280',
+      fontSize: 10, fontWeight: 700, color: isSupport ? 'white' : 'var(--color-text-3)',
     }}>
       {isSupport ? 'OS' : 'ME'}
     </div>
@@ -153,8 +154,8 @@ function TicketRow({ ticket }: { ticket: SupportTicket }) {
   return (
     <div
       style={{
-        background: 'white',
-        border: '1px solid #E5E7EB',
+        background: 'var(--color-surface)',
+        border: '1px solid var(--color-border)',
         borderLeft: `3px solid ${accent}`,
         borderRadius: 12,
         overflow: 'hidden',
@@ -169,23 +170,23 @@ function TicketRow({ ticket }: { ticket: SupportTicket }) {
         style={{
           display: 'flex', alignItems: 'center', gap: 14,
           padding: '14px 20px', cursor: 'pointer',
-          borderBottom: open ? '1px solid #F3F4F6' : 'none',
+          borderBottom: open ? '1px solid var(--color-border-subtle)' : 'none',
         }}
         onClick={() => setOpen(!open)}
       >
         {/* Left: category + area */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, minWidth: 0 }}>
           <CategoryBadge cat={ticket.category} />
-          <span style={{ fontSize: 12, color: '#CBD5E1' }}>›</span>
-          <span style={{ fontSize: 13.5, fontWeight: 600, color: '#1E293B', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ticket.area}</span>
+          <span style={{ fontSize: 12, color: 'var(--color-border)' }}>›</span>
+          <span style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--color-text-1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ticket.area}</span>
         </div>
 
         {/* Right: meta + status + chevron */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
-          <span style={{ fontSize: 11, color: '#94A3B8', whiteSpace: 'nowrap', fontFamily: 'monospace', letterSpacing: '0.03em' }}>{ticket.id}</span>
-          <span style={{ fontSize: 11.5, color: '#94A3B8', whiteSpace: 'nowrap' }}>{ticket.date}</span>
+          <span style={{ fontSize: 11, color: 'var(--color-text-4)', whiteSpace: 'nowrap', fontFamily: 'monospace', letterSpacing: '0.03em' }}>{ticket.id}</span>
+          <span style={{ fontSize: 11.5, color: 'var(--color-text-4)', whiteSpace: 'nowrap' }}>{ticket.date}</span>
           <StatusPill status={ticket.status} />
-          <span style={{ color: '#94A3B8', lineHeight: 0 }}>
+          <span style={{ color: 'var(--color-text-4)', lineHeight: 0 }}>
             {open ? <ChevronUp size={14} strokeWidth={2.5} /> : <ChevronDown size={14} strokeWidth={2.5} />}
           </span>
         </div>
@@ -197,14 +198,14 @@ function TicketRow({ ticket }: { ticket: SupportTicket }) {
 
           {/* Meta pills */}
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 12px', borderRadius: 8, background: '#F8FAFC', border: '1px solid #E2E8F0' }}>
-              <MapPin size={12} strokeWidth={2} style={{ color: '#64748B' }} />
-              <span style={{ fontSize: 12.5, fontWeight: 500, color: '#334155' }}>{ticket.store}</span>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 12px', borderRadius: 8, background: 'var(--color-surface-2)', border: '1px solid var(--color-border)' }}>
+              <MapPin size={12} strokeWidth={2} style={{ color: 'var(--color-text-3)' }} />
+              <span style={{ fontSize: 12.5, fontWeight: 500, color: 'var(--color-text-2)' }}>{ticket.store}</span>
             </div>
             {ticket.eventTime && (
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 12px', borderRadius: 8, background: '#F8FAFC', border: '1px solid #E2E8F0' }}>
-                <Calendar size={12} strokeWidth={2} style={{ color: '#64748B' }} />
-                <span style={{ fontSize: 12.5, fontWeight: 500, color: '#334155' }}>{ticket.eventTime}</span>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 12px', borderRadius: 8, background: 'var(--color-surface-2)', border: '1px solid var(--color-border)' }}>
+                <Calendar size={12} strokeWidth={2} style={{ color: 'var(--color-text-3)' }} />
+                <span style={{ fontSize: 12.5, fontWeight: 500, color: 'var(--color-text-2)' }}>{ticket.eventTime}</span>
               </div>
             )}
           </div>
@@ -214,12 +215,12 @@ function TicketRow({ ticket }: { ticket: SupportTicket }) {
             <SupportAvatar from="user" />
             <div style={{ flex: 1 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                <span style={{ fontSize: 12, fontWeight: 700, color: '#374151' }}>You</span>
-                <span style={{ fontSize: 11, color: '#CBD5E1' }}>·</span>
-                <span style={{ fontSize: 11, color: '#94A3B8' }}>{ticket.date}</span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text-2)' }}>You</span>
+                <span style={{ fontSize: 11, color: 'var(--color-border)' }}>·</span>
+                <span style={{ fontSize: 11, color: 'var(--color-text-4)' }}>{ticket.date}</span>
               </div>
-              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 10, padding: '12px 14px' }}>
-                <p style={{ fontSize: 13, color: '#374151', lineHeight: 1.65, margin: 0 }}>{ticket.comment}</p>
+              <div style={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', borderRadius: 10, padding: '12px 14px' }}>
+                <p style={{ fontSize: 13, color: 'var(--color-text-2)', lineHeight: 1.65, margin: 0 }}>{ticket.comment}</p>
               </div>
             </div>
           </div>
@@ -230,18 +231,18 @@ function TicketRow({ ticket }: { ticket: SupportTicket }) {
               <SupportAvatar from={reply.from} />
               <div style={{ flex: 1 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: reply.from === 'support' ? '#655BD3' : '#374151' }}>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: reply.from === 'support' ? 'var(--color-primary)' : 'var(--color-text-2)' }}>
                     {reply.from === 'support' ? 'Oly Support' : 'You'}
                   </span>
-                  <span style={{ fontSize: 11, color: '#CBD5E1' }}>·</span>
-                  <span style={{ fontSize: 11, color: '#94A3B8' }}>{reply.time}</span>
+                  <span style={{ fontSize: 11, color: 'var(--color-border)' }}>·</span>
+                  <span style={{ fontSize: 11, color: 'var(--color-text-4)' }}>{reply.time}</span>
                 </div>
                 <div style={{
-                  background: reply.from === 'support' ? '#F5F3FF' : '#F8FAFC',
-                  border: `1px solid ${reply.from === 'support' ? '#DDD6FE' : '#E2E8F0'}`,
+                  background: reply.from === 'support' ? 'var(--color-accent-bg)' : 'var(--color-surface-2)',
+                  border: `1px solid ${reply.from === 'support' ? 'var(--color-accent-border)' : 'var(--color-border)'}`,
                   borderRadius: 10, padding: '12px 14px',
                 }}>
-                  <p style={{ fontSize: 13, color: '#374151', lineHeight: 1.65, margin: 0 }}>{reply.body}</p>
+                  <p style={{ fontSize: 13, color: 'var(--color-text-2)', lineHeight: 1.65, margin: 0 }}>{reply.body}</p>
                 </div>
               </div>
             </div>
@@ -293,13 +294,15 @@ function RaiseModal({ onClose, onSubmit }: { onClose: () => void; onSubmit: (t: 
 
   const field: React.CSSProperties = {
     width: '100%', fontSize: 13, borderRadius: 8,
-    border: '1px solid #E5E7EB', padding: '9px 12px',
-    color: '#111827', background: 'white', outline: 'none',
+    border: '1px solid var(--color-border)', padding: '9px 12px',
+    color: 'var(--color-text-1)', background: 'var(--color-surface)', outline: 'none',
     boxSizing: 'border-box',
   };
+  // Select fields need extra right padding so text doesn't overlap the native chevron
+  const selectField: React.CSSProperties = { ...field, paddingRight: 32 };
   const label: React.CSSProperties = {
     display: 'block', fontSize: 11, fontWeight: 700,
-    color: '#6B7280', marginBottom: 6, letterSpacing: '0.06em', textTransform: 'uppercase',
+    color: 'var(--color-text-3)', marginBottom: 6, letterSpacing: '0.06em', textTransform: 'uppercase',
   };
 
   return (
@@ -309,18 +312,18 @@ function RaiseModal({ onClose, onSubmit }: { onClose: () => void; onSubmit: (t: 
     >
       <div
         onClick={e => e.stopPropagation()}
-        style={{ background: 'white', borderRadius: 16, width: '100%', maxWidth: 520, boxShadow: '0 24px 64px rgba(0,0,0,0.18)', overflow: 'hidden' }}
+        style={{ background: 'var(--color-surface)', borderRadius: 16, width: '100%', maxWidth: 520, boxShadow: '0 24px 64px rgba(0,0,0,0.18)', overflow: 'hidden' }}
       >
         {/* Modal header */}
-        <div style={{ padding: '20px 24px 18px', borderBottom: '1px solid #F3F4F6', display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{ width: 36, height: 36, borderRadius: 10, background: '#EEE9FF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Ticket size={18} strokeWidth={1.5} style={{ color: '#655BD3' }} />
+        <div style={{ padding: '20px 24px 18px', borderBottom: '1px solid var(--color-border-subtle)', display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{ width: 36, height: 36, borderRadius: 10, background: 'var(--color-primary-light)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Ticket size={18} strokeWidth={1.5} style={{ color: 'var(--color-primary)' }} />
           </div>
           <div>
-            <p style={{ fontSize: 15, fontWeight: 700, color: '#111827', marginBottom: 1 }}>Raise a New Concern</p>
-            <p style={{ fontSize: 12, color: '#9CA3AF' }}>We'll review and respond within 24 hours</p>
+            <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-text-1)', marginBottom: 1 }}>Raise a New Concern</p>
+            <p style={{ fontSize: 12, color: 'var(--color-text-4)' }}>We'll review and respond within 24 hours</p>
           </div>
-          <button onClick={onClose} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: '#9CA3AF', cursor: 'pointer', padding: 4, borderRadius: 6 }}>
+          <button onClick={onClose} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: 'var(--color-text-4)', cursor: 'pointer', padding: 4, borderRadius: 6 }}>
             <X size={18} strokeWidth={2} />
           </button>
         </div>
@@ -330,7 +333,7 @@ function RaiseModal({ onClose, onSubmit }: { onClose: () => void; onSubmit: (t: 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
             <div>
               <label style={label}>Category</label>
-              <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value as TicketCategory })} style={{ ...field, cursor: 'pointer' }}>
+              <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value as TicketCategory })} style={{ ...selectField, cursor: 'pointer' }}>
                 {(Object.keys(CATEGORY_CFG) as TicketCategory[]).map(k => (
                   <option key={k} value={k}>{CATEGORY_CFG[k].label}</option>
                 ))}
@@ -338,7 +341,7 @@ function RaiseModal({ onClose, onSubmit }: { onClose: () => void; onSubmit: (t: 
             </div>
             <div>
               <label style={label}>Area</label>
-              <select value={form.area} onChange={e => setForm({ ...form, area: e.target.value })} style={{ ...field, cursor: 'pointer' }}>
+              <select value={form.area} onChange={e => setForm({ ...form, area: e.target.value })} style={{ ...selectField, cursor: 'pointer' }}>
                 {AREAS.map(a => <option key={a}>{a}</option>)}
               </select>
             </div>
@@ -346,13 +349,13 @@ function RaiseModal({ onClose, onSubmit }: { onClose: () => void; onSubmit: (t: 
 
           <div>
             <label style={label}>Store</label>
-            <select value={form.store} onChange={e => setForm({ ...form, store: e.target.value })} style={{ ...field, cursor: 'pointer' }}>
+            <select value={form.store} onChange={e => setForm({ ...form, store: e.target.value })} style={{ ...selectField, cursor: 'pointer' }}>
               {STORES.map(s => <option key={s}>{s}</option>)}
             </select>
           </div>
 
           <div>
-            <label style={label}>Event Time <span style={{ color: '#9CA3AF', fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(optional)</span></label>
+            <label style={label}>Event Time <span style={{ color: 'var(--color-text-4)', fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(optional)</span></label>
             <input
               type="text"
               placeholder="e.g. Yesterday, 2:30 PM or 11:00 AM – 12:00 PM"
@@ -378,13 +381,13 @@ function RaiseModal({ onClose, onSubmit }: { onClose: () => void; onSubmit: (t: 
             <button
               type="button"
               onClick={onClose}
-              style={{ flex: 1, height: 40, borderRadius: 8, border: '1px solid #E5E7EB', background: 'white', fontSize: 13, fontWeight: 500, color: '#374151', cursor: 'pointer' }}
+              style={{ flex: 1, height: 40, borderRadius: 8, border: '1px solid var(--color-border)', background: 'var(--color-surface)', fontSize: 13, fontWeight: 500, color: 'var(--color-text-2)', cursor: 'pointer' }}
             >
               Cancel
             </button>
             <button
               type="submit"
-              style={{ flex: 2, height: 40, borderRadius: 8, border: 'none', background: '#655BD3', fontSize: 13, fontWeight: 600, color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7 }}
+              style={{ flex: 2, height: 40, borderRadius: 8, border: 'none', background: 'var(--color-primary-emphasis)', fontSize: 13, fontWeight: 600, color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7 }}
             >
               <Ticket size={14} strokeWidth={2} />
               Submit Ticket
@@ -399,9 +402,20 @@ function RaiseModal({ onClose, onSubmit }: { onClose: () => void; onSubmit: (t: 
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 export default function MyTicketsPage() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
   const [tickets, setTickets] = useState<SupportTicket[]>(TICKETS);
   const [showModal, setShowModal] = useState(false);
   const [filter, setFilter] = useState<'all' | TicketStatus>('all');
+
+  // Auto-open Raise New Concern modal when navigated from Quick Actions
+  useEffect(() => {
+    if (searchParams.get('action') === 'raise-concern') {
+      setShowModal(true);
+      router.replace('/dashboard/preferences/tickets');
+    }
+  }, [searchParams, router]);
 
   const filtered = filter === 'all' ? tickets : tickets.filter(t => t.status === filter);
 
@@ -418,12 +432,12 @@ export default function MyTicketsPage() {
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 28 }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-            <div style={{ width: 36, height: 36, borderRadius: 10, background: '#EEE9FF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Ticket size={18} strokeWidth={1.5} style={{ color: '#655BD3' }} />
+            <div style={{ width: 36, height: 36, borderRadius: 10, background: 'var(--color-primary-light)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Ticket size={18} strokeWidth={1.5} style={{ color: 'var(--color-primary)' }} />
             </div>
-            <h1 style={{ fontSize: 22, fontWeight: 700, color: '#0F172A', letterSpacing: '-0.02em', margin: 0 }}>My Tickets</h1>
+            <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--color-text-1)', letterSpacing: '-0.02em', margin: 0 }}>My Tickets</h1>
           </div>
-          <p style={{ fontSize: 13, color: '#94A3B8', margin: 0, paddingLeft: 46 }}>
+          <p style={{ fontSize: 13, color: 'var(--color-text-4)', margin: 0, paddingLeft: 46 }}>
             Track concerns you&apos;ve raised and see responses from the Oly support team.
           </p>
         </div>
@@ -432,14 +446,14 @@ export default function MyTicketsPage() {
           style={{
             display: 'flex', alignItems: 'center', gap: 8,
             padding: '10px 18px', borderRadius: 10, border: 'none',
-            background: '#655BD3', color: 'white',
+            background: 'var(--color-primary-emphasis)', color: 'white',
             fontSize: 13.5, fontWeight: 600, cursor: 'pointer',
             boxShadow: '0 2px 8px rgba(101,91,211,0.30)',
             transition: 'background 150ms ease, box-shadow 150ms ease',
             flexShrink: 0,
           }}
-          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#5549C0'; }}
-          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '#655BD3'; }}
+          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--color-primary-emphasis-hover)'; }}
+          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--color-primary-emphasis)'; }}
         >
           <Plus size={15} strokeWidth={2.5} />
           Raise New Concern
@@ -449,7 +463,7 @@ export default function MyTicketsPage() {
       {/* KPI summary strip */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginBottom: 24 }}>
         {[
-          { label: 'Total Raised',     value: total,          color: '#655BD3', bg: '#F5F3FF', border: '#DDD6FE', status: 'all'      as const },
+          { label: 'Total Raised',     value: total,          color: 'var(--color-primary)', bg: 'var(--color-accent-bg)', border: 'var(--color-accent-border)', status: 'all'      as const },
           { label: 'Open / In Review', value: openCount,      color: '#D97706', bg: '#FFFBEB', border: '#FDE68A', status: 'open'     as const },
           { label: 'Resolved',         value: resolvedCount,  color: '#16A34A', bg: '#F0FDF4', border: '#BBF7D0', status: 'resolved' as const },
         ].map(({ label, value, color, bg, border, status }) => (
@@ -457,18 +471,18 @@ export default function MyTicketsPage() {
             key={label}
             onClick={() => setFilter(filter === status ? 'all' : status)}
             style={{
-              background: filter === status ? bg : 'white',
-              border: `1px solid ${filter === status ? border : '#E5E7EB'}`,
+              background: filter === status ? bg : 'var(--color-surface)',
+              border: `1px solid ${filter === status ? border : 'var(--color-border)'}`,
               borderRadius: 12, padding: '20px 22px',
               textAlign: 'left', cursor: 'pointer',
-              boxShadow: filter === status ? `0 2px 12px ${color}18` : '0 1px 2px rgba(0,0,0,0.04)',
+              boxShadow: filter === status ? `0 2px 12px ${color}18` : '0 1px 2px var(--color-border-subtle)',
               transition: 'all 150ms ease',
             }}
           >
-            <p style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: filter === status ? color : '#9CA3AF', marginBottom: 10 }}>
+            <p style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: filter === status ? color : 'var(--color-text-4)', marginBottom: 10 }}>
               {label}
             </p>
-            <p style={{ fontSize: 32, fontWeight: 700, color: filter === status ? color : '#0F172A', lineHeight: 1, letterSpacing: '-0.03em' }}>
+            <p style={{ fontSize: 32, fontWeight: 700, color: filter === status ? color : 'var(--color-text-1)', lineHeight: 1, letterSpacing: '-0.03em' }}>
               {value}
             </p>
           </button>
@@ -476,7 +490,7 @@ export default function MyTicketsPage() {
       </div>
 
       {/* Filter tabs */}
-      <div style={{ display: 'inline-flex', background: '#F1F5F9', borderRadius: 9, padding: 3, gap: 2, marginBottom: 18 }}>
+      <div style={{ display: 'inline-flex', background: 'var(--color-surface-2)', borderRadius: 9, padding: 3, gap: 2, marginBottom: 18 }}>
         {(['all', 'open', 'in_review', 'resolved'] as const).map((f) => {
           const active = filter === f;
           const label = f === 'all' ? 'All' : f === 'in_review' ? 'In Review' : f === 'open' ? 'Open' : 'Resolved';
@@ -487,8 +501,8 @@ export default function MyTicketsPage() {
               style={{
                 padding: '5px 15px', borderRadius: 6, border: 'none', cursor: 'pointer',
                 fontSize: 12.5, fontWeight: active ? 600 : 500,
-                background: active ? 'white' : 'transparent',
-                color: active ? '#0F172A' : '#64748B',
+                background: active ? 'var(--color-surface)' : 'transparent',
+                color: active ? 'var(--color-text-1)' : 'var(--color-text-3)',
                 boxShadow: active ? '0 1px 3px rgba(0,0,0,0.10)' : 'none',
                 transition: 'all 150ms ease',
               }}
@@ -498,8 +512,8 @@ export default function MyTicketsPage() {
                 <span style={{
                   marginLeft: 6, fontSize: 10.5, fontWeight: 700,
                   padding: '1px 6px', borderRadius: 999,
-                  background: active ? (STATUS_CFG[f]?.bg ?? '#F3F4F6') : '#E2E8F0',
-                  color: active ? (STATUS_CFG[f]?.color ?? '#6B7280') : '#94A3B8',
+                  background: active ? (STATUS_CFG[f]?.bg ?? 'var(--color-surface-2)') : 'var(--color-border)',
+                  color: active ? (STATUS_CFG[f]?.color ?? 'var(--color-text-3)') : 'var(--color-text-4)',
                 }}>
                   {tickets.filter(t => t.status === f).length}
                 </span>
@@ -512,12 +526,12 @@ export default function MyTicketsPage() {
       {/* Ticket list */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         {filtered.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '56px 0', color: '#94A3B8' }}>
-            <div style={{ width: 56, height: 56, borderRadius: 16, background: '#F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>
+          <div style={{ textAlign: 'center', padding: '56px 0', color: 'var(--color-text-4)' }}>
+            <div style={{ width: 56, height: 56, borderRadius: 16, background: 'var(--color-surface-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>
               <Ticket size={26} strokeWidth={1} style={{ opacity: 0.5 }} />
             </div>
-            <p style={{ fontSize: 14, fontWeight: 600, color: '#334155', marginBottom: 4 }}>No tickets found</p>
-            <p style={{ fontSize: 12.5, color: '#94A3B8' }}>Raise a concern to get started</p>
+            <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-2)', marginBottom: 4 }}>No tickets found</p>
+            <p style={{ fontSize: 12.5, color: 'var(--color-text-4)' }}>Raise a concern to get started</p>
           </div>
         ) : (
           filtered.map(t => <TicketRow key={t.id} ticket={t} />)

@@ -11,8 +11,8 @@ export default function TrafficPage() {
   return (
     <div className="p-8 space-y-6">
       <div>
-        <h1 style={{ fontSize: 18, fontWeight: 700, color: '#111827' }}>Traffic Analytics</h1>
-        <p style={{ fontSize: 13, color: '#6B7280', marginTop: 2 }}>
+        <h1 style={{ fontSize: 18, fontWeight: 700, color: 'var(--color-text-1)' }}>Traffic Analytics</h1>
+        <p style={{ fontSize: 13, color: 'var(--color-text-3)', marginTop: 2 }}>
           Detailed footfall, demographics, and conversion data across all stores.
         </p>
       </div>
