@@ -1,5 +1,5 @@
 'use client';
-import { useState, useRef, useEffect, useLayoutEffect } from 'react';
+import { useState, useRef, useEffect, useLayoutEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import {
   Plus, X, LayoutGrid, BarChart2, Users, Activity, Clock,
@@ -2935,7 +2935,7 @@ const DEFAULT_TABS: AnalyticsTab[] = [
   },
 ];
 
-export default function AnalyticsPage() {
+function AnalyticsPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -3306,5 +3306,13 @@ export default function AnalyticsPage() {
         />
       )}
     </div>
+  );
+}
+
+export default function AnalyticsPage() {
+  return (
+    <Suspense fallback={null}>
+      <AnalyticsPageContent />
+    </Suspense>
   );
 }

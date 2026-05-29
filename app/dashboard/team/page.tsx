@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import {
   Plus, Search, X, Edit2, Trash2, Check,
@@ -854,7 +854,7 @@ function MemberModal({
 }
 
 // ── Page ──────────────────────────────────────────────────────────────────────
-export default function TeamPage() {
+function TeamPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -1200,5 +1200,13 @@ export default function TeamPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function TeamPage() {
+  return (
+    <Suspense fallback={null}>
+      <TeamPageContent />
+    </Suspense>
   );
 }

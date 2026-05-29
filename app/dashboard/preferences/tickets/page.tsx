@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import {
   Ticket, Plus, ChevronDown, ChevronUp, X,
@@ -401,7 +401,7 @@ function RaiseModal({ onClose, onSubmit }: { onClose: () => void; onSubmit: (t: 
 }
 
 // ── Main page ─────────────────────────────────────────────────────────────────
-export default function MyTicketsPage() {
+function MyTicketsPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -542,5 +542,13 @@ export default function MyTicketsPage() {
         <RaiseModal onClose={() => setShowModal(false)} onSubmit={addTicket} />
       )}
     </div>
+  );
+}
+
+export default function MyTicketsPage() {
+  return (
+    <Suspense fallback={null}>
+      <MyTicketsPageContent />
+    </Suspense>
   );
 }
