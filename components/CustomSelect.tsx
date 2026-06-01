@@ -12,9 +12,8 @@ interface CustomSelectProps {
   onChange: (value: string) => void;
   options: SelectOption[];
   placeholder?: string;
-  /** 'sm' — compact toolbar control (~28px tall)
-   *  'md' — form field matching inputStyle height */
-  size?: 'sm' | 'md';
+  /** 'sm' — compact toolbar · 'md' — forms · 'filter' — fixed-width team filters */
+  size?: 'sm' | 'md' | 'filter';
   style?: React.CSSProperties;
 }
 
@@ -32,6 +31,7 @@ export function CustomSelect({
   const [panelStyle, setPanelStyle] = useState<React.CSSProperties>({});
 
   const isSm = size === 'sm';
+  const isFilter = size === 'filter';
   const selectedOpt = options.find(o => o.value === value);
   const displayLabel = selectedOpt?.label ?? placeholder;
   const hasValue = !!selectedOpt;
@@ -106,14 +106,16 @@ export function CustomSelect({
         style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           gap: 6,
-          width: '100%',
-          padding: isSm ? '0 8px' : '9px 10px 9px 12px',
-          height: isSm ? 28 : undefined,
+          width: style?.width ?? '100%',
+          padding: isFilter ? '0 12px' : isSm ? '0 8px' : '9px 10px 9px 12px',
+          height: isFilter ? 38 : isSm ? (style?.height ?? 28) : undefined,
+          minHeight: isFilter ? 38 : isSm && style?.height ? style.height : undefined,
           border: `${isSm ? 1 : 1.5}px solid ${open ? 'var(--color-primary)' : 'var(--color-border)'}`,
           borderRadius: isSm ? 6 : 8,
+          ...(isFilter ? { borderRadius: 8 } : {}),
           background: 'var(--color-surface)',
           color: hasValue ? 'var(--color-text-1)' : 'var(--color-text-4)',
-          fontSize: isSm ? 11.5 : 13,
+          fontSize: isFilter ? 13 : isSm ? 11.5 : 13,
           fontWeight: 400,
           cursor: 'pointer',
           outline: 'none',

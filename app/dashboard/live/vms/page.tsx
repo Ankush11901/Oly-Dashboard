@@ -139,26 +139,27 @@ function CameraFeed({ camera, selected, onToggle, onRoiClick, gridMode }: {
             title="View ROI zones"
             style={{
               display: 'flex', alignItems: 'center', gap: 4,
-              padding: '3px 7px 3px 5px',
-              borderRadius: 5,
-              border: '1px solid rgba(255,255,255,0.22)',
-              background: 'rgba(0,0,0,0.55)',
+              padding: '4px 8px 4px 6px',
+              borderRadius: 6,
+              border: '1px solid color-mix(in srgb, var(--color-primary-emphasis) 65%, transparent)',
+              background: 'color-mix(in srgb, var(--color-primary-emphasis) 88%, #1a1530)',
               backdropFilter: 'blur(8px)',
-              color: 'rgba(255,255,255,0.92)',
+              color: 'var(--color-on-primary)',
               fontSize: 9,
               fontWeight: 700,
               fontFamily: 'var(--font-base, "Neue Haas Grotesk Display Pro", "Helvetica Neue", sans-serif)',
               letterSpacing: '0.04em',
               cursor: 'pointer',
-              transition: 'background 150ms ease, border-color 150ms ease',
+              boxShadow: '0 2px 8px rgba(101, 91, 211, 0.35)',
+              transition: 'background 150ms ease, border-color 150ms ease, box-shadow 150ms ease',
             }}
             onMouseEnter={e => {
-              (e.currentTarget as HTMLElement).style.background = 'rgba(0,0,0,0.72)';
-              (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.35)';
+              (e.currentTarget as HTMLElement).style.background = 'var(--color-primary-emphasis)';
+              (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-primary)';
             }}
             onMouseLeave={e => {
-              (e.currentTarget as HTMLElement).style.background = 'rgba(0,0,0,0.55)';
-              (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.22)';
+              (e.currentTarget as HTMLElement).style.background = 'color-mix(in srgb, var(--color-primary-emphasis) 88%, #1a1530)';
+              (e.currentTarget as HTMLElement).style.borderColor = 'color-mix(in srgb, var(--color-primary-emphasis) 65%, transparent)';
             }}
           >
             <Scan size={9} strokeWidth={2.5} />

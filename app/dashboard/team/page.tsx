@@ -2,49 +2,23 @@
 import React, { useState, useRef, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import {
-  Plus, Search, X, Edit2, Trash2, Check,
+  Plus, Search, X, Edit2, Trash2, Check, Filter,
   LayoutDashboard, BarChart2, Video, UserCog, FileText,
-  Store, Shield, ChevronRight, Users,
+  Store, Users, UsersRound,
   Activity, Download, Camera, KeyRound, ShieldCheck, LogIn,
 } from 'lucide-react';
 import { CustomSelect } from '@/components/CustomSelect';
 import { RolePill } from '@/components/team/RolePill';
-
-// ── Types ─────────────────────────────────────────────────────────────────────
-type Status    = 'Active' | 'On Leave' | 'Inactive';
-type PermLevel = 'full' | 'view' | 'none';
-type UserType  = 'admin' | 'regular';
-type UserCategory = 'all' | 'admin' | 'regular';
-
-interface Member {
-  id: number;
-  name: string;
-  email: string;
-  roleId: string;
-  userType: UserType;
-  location: string;
-  storeAccess: string[];
-  status: Status;
-  avatar?: string;
-  customPerms?: Record<string, PermLevel>;
-}
-
-interface RoleDef {
-  id: string;
-  name: string;
-  description: string;
-  color: string;
-  userType: UserType;
-}
-
-// ── Constants ─────────────────────────────────────────────────────────────────
-const ROLE_DEFS: RoleDef[] = [
-  { id: 'super_admin',       name: 'Super Admin',       description: 'Full unrestricted access to all modules',    color: 'var(--color-primary)', userType: 'admin'   },
-  { id: 'regional_director', name: 'Regional Director', description: 'Cross-store analytics & team oversight',      color: '#00CE9C', userType: 'admin'   },
-  { id: 'store_manager',     name: 'Store Manager',     description: 'Full access to assigned store & team',        color: '#3B82F6', userType: 'regular' },
-  { id: 'security_ops',      name: 'Security Ops',      description: 'Live feed monitoring & incident management',   color: '#F59E0B', userType: 'regular' },
-  { id: 'staff',             name: 'Staff Associate',   description: 'Read-only dashboard & analytics access',       color: '#6B7280', userType: 'regular' },
-];
+import { TeamKpiStrip } from '@/components/team/TeamKpiStrip';
+import { TeamFiltersPanel } from '@/components/team/TeamFiltersPanel';
+import { GroupsPanel, GroupsToolbarExtras } from '@/components/team/GroupsPanel';
+import {
+  type Member, type Status, type PermLevel, type UserType, type UserCategory,
+  type TeamViewMode, type GroupViewLayout, type TeamGroup, type TeamFilters,
+  ROLE_DEFS, MODULES, DEFAULT_ROLE_PERMS, LOCATIONS, STATUS_CFG, PERM_CFG,
+  INITIAL_MEMBERS, INITIAL_GROUPS, EMPTY_FILTERS,
+  getRoleDef, getInitials, memberMatchesSearch,
+} from '@/lib/team-data';
 
 const MODULE_ICONS: Record<string, React.ReactNode> = {
   dashboard: <LayoutDashboard size={13} strokeWidth={1.5} />,
@@ -53,61 +27,6 @@ const MODULE_ICONS: Record<string, React.ReactNode> = {
   team:      <UserCog        size={13} strokeWidth={1.5} />,
   reports:   <FileText       size={13} strokeWidth={1.5} />,
 };
-
-const MODULES = [
-  { key: 'dashboard', label: 'Dashboard' },
-  { key: 'analytics', label: 'Analytics' },
-  { key: 'live_feed', label: 'Live Feed' },
-  { key: 'team',      label: 'Team' },
-  { key: 'reports',   label: 'Reports' },
-];
-
-const DEFAULT_ROLE_PERMS: Record<string, Record<string, PermLevel>> = {
-  super_admin:       { dashboard: 'full', analytics: 'full', live_feed: 'full', team: 'full',  reports: 'full' },
-  regional_director: { dashboard: 'full', analytics: 'full', live_feed: 'full', team: 'view',  reports: 'full' },
-  store_manager:     { dashboard: 'full', analytics: 'view', live_feed: 'full', team: 'view',  reports: 'view' },
-  security_ops:      { dashboard: 'view', analytics: 'none', live_feed: 'full', team: 'none',  reports: 'view' },
-  staff:             { dashboard: 'view', analytics: 'view', live_feed: 'view', team: 'none',  reports: 'view' },
-};
-
-const LOCATIONS = [
-  'Marina Bay Sands', 'Orchard Central', 'VivoCity', 'Bugis Junction',
-  'Tampines Mall', 'Jurong Point', 'Northpoint City', 'Causeway Point', 'Singapore HQ',
-];
-
-const STATUS_CFG: Record<Status, { dot: string; color: string }> = {
-  Active:     { dot: 'var(--status-active-dot)', color: 'var(--status-active-text)' },
-  'On Leave': { dot: 'var(--status-leave-dot)', color: 'var(--status-leave-text)' },
-  Inactive:   { dot: 'var(--status-inactive-dot)', color: 'var(--status-inactive-text)' },
-};
-
-const PERM_CFG: Record<PermLevel, { label: string; bg: string; color: string; border: string }> = {
-  full: { label: 'Full',      bg: 'var(--perm-full-bg)', color: 'var(--perm-full-text)', border: 'var(--perm-full-border)' },
-  view: { label: 'View',      bg: 'var(--perm-view-bg)', color: 'var(--perm-view-text)', border: 'var(--perm-view-border)' },
-  none: { label: 'No Access', bg: 'var(--color-surface-2)', color: 'var(--color-text-4)', border: 'var(--color-border)' },
-};
-
-const INITIAL_MEMBERS: Member[] = [
-  { id: 1, name: 'Aditi Sharma',  email: 'aditi.sharma@olyretail.com',  roleId: 'store_manager',     userType: 'regular', location: 'Marina Bay Sands', storeAccess: ['Marina Bay Sands', 'Orchard Central'],  status: 'Active',   avatar: 'https://i.pravatar.cc/68?img=47' },
-  { id: 2, name: 'Jason Lee',     email: 'jason.lee@olyretail.com',     roleId: 'regional_director', userType: 'admin',   location: 'Singapore HQ',     storeAccess: ['Marina Bay Sands', 'VivoCity', 'Bugis Junction', 'Tampines Mall'], status: 'Active',  avatar: 'https://i.pravatar.cc/68?img=12' },
-  { id: 3, name: 'Sarah Chen',    email: 'sarah.chen@olyretail.com',    roleId: 'staff',             userType: 'regular', location: 'Orchard Central',  storeAccess: ['Orchard Central'],                      status: 'On Leave', avatar: 'https://i.pravatar.cc/68?img=44' },
-  { id: 4, name: 'Michael Tan',   email: 'michael.tan@olyretail.com',   roleId: 'security_ops',      userType: 'regular', location: 'VivoCity',         storeAccess: ['VivoCity', 'Bugis Junction'],            status: 'Active',   avatar: 'https://i.pravatar.cc/68?img=15' },
-  { id: 5, name: 'Priya Nair',    email: 'priya.nair@olyretail.com',    roleId: 'super_admin',       userType: 'admin',   location: 'Singapore HQ',     storeAccess: LOCATIONS,                                status: 'Active',   avatar: 'https://i.pravatar.cc/68?img=49' },
-];
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-function getRoleDef(roleId: string): RoleDef {
-  return ROLE_DEFS.find(r => r.id === roleId) ?? ROLE_DEFS[4];
-}
-
-function getEffectivePerms(member: Member): Record<string, PermLevel> {
-  const base = DEFAULT_ROLE_PERMS[member.roleId] ?? DEFAULT_ROLE_PERMS['staff'];
-  return { ...base, ...member.customPerms };
-}
-
-function getInitials(name: string): string {
-  return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
-}
 
 // avatar bg colors by index
 const AVATAR_COLORS = ['var(--chart-1)', 'var(--chart-2)', 'var(--chart-4)', 'var(--chart-3)', 'var(--chart-5)'];
@@ -392,6 +311,21 @@ function ActivityLogModal({ member, onClose }: { member: Member; onClose: () => 
             </div>
 
             <button
+              type="button"
+              onClick={() => {
+                const rows = [['Date', 'Time', 'Event', 'Detail'], ...filtered.map(log => {
+                  const { date, time } = fmtDateTime(log.timestamp);
+                  return [date, time, log.description, log.detail ?? ''];
+                })];
+                const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+                const blob = new Blob([csv], { type: 'text/csv' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${member.name.replace(/\s+/g, '_')}_activity.csv`;
+                a.click();
+                URL.revokeObjectURL(url);
+              }}
               style={{
                 display: 'flex', alignItems: 'center', gap: 5,
                 height: 34, paddingLeft: 12, paddingRight: 12,
@@ -726,9 +660,8 @@ function MemberModal({
                       >
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
                           <span style={{ fontSize: 12.5, fontWeight: 700, color: active ? 'var(--color-primary)' : 'var(--color-text-1)', flex: 1 }}>{r.name}</span>
-                          {active && <Check size={12} strokeWidth={2.5} style={{ color: 'var(--color-primary)', flexShrink: 0 }} />}
                         </div>
-                        <p style={{ fontSize: 11, color: 'var(--color-text-4)', margin: 0, lineHeight: 1.4 }}>{r.description}</p>
+                        <p style={{ fontSize: 11, color: active ? 'var(--color-text-2)' : 'var(--color-text-4)', margin: 0, lineHeight: 1.4 }}>{r.description}</p>
                       </button>
                     );
                   })}
@@ -767,13 +700,13 @@ function MemberModal({
               <div style={{
                 display: 'flex', alignItems: 'center', gap: 10,
                 padding: '10px 14px', borderRadius: 9, marginBottom: 18,
-                background: selectedRole.color + '0D',
-                border: `1.5px solid ${selectedRole.color}30`,
+                background: 'var(--color-primary-light)',
+                border: '1.5px solid var(--color-accent-border)',
               }}>
-                <span style={{ fontSize: 12.5, fontWeight: 600, color: selectedRole.color }}>
+                <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--color-primary)' }}>
                   {selectedRole.name}
                 </span>
-                <span style={{ fontSize: 12, color: selectedRole.color, opacity: 0.7 }}>
+                <span style={{ fontSize: 12, color: 'var(--color-text-2)' }}>
                   — default permissions applied. Customise below.
                 </span>
               </div>
@@ -858,15 +791,21 @@ function TeamPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const [members,        setMembers]        = useState<Member[]>(INITIAL_MEMBERS);
-  const [category,       setCategory]       = useState<UserCategory>('all');
-  const [search,         setSearch]         = useState('');
-  const [addOpen,        setAddOpen]        = useState(false);
-  const [editMember,     setEditMember]     = useState<Member | null>(null);
-  const [deleteId,       setDeleteId]       = useState<number | null>(null);
+  const [members, setMembers] = useState<Member[]>(INITIAL_MEMBERS);
+  const [groups, setGroups] = useState<TeamGroup[]>(INITIAL_GROUPS);
+  const [viewMode, setViewMode] = useState<TeamViewMode>('users');
+  const [category, setCategory] = useState<UserCategory>('all');
+  const [search, setSearch] = useState('');
+  const [filters, setFilters] = useState<TeamFilters>(EMPTY_FILTERS);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [groupLayout, setGroupLayout] = useState<GroupViewLayout>('grid');
+  const [groupsCreateOpen, setGroupsCreateOpen] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [addOpen, setAddOpen] = useState(false);
+  const [editMember, setEditMember] = useState<Member | null>(null);
+  const [deleteId, setDeleteId] = useState<number | null>(null);
   const [activityMember, setActivityMember] = useState<Member | null>(null);
 
-  // Auto-open Add Member modal when navigated from Quick Actions
   useEffect(() => {
     if (searchParams.get('action') === 'add-member') {
       setAddOpen(true);
@@ -874,18 +813,46 @@ function TeamPageContent() {
     }
   }, [searchParams, router]);
 
+  const memberInGroupFilter = (m: Member) => {
+    if (!filters.groupId) return true;
+    const g = groups.find(x => String(x.id) === filters.groupId);
+    return g ? g.memberIds.includes(m.id) : true;
+  };
+
   const filtered = members.filter(m => {
     const matchesCategory =
       category === 'all' ||
-      (category === 'admin'   && m.userType === 'admin') ||
+      (category === 'admin' && m.userType === 'admin') ||
       (category === 'regular' && m.userType === 'regular');
-    const q = search.toLowerCase();
-    const matchesSearch = !q ||
-      m.name.toLowerCase().includes(q) ||
-      m.email.toLowerCase().includes(q) ||
-      m.location.toLowerCase().includes(q);
-    return matchesCategory && matchesSearch;
+    if (!matchesCategory) return false;
+    if (!memberMatchesSearch(m, search)) return false;
+    if (filters.roleId && m.roleId !== filters.roleId) return false;
+    if (filters.status && m.status !== filters.status) return false;
+    if (filters.store && !m.storeAccess.includes(filters.store) && m.location !== filters.store) return false;
+    if (!memberInGroupFilter(m)) return false;
+    return true;
   });
+
+  const toggleSelect = (id: number) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const handleCreateGroupFromSelection = () => {
+    if (selectedIds.size === 0) return;
+    setGroups(prev => [...prev, {
+      id: Date.now(),
+      name: `New Team (${selectedIds.size} members)`,
+      description: 'Created from selected members',
+      memberIds: Array.from(selectedIds),
+    }]);
+    setSelectedIds(new Set());
+    setViewMode('groups');
+  };
 
   const handleAdd = (data: typeof BLANK_FORM & { customPerms: Record<string, PermLevel> }) => {
     setMembers(prev => [...prev, { ...data, id: Date.now(), storeAccess: data.storeAccess.length ? data.storeAccess : [data.location] }]);
@@ -903,24 +870,57 @@ function TeamPageContent() {
     setDeleteId(null);
   };
 
-  const adminCount   = members.filter(m => m.userType === 'admin').length;
+  const adminCount = members.filter(m => m.userType === 'admin').length;
   const regularCount = members.filter(m => m.userType === 'regular').length;
+  const hasFilters = !!(filters.roleId || filters.status || filters.store || filters.groupId);
 
   return (
     <div style={{ padding: '28px 32px', minHeight: '100%', background: 'var(--color-page-bg)' }}>
 
-      {/* Toolbar */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginBottom: 16 }}>
+        <div style={{ display: 'flex', background: 'var(--color-surface-2)', borderRadius: 10, padding: 3 }}>
+          {([
+            { key: 'users' as const, label: 'Users', icon: <Users size={14} strokeWidth={1.5} /> },
+            { key: 'groups' as const, label: 'Groups', icon: <UsersRound size={14} strokeWidth={1.5} /> },
+          ]).map(tab => {
+            const active = viewMode === tab.key;
+            return (
+              <button
+                key={tab.key}
+                type="button"
+                onClick={() => setViewMode(tab.key)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 7, padding: '7px 16px', borderRadius: 8, border: 'none',
+                  background: active ? 'var(--color-primary-emphasis)' : 'transparent',
+                  color: active ? '#fff' : 'var(--color-text-3)',
+                  fontSize: 13, fontWeight: 600, cursor: 'pointer', transition: 'all 150ms ease',
+                }}
+              >
+                {tab.icon}
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
-        {/* Category tabs — segmented control */}
+      <TeamKpiStrip members={members} groups={groups} />
+
+      {filtersOpen && (
+        <TeamFiltersPanel filters={filters} onChange={setFilters} onClear={() => setFilters(EMPTY_FILTERS)} groups={groups} />
+      )}
+
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
+
+        {viewMode === 'users' ? (
         <div style={{
           display: 'flex', gap: 2,
           background: 'var(--color-surface-2)', borderRadius: 10, padding: 3,
         }}>
           {([
             { key: 'all',     label: 'All Users',     count: members.length },
-            { key: 'admin',   label: 'Admin',         count: adminCount     },
-            { key: 'regular', label: 'Regular',       count: regularCount   },
+            { key: 'admin',   label: 'Admin Users',   count: adminCount     },
+            { key: 'regular', label: 'Regular Users', count: regularCount   },
           ] as { key: UserCategory; label: string; count: number }[]).map(tab => {
             const active = category === tab.key;
             return (
@@ -952,59 +952,107 @@ function TeamPageContent() {
             );
           })}
         </div>
+        ) : (
+          <p style={{ fontSize: 13, color: 'var(--color-text-3)', margin: 0 }}>{groups.length} groups</p>
+        )}
 
-        {/* Search + Add */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
           <div style={{ position: 'relative' }}>
             <Search size={13} style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-4)', pointerEvents: 'none' }} />
             <input
               type="text"
-              placeholder="Search members..."
+              placeholder={viewMode === 'users' ? 'Search users, stores, roles...' : 'Search groups...'}
               value={search}
               onChange={e => setSearch(e.target.value)}
               style={{
-                width: 240, paddingLeft: 33, paddingRight: 12, height: 36,
+                width: 260, paddingLeft: 33, paddingRight: 12, height: 36,
                 border: '1.5px solid var(--color-border)', borderRadius: 8,
                 fontSize: 13, color: 'var(--color-text-1)', outline: 'none',
                 background: 'var(--color-surface-2)',
-                transition: 'border-color 150ms ease',
               }}
               onFocus={e => (e.currentTarget.style.borderColor = 'var(--color-primary)')}
               onBlur={e => (e.currentTarget.style.borderColor = 'var(--color-border)')}
             />
           </div>
           <button
-            onClick={() => setAddOpen(true)}
+            type="button"
+            onClick={() => setFiltersOpen(o => !o)}
             style={{
-              display: 'flex', alignItems: 'center', gap: 7,
-              height: 36, paddingLeft: 16, paddingRight: 16,
-              borderRadius: 8, border: 'none', background: 'var(--color-primary-emphasis)',
-              color: 'white', fontSize: 13, fontWeight: 700, cursor: 'pointer',
-              letterSpacing: '-0.01em',
+              display: 'flex', alignItems: 'center', gap: 6, height: 36, padding: '0 14px',
+              borderRadius: 8,
+              border: `1.5px solid ${filtersOpen || hasFilters ? 'var(--color-primary)' : 'var(--color-border)'}`,
+              background: filtersOpen || hasFilters ? 'var(--color-primary-light)' : 'var(--color-surface)',
+              color: filtersOpen || hasFilters ? 'var(--color-primary)' : 'var(--color-text-2)',
+              fontSize: 13, fontWeight: 500, cursor: 'pointer',
             }}
           >
-            <Plus size={14} strokeWidth={2.5} />
-            Add Member
+            <Filter size={14} />
+            Filters
           </button>
+          {viewMode === 'users' && selectedIds.size > 0 && (
+            <button
+              type="button"
+              onClick={handleCreateGroupFromSelection}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6, height: 36, padding: '0 14px',
+                borderRadius: 8, border: '1.5px solid var(--color-accent-border)', background: 'var(--color-accent-bg)',
+                color: 'var(--color-primary)', fontSize: 13, fontWeight: 600, cursor: 'pointer',
+              }}
+            >
+              <UsersRound size={14} />
+              Create Group ({selectedIds.size})
+            </button>
+          )}
+          {viewMode === 'groups' ? (
+            <GroupsToolbarExtras layout={groupLayout} onLayoutChange={setGroupLayout} onCreateGroup={() => setGroupsCreateOpen(true)} />
+          ) : (
+            <button
+              type="button"
+              onClick={() => setAddOpen(true)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 7, height: 36, padding: '0 16px',
+                borderRadius: 8, border: 'none', background: 'var(--color-primary-emphasis)',
+                color: 'white', fontSize: 13, fontWeight: 700, cursor: 'pointer',
+              }}
+            >
+              <Plus size={14} strokeWidth={2.5} />
+              Add Member
+            </button>
+          )}
         </div>
       </div>
 
+      {viewMode === 'groups' ? (
+        <GroupsPanel
+          groups={groups}
+          setGroups={setGroups}
+          members={members}
+          search={search}
+          layout={groupLayout}
+          onEditMember={setEditMember}
+          createOpen={groupsCreateOpen}
+          onCreateOpenChange={setGroupsCreateOpen}
+        />
+      ) : (
+      <>
       {/* Table */}
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
         <table className="table-surface" style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
           <colgroup>
-            <col style={{ width: '24%' }} />
-            <col style={{ width: '14%' }} />
+            <col style={{ width: 40 }} />
             <col style={{ width: '22%' }} />
+            <col style={{ width: '12%' }} />
+            <col style={{ width: '12%' }} />
+            <col style={{ width: '20%' }} />
             <col style={{ width: 'auto' }} />
             <col style={{ width: 136 }} />
           </colgroup>
           <thead>
             <tr style={{ background: 'var(--color-surface-2)', borderBottom: '1.5px solid var(--color-border-subtle)' }}>
-              {(['Member Name', 'Role', 'Email', 'Access', 'Actions'] as const).map((h, i) => (
+              {(['', 'Member Name', 'User Type', 'Role', 'Email', 'Access', 'Actions'] as const).map((h, i) => (
                 <th key={i} style={{
                   padding: '11px 20px',
-                  textAlign: i === 0 ? 'left' : 'center',
+                  textAlign: i <= 1 ? 'left' : 'center',
                   fontSize: 10.5, fontWeight: 700, color: 'var(--color-text-4)',
                   textTransform: 'uppercase', letterSpacing: '0.07em',
                 }}>
@@ -1016,7 +1064,7 @@ function TeamPageContent() {
           <tbody>
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={5} style={{ padding: '48px 20px', textAlign: 'center', color: 'var(--color-text-4)', fontSize: 13 }}>
+                <td colSpan={7} style={{ padding: '48px 20px', textAlign: 'center', color: 'var(--color-text-4)', fontSize: 13 }}>
                   No members match your search.
                 </td>
               </tr>
@@ -1025,6 +1073,7 @@ function TeamPageContent() {
               const role   = getRoleDef(member.roleId);
               const sc     = STATUS_CFG[member.status];
               const bgColor = AVATAR_COLORS[idx % AVATAR_COLORS.length];
+              const checked = selectedIds.has(member.id);
 
               return (
                 <tr
@@ -1033,6 +1082,9 @@ function TeamPageContent() {
                   onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'var(--color-surface-2)'}
                   onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
                 >
+                  <td style={{ padding: '13px 12px', verticalAlign: 'middle', textAlign: 'center' }}>
+                    <input type="checkbox" checked={checked} onChange={() => toggleSelect(member.id)} style={{ width: 16, height: 16, cursor: 'pointer', accentColor: 'var(--color-primary-emphasis)' }} />
+                  </td>
                   {/* Member Name */}
                   <td style={{ padding: '13px 20px', verticalAlign: 'middle', textAlign: 'left' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 10 }}>
@@ -1052,8 +1104,23 @@ function TeamPageContent() {
                         <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-1)', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                           {member.name}
                         </p>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, marginTop: 4, fontSize: 11, fontWeight: 500, color: sc.color }}>
+                          <span style={{ width: 6, height: 6, borderRadius: '50%', background: sc.dot, flexShrink: 0 }} />
+                          {member.status}
+                        </span>
                       </div>
                     </div>
+                  </td>
+
+                  <td style={{ padding: '13px 20px', verticalAlign: 'middle', textAlign: 'center' }}>
+                    <span style={{
+                      fontSize: 11.5, fontWeight: 600, padding: '4px 10px', borderRadius: 6,
+                      background: member.userType === 'admin' ? 'var(--color-primary-light)' : 'var(--color-surface-2)',
+                      color: member.userType === 'admin' ? 'var(--color-primary)' : 'var(--color-text-3)',
+                      border: `1px solid ${member.userType === 'admin' ? 'var(--color-accent-border)' : 'var(--color-border)'}`,
+                    }}>
+                      {member.userType === 'admin' ? 'Admin' : 'Regular'}
+                    </span>
                   </td>
 
                   {/* Role */}
@@ -1129,9 +1196,12 @@ function TeamPageContent() {
         <div style={{ padding: '10px 20px', borderTop: '1px solid var(--color-border-subtle)' }}>
           <span style={{ fontSize: 12, color: 'var(--color-text-4)' }}>
             Showing {filtered.length} of {members.length} members
+            {selectedIds.size > 0 ? ` · ${selectedIds.size} selected` : ''}
           </span>
         </div>
       </div>
+      </>
+      )}
 
       {/* Add Modal */}
       {addOpen && (

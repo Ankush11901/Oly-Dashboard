@@ -16,7 +16,7 @@ const NAV_NODES: NavNode[] = [
   {
     type: 'section', label: 'Team Management', icon: <Users size={14} strokeWidth={1.5} />,
     items: [
-      { label: 'Staff / Team', href: '/dashboard/team/staff' },
+      { label: 'Team', href: '/dashboard/team' },
       { label: 'Permissions', href: '/dashboard/team/permissions' },
     ],
   },
