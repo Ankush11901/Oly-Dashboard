@@ -105,10 +105,11 @@ export function HomeRedesignView({
   const [activeBar, setActiveBar] = useState(DIP_IDX >= 0 ? DIP_IDX : 0);
 
   const footfall = KPI_CARDS[0];
-  const summary = KPI_CARDS.slice(1);
+  const summaryRows = [...KPI_CARDS.slice(1), footfall];
   const conv = KPI_CARDS[2];
   const storeSignals = SIGNALS.slice(0, 4);
-  const done = tasks.filter(t => t.status === 'done').length;
+  const completedTasks = tasks.filter(t => t.status === 'done');
+  const done = completedTasks.length;
   const taskPct = tasks.length ? Math.round((done / tasks.length) * 100) : 0;
   const trackerTasks = tasks.slice(0, 4);
   const alerts = filteredAlerts.slice(0, 5);
@@ -174,7 +175,7 @@ export function HomeRedesignView({
           <ul className="acru-footfall__facts">
             <li><span>Peak hour</span><strong>1 PM</strong></li>
             <li><span>Top store</span><strong>Marina Bay Sands</strong></li>
-            <li><span>Passerby</span><strong>{formatKpi(summary[0])}</strong></li>
+            <li><span>Passerby</span><strong>{formatKpi(summaryRows[0])}</strong></li>
           </ul>
         </section>
 
@@ -182,7 +183,7 @@ export function HomeRedesignView({
         <section className="acru-card acru-card--summary">
           <h2 className="acru-card__title">Store summary</h2>
           <ul className="acru-summary">
-            {summary.map(card => {
+            {summaryRows.map(card => {
               const up = card.change >= 0;
               return (
                 <li key={card.label}>
@@ -210,6 +211,23 @@ export function HomeRedesignView({
             <div className="acru-limit__fill" style={{ width: `${taskPct}%` }} />
           </div>
           <p className="acru-limit__cap">{taskPct}% complete this week</p>
+          <div className="acru-limit__done-wrap">
+            <p className="acru-limit__done-label">Completed</p>
+            {completedTasks.length === 0 ? (
+              <p className="acru-limit__done-empty">No tasks completed yet</p>
+            ) : (
+              <ul className="acru-limit__done">
+                {completedTasks.map(task => (
+                  <li key={task.id}>
+                    <span className="acru-limit__done-check" aria-hidden>
+                      {STATUS_CFG.done.icon}
+                    </span>
+                    <span className="acru-limit__done-title">{task.title}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </section>
 
         <section className="acru-card acru-card--gauge">
@@ -342,9 +360,6 @@ export function HomeRedesignView({
                   </span>
                   <span className="acru-history__meta">
                     <em className={neg ? 'bad' : 'ok'}>{neg ? 'Alert' : 'Logged'}</em>
-                    <b className={a.type === 'success' ? 'pos' : ''}>
-                      {a.type === 'success' ? '+' : a.type === 'warning' ? '!' : '−'}
-                    </b>
                   </span>
                 </li>
               );
