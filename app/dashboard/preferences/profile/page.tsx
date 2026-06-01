@@ -1,5 +1,5 @@
 'use client';
-import { Suspense, useState, useRef, useEffect } from 'react';
+import { Suspense, useState, useRef, useEffect, type ReactNode } from 'react';
 import { useSearchParams } from 'next/navigation';
 import {
   UserCircle, Mail, Phone, MapPin, Building, Shield, Check,
@@ -184,26 +184,29 @@ function ProfileTab() {
   );
 }
 
-// ── Password input helper ─────────────────────────────────────────────────────
-function PasswordInput({ label, value, onChange, placeholder }: {
-  label: string; value: string; onChange: (v: string) => void; placeholder?: string;
+// ── Password input helper (compact) ───────────────────────────────────────────
+function PasswordInput({ label, value, onChange, placeholder, id }: {
+  label: string; value: string; onChange: (v: string) => void; placeholder?: string; id?: string;
 }) {
   const [show, setShow] = useState(false);
   return (
     <div>
-      <label className="block text-sm font-semibold mb-1.5" style={{ color: 'var(--color-text-2)' }}>{label}</label>
+      <label htmlFor={id} className="block text-xs font-semibold mb-1" style={{ color: 'var(--color-text-2)' }}>
+        {label}
+      </label>
       <div className="relative">
-        <Lock size={15} className="absolute left-3 top-2.5" style={{ color: 'var(--color-text-3)' }} />
+        <Lock size={14} className="absolute left-2.5 top-2" style={{ color: 'var(--color-text-3)' }} />
         <input
+          id={id}
           type={show ? 'text' : 'password'}
           value={value}
           onChange={e => onChange(e.target.value)}
           placeholder={placeholder}
-          className="w-full pl-9 pr-10 py-2.5 rounded-lg border text-sm outline-none"
+          className="w-full pl-8 pr-9 py-2 rounded-lg border text-sm outline-none"
           style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)', color: 'var(--color-text-1)' }}
         />
-        <button type="button" onClick={() => setShow(s => !s)} className="absolute right-3 top-2.5" style={{ color: 'var(--color-text-3)' }}>
-          {show ? <EyeOff size={15} /> : <Eye size={15} />}
+        <button type="button" onClick={() => setShow(s => !s)} className="absolute right-2.5 top-2" style={{ color: 'var(--color-text-3)' }} aria-label={show ? 'Hide password' : 'Show password'}>
+          {show ? <EyeOff size={14} /> : <Eye size={14} />}
         </button>
       </div>
     </div>
@@ -216,13 +219,105 @@ function StrengthBar({ password }: { password: string }) {
   const colors = ['var(--color-border)', '#DC2626', '#F59E0B', '#3B82F6', '#16A34A'];
   if (!password) return null;
   return (
-    <div className="flex items-center gap-2 mt-1.5">
+    <div className="flex items-center gap-2" style={{ height: 16, marginTop: 2 }}>
       <div className="flex gap-1 flex-1">
         {[1, 2, 3, 4].map(i => (
-          <div key={i} style={{ flex: 1, height: 4, borderRadius: 99, background: i <= score ? colors[score] : 'var(--color-border)', transition: 'background 200ms' }} />
+          <div key={i} style={{ flex: 1, height: 3, borderRadius: 99, background: i <= score ? colors[score] : 'var(--color-border)', transition: 'background 200ms' }} />
         ))}
       </div>
-      <span style={{ fontSize: 11, fontWeight: 600, color: colors[score] }}>{labels[score]}</span>
+      <span style={{ fontSize: 10, fontWeight: 600, color: colors[score], minWidth: 36, textAlign: 'right' }}>{labels[score]}</span>
+    </div>
+  );
+}
+
+const PW_RULES = [
+  { id: 'len', label: 'At least 8 characters', test: (p: string) => p.length >= 8 },
+  { id: 'upper', label: 'One uppercase letter', test: (p: string) => /[A-Z]/.test(p) },
+  { id: 'num', label: 'One number', test: (p: string) => /[0-9]/.test(p) },
+  { id: 'special', label: 'One special character', test: (p: string) => /[^A-Za-z0-9]/.test(p) },
+] as const;
+
+function PasswordRequirements({ password }: { password: string }) {
+  return (
+    <div
+      style={{
+        borderRadius: 10,
+        border: '1px solid var(--color-border-subtle)',
+        overflow: 'hidden',
+        background: 'var(--color-surface-2)',
+      }}
+    >
+      <div
+        style={{
+          padding: '6px 12px',
+          fontSize: 10,
+          fontWeight: 700,
+          textTransform: 'uppercase',
+          letterSpacing: '0.06em',
+          color: 'var(--color-text-4)',
+          borderBottom: '1px solid var(--color-border-subtle)',
+          background: 'var(--color-surface)',
+        }}
+      >
+        Password requirements
+      </div>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: 0,
+        }}
+      >
+        {PW_RULES.map((rule, idx) => {
+          const met = password.length > 0 && rule.test(password);
+          return (
+            <div
+              key={rule.id}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                padding: '8px 12px',
+                borderTop: idx >= 2 ? '1px solid var(--color-border-subtle)' : 'none',
+                borderRight: idx % 2 === 0 ? '1px solid var(--color-border-subtle)' : 'none',
+              }}
+            >
+              <span
+                style={{
+                  width: 16,
+                  height: 16,
+                  borderRadius: '50%',
+                  flexShrink: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  background: met ? 'var(--color-success-light)' : 'var(--color-surface)',
+                  border: `1px solid ${met ? 'var(--color-success)' : 'var(--color-border)'}`,
+                }}
+              >
+                {met && <Check size={10} strokeWidth={2.5} style={{ color: 'var(--color-success)' }} />}
+              </span>
+              <span style={{ fontSize: 11, color: met ? 'var(--color-text-1)' : 'var(--color-text-3)', fontWeight: met ? 500 : 400 }}>
+                {rule.label}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function SectionHeading({ icon, title, subtitle }: { icon: ReactNode; title: string; subtitle?: string }) {
+  return (
+    <div style={{ marginBottom: 16 }}>
+      <div className="flex items-center gap-2">
+        <span style={{ color: 'var(--color-primary)', display: 'flex' }}>{icon}</span>
+        <h2 style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text-1)', margin: 0, letterSpacing: '-0.01em' }}>{title}</h2>
+      </div>
+      {subtitle && (
+        <p style={{ fontSize: 12, color: 'var(--color-text-3)', margin: '6px 0 0', lineHeight: 1.45 }}>{subtitle}</p>
+      )}
     </div>
   );
 }
@@ -258,93 +353,338 @@ function PasswordTab() {
     setSessions(prev => prev.filter(s => s.id !== id));
   };
 
+  const revokeOthers = () => {
+    setSessions(prev => prev.filter(s => s.current));
+  };
+
+  const otherSessions = sessions.filter(s => !s.current);
+
   return (
-    <div className="space-y-6">
-      {/* Change Password */}
-      <div className="card">
-        <div className="flex items-center gap-2 mb-5">
-          <Shield size={16} strokeWidth={1.5} style={{ color: 'var(--color-primary)' }} />
-          <h2 style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-1)' }}>Change Password</h2>
-        </div>
-        <form onSubmit={handleChangePassword} className="space-y-4" style={{ maxWidth: 560 }}>
-          <PasswordInput label="Current Password" value={current} onChange={setCurrent} placeholder="Enter current password" />
-          <div>
-            <PasswordInput label="New Password" value={newPw} onChange={setNewPw} placeholder="At least 8 characters" />
-            <StrengthBar password={newPw} />
-          </div>
-          <PasswordInput label="Confirm New Password" value={confirm} onChange={setConfirm} placeholder="Re-enter new password" />
-          {pwError && <p style={{ fontSize: 12, color: '#DC2626' }}>{pwError}</p>}
-          <div className="flex items-center gap-3 pt-1">
-            <button type="submit" className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold text-white" style={{ background: pwSaved ? '#16A34A' : 'var(--color-primary)' }}>
-              {pwSaved && <Check size={14} strokeWidth={2.5} />}
-              {pwSaved ? 'Password Updated!' : 'Update Password'}
-            </button>
-          </div>
-        </form>
-      </div>
+    <div
+      className="card"
+      style={{
+        padding: 0,
+        overflow: 'hidden',
+      }}
+    >
+      <div
+        className="password-access-grid"
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          alignItems: 'stretch',
+          minHeight: 0,
+        }}
+      >
+        {/* ── Left: Change password ─────────────────────────────────────── */}
+        <section
+          style={{
+            padding: '22px 26px',
+            borderRight: '1px solid var(--color-border-subtle)',
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
+          <SectionHeading
+            icon={<Lock size={15} strokeWidth={1.75} />}
+            title="Change password"
+            subtitle="Use a strong password you do not use elsewhere."
+          />
 
-      {/* Two-Factor Authentication */}
-      <div className="card">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div style={{ width: 40, height: 40, borderRadius: 10, background: twoFa ? 'var(--color-primary-light)' : 'var(--color-surface-2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Smartphone size={18} strokeWidth={1.5} style={{ color: twoFa ? 'var(--color-primary)' : 'var(--color-text-4)' }} />
-            </div>
-            <div>
-              <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-1)' }}>Two-Factor Authentication</p>
-              <p style={{ fontSize: 12, color: 'var(--color-text-3)', marginTop: 2 }}>
-                {twoFa ? 'Enabled — your account is protected by 2FA.' : 'Add an extra layer of security to your account.'}
-              </p>
-            </div>
-          </div>
-          <Toggle on={twoFa} onChange={() => setTwoFa(t => !t)} />
-        </div>
-        {twoFa && (
-          <div className="mt-4 rounded-lg p-3" style={{ background: 'var(--color-accent-bg)', border: '1px solid var(--color-accent-border)' }}>
-            <p style={{ fontSize: 12, color: 'var(--color-primary)', fontWeight: 500 }}>
-              2FA is active. Your account requires a verification code on each login.
-            </p>
-          </div>
-        )}
-      </div>
-
-      {/* Active Sessions */}
-      <div className="card">
-        <div className="flex items-center gap-2 mb-4">
-          <Monitor size={16} strokeWidth={1.5} style={{ color: 'var(--color-primary)' }} />
-          <h2 style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-1)' }}>Active Sessions</h2>
-        </div>
-        <div className="space-y-2">
-          {sessions.map(session => (
-            <div key={session.id} className="flex items-center justify-between rounded-lg px-4 py-3" style={{ background: session.current ? 'var(--color-accent-bg)' : 'var(--color-surface-2)', border: `1px solid ${session.current ? 'var(--color-accent-border)' : 'var(--color-border-subtle)'}` }}>
-              <div className="flex items-center gap-3">
-                <div style={{ width: 32, height: 32, borderRadius: 8, background: session.current ? 'var(--color-primary-light)' : 'var(--color-surface-2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Monitor size={14} strokeWidth={1.5} style={{ color: session.current ? 'var(--color-primary)' : 'var(--color-text-4)' }} />
-                </div>
-                <div>
-                  <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-1)' }}>
-                    {session.device}
-                    {session.current && <span style={{ marginLeft: 8, fontSize: 10, fontWeight: 700, color: 'var(--color-primary)', background: 'var(--color-primary-light)', padding: '2px 6px', borderRadius: 4 }}>This device</span>}
-                  </p>
-                  <p style={{ fontSize: 11, color: 'var(--color-text-3)', marginTop: 1 }}>{session.location} · {session.lastActive}</p>
-                </div>
+          <form onSubmit={handleChangePassword} style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <PasswordInput
+                id="pw-current"
+                label="Current password"
+                value={current}
+                onChange={setCurrent}
+                placeholder="Enter current password"
+              />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <PasswordInput
+                  id="pw-new"
+                  label="New password"
+                  value={newPw}
+                  onChange={setNewPw}
+                  placeholder="Create a new password"
+                />
+                <StrengthBar password={newPw} />
+                <PasswordInput
+                  id="pw-confirm"
+                  label="Confirm new password"
+                  value={confirm}
+                  onChange={setConfirm}
+                  placeholder="Re-enter new password"
+                />
               </div>
-              {!session.current && (
-                <button
-                  onClick={() => revokeSession(session.id)}
-                  className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
-                  style={{ color: '#DC2626', background: 'var(--color-error-light)', border: 'none', cursor: 'pointer' }}
+            </div>
+
+            <div style={{ marginTop: 14 }}>
+              <PasswordRequirements password={newPw} />
+            </div>
+
+            <div
+              style={{
+                marginTop: 'auto',
+                paddingTop: 16,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 12,
+                flexWrap: 'wrap',
+              }}
+            >
+              <p style={{ fontSize: 11, color: pwError ? '#DC2626' : 'var(--color-text-4)', margin: 0 }}>
+                {pwError || 'Last changed 3 months ago'}
+              </p>
+              <button
+                type="submit"
+                className="flex items-center gap-2 shrink-0"
+                style={{
+                  padding: '8px 18px',
+                  borderRadius: 8,
+                  border: 'none',
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: '#fff',
+                  cursor: 'pointer',
+                  background: pwSaved ? '#16A34A' : 'var(--color-primary-emphasis)',
+                }}
+              >
+                {pwSaved && <Check size={14} strokeWidth={2.5} />}
+                {pwSaved ? 'Updated' : 'Update password'}
+              </button>
+            </div>
+          </form>
+        </section>
+
+        {/* ── Right: Access controls ────────────────────────────────────── */}
+        <section style={{ padding: '22px 26px', display: 'flex', flexDirection: 'column' }}>
+          <SectionHeading
+            icon={<Shield size={15} strokeWidth={1.75} />}
+            title="Account access"
+            subtitle="Two-factor auth and devices signed in to your account."
+          />
+
+          {/* 2FA — compact row */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 12,
+              padding: '10px 12px',
+              borderRadius: 10,
+              background: twoFa ? 'var(--color-accent-bg)' : 'var(--color-surface-2)',
+              border: `1px solid ${twoFa ? 'var(--color-accent-border)' : 'var(--color-border-subtle)'}`,
+            }}
+          >
+            <div className="flex items-center gap-2.5" style={{ minWidth: 0 }}>
+              <div
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: 8,
+                  flexShrink: 0,
+                  background: twoFa ? 'var(--color-primary-light)' : 'var(--color-surface)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Smartphone size={15} strokeWidth={1.75} style={{ color: twoFa ? 'var(--color-primary)' : 'var(--color-text-4)' }} />
+              </div>
+              <div style={{ minWidth: 0 }}>
+                <p style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--color-text-1)', margin: 0 }}>
+                  Two-factor authentication
+                </p>
+                <p style={{ fontSize: 11, color: 'var(--color-text-3)', margin: '2px 0 0', lineHeight: 1.35 }}>
+                  {twoFa ? 'Verification required at sign-in' : 'Recommended for admin accounts'}
+                </p>
+              </div>
+            </div>
+            <Toggle on={twoFa} onChange={() => setTwoFa(t => !t)} />
+          </div>
+
+          {/* Sessions — dense table */}
+          <div style={{ marginTop: 16, flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: 8,
+              }}
+            >
+              <div className="flex items-center gap-2">
+                <Monitor size={14} strokeWidth={1.75} style={{ color: 'var(--color-primary)' }} />
+                <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text-1)' }}>Active sessions</span>
+                <span
+                  style={{
+                    fontSize: 10,
+                    fontWeight: 700,
+                    padding: '2px 7px',
+                    borderRadius: 99,
+                    background: 'var(--color-surface-2)',
+                    color: 'var(--color-text-3)',
+                    border: '1px solid var(--color-border-subtle)',
+                  }}
                 >
-                  <LogOut size={11} strokeWidth={2} />Revoke
+                  {sessions.length}
+                </span>
+              </div>
+              {otherSessions.length > 0 && (
+                <button
+                  type="button"
+                  onClick={revokeOthers}
+                  className="flex items-center gap-1.5"
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    color: '#DC2626',
+                    background: 'var(--color-error-light)',
+                    border: '1px solid color-mix(in srgb, #DC2626 28%, var(--color-border))',
+                    borderRadius: 8,
+                    cursor: 'pointer',
+                    padding: '6px 12px',
+                    flexShrink: 0,
+                    transition: 'background 150ms ease, border-color 150ms ease',
+                  }}
+                  onMouseEnter={e => {
+                    (e.currentTarget as HTMLButtonElement).style.background = 'color-mix(in srgb, #DC2626 12%, var(--color-error-light))';
+                  }}
+                  onMouseLeave={e => {
+                    (e.currentTarget as HTMLButtonElement).style.background = 'var(--color-error-light)';
+                  }}
+                >
+                  <LogOut size={12} strokeWidth={2} />
+                  Sign out others
                 </button>
               )}
             </div>
-          ))}
-          {sessions.length <= 1 && (
-            <p style={{ fontSize: 12, color: 'var(--color-text-3)', textAlign: 'center', padding: '8px 0' }}>No other active sessions.</p>
-          )}
-        </div>
+
+            <div
+              style={{
+                borderRadius: 10,
+                border: '1px solid var(--color-border-subtle)',
+                overflow: 'hidden',
+                background: 'var(--color-surface)',
+              }}
+            >
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr auto auto',
+                  gap: 8,
+                  padding: '6px 12px',
+                  fontSize: 10,
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.06em',
+                  color: 'var(--color-text-4)',
+                  borderBottom: '1px solid var(--color-border-subtle)',
+                  background: 'var(--color-surface)',
+                }}
+              >
+                <span>Device</span>
+                <span style={{ textAlign: 'right' }}>Last active</span>
+                <span style={{ width: 52, textAlign: 'right' }} />
+              </div>
+
+              {sessions.map((session, idx) => (
+                <div
+                  key={session.id}
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: '1fr auto auto',
+                    gap: 8,
+                    alignItems: 'center',
+                    padding: '8px 12px',
+                    borderTop: idx === 0 ? 'none' : '1px solid var(--color-border-subtle)',
+                    background: session.current ? 'var(--color-accent-bg)' : 'var(--color-surface)',
+                    borderLeft: session.current ? '3px solid var(--color-primary-emphasis)' : '3px solid transparent',
+                    boxShadow: session.current ? 'inset 0 0 0 1px var(--color-accent-border)' : 'none',
+                  }}
+                >
+                  <div style={{ minWidth: 0 }}>
+                    <p
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 600,
+                        color: 'var(--color-text-1)',
+                        margin: 0,
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                      }}
+                    >
+                      {session.device}
+                      {session.current && (
+                        <span
+                          style={{
+                            marginLeft: 6,
+                            fontSize: 9,
+                            fontWeight: 700,
+                            color: 'var(--color-primary)',
+                            verticalAlign: 'middle',
+                          }}
+                        >
+                          · This device
+                        </span>
+                      )}
+                    </p>
+                    <p style={{ fontSize: 10.5, color: 'var(--color-text-3)', margin: '1px 0 0' }}>{session.location}</p>
+                  </div>
+                  <span style={{ fontSize: 11, color: 'var(--color-text-3)', whiteSpace: 'nowrap' }}>{session.lastActive}</span>
+                  <div style={{ width: 52, display: 'flex', justifyContent: 'flex-end' }}>
+                    {!session.current ? (
+                      <button
+                        type="button"
+                        onClick={() => revokeSession(session.id)}
+                        title="Revoke session"
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          width: 28,
+                          height: 28,
+                          borderRadius: 6,
+                          border: 'none',
+                          cursor: 'pointer',
+                          color: '#DC2626',
+                          background: 'var(--color-error-light)',
+                        }}
+                      >
+                        <LogOut size={12} strokeWidth={2} />
+                      </button>
+                    ) : (
+                      <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--color-success)' }}>Active</span>
+                    )}
+                  </div>
+                </div>
+              ))}
+
+              {sessions.length === 0 && (
+                <p style={{ fontSize: 12, color: 'var(--color-text-3)', textAlign: 'center', padding: '16px 12px', margin: 0 }}>
+                  No active sessions.
+                </p>
+              )}
+            </div>
+          </div>
+        </section>
       </div>
+
+      <style>{`
+        @media (max-width: 900px) {
+          .password-access-grid {
+            grid-template-columns: 1fr !important;
+          }
+          .password-access-grid > section:first-child {
+            border-right: none !important;
+            border-bottom: 1px solid var(--color-border-subtle);
+          }
+        }
+      `}</style>
     </div>
   );
 }
