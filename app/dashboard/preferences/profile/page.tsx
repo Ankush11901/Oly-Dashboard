@@ -185,6 +185,8 @@ function ProfileTab() {
 }
 
 // ── Password input helper (compact) ───────────────────────────────────────────
+const PW_INPUT_HEIGHT = 38;
+
 function PasswordInput({ label, value, onChange, placeholder, id }: {
   label: string; value: string; onChange: (v: string) => void; placeholder?: string; id?: string;
 }) {
@@ -194,19 +196,57 @@ function PasswordInput({ label, value, onChange, placeholder, id }: {
       <label htmlFor={id} className="block text-xs font-semibold mb-1" style={{ color: 'var(--color-text-2)' }}>
         {label}
       </label>
-      <div className="relative">
-        <Lock size={14} className="absolute left-2.5 top-2" style={{ color: 'var(--color-text-3)' }} />
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          height: PW_INPUT_HEIGHT,
+          padding: '0 10px 0 12px',
+          borderRadius: 8,
+          border: '1px solid var(--color-border)',
+          background: 'var(--color-surface)',
+        }}
+      >
+        <Lock
+          size={15}
+          strokeWidth={1.75}
+          style={{ color: 'var(--color-text-3)', flexShrink: 0, display: 'block' }}
+          aria-hidden
+        />
         <input
           id={id}
           type={show ? 'text' : 'password'}
           value={value}
           onChange={e => onChange(e.target.value)}
           placeholder={placeholder}
-          className="w-full pl-8 pr-9 py-2 rounded-lg border text-sm outline-none"
-          style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)', color: 'var(--color-text-1)' }}
+          className="flex-1 min-w-0 text-sm outline-none"
+          style={{
+            padding: 0,
+            margin: 0,
+            border: 'none',
+            background: 'transparent',
+            color: 'var(--color-text-1)',
+            fontSize: 13,
+          }}
         />
-        <button type="button" onClick={() => setShow(s => !s)} className="absolute right-2.5 top-2" style={{ color: 'var(--color-text-3)' }} aria-label={show ? 'Hide password' : 'Show password'}>
-          {show ? <EyeOff size={14} /> : <Eye size={14} />}
+        <button
+          type="button"
+          onClick={() => setShow(s => !s)}
+          className="flex items-center justify-center shrink-0"
+          style={{
+            width: 28,
+            height: 28,
+            padding: 0,
+            border: 'none',
+            borderRadius: 6,
+            background: 'transparent',
+            color: 'var(--color-text-3)',
+            cursor: 'pointer',
+          }}
+          aria-label={show ? 'Hide password' : 'Show password'}
+        >
+          {show ? <EyeOff size={15} strokeWidth={1.75} /> : <Eye size={15} strokeWidth={1.75} />}
         </button>
       </div>
     </div>
