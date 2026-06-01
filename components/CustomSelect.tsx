@@ -107,7 +107,7 @@ export function CustomSelect({
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           gap: 6,
           width: style?.width ?? '100%',
-          padding: isFilter ? '0 12px' : isSm ? '0 8px' : '9px 10px 9px 12px',
+          padding: isFilter ? '0 14px 0 12px' : isSm ? '0 10px 0 8px' : '9px 14px 9px 12px',
           height: isFilter ? 38 : isSm ? (style?.height ?? 28) : undefined,
           minHeight: isFilter ? 38 : isSm && style?.height ? style.height : undefined,
           border: `${isSm ? 1 : 1.5}px solid ${open ? 'var(--color-primary)' : 'var(--color-border)'}`,

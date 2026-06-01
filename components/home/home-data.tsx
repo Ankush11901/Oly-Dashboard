@@ -5,25 +5,103 @@ import {
   UserPlus, LayoutGrid, Users, BarChart2, Clock,
 } from 'lucide-react';
 
+export type SignalTone = 'warning' | 'error' | 'success' | 'info' | 'brand';
+
+export function signalIconStyle(tone: SignalTone): { background: string; color: string } {
+  switch (tone) {
+    case 'warning':
+      return { background: 'var(--color-warning-light)', color: 'var(--color-warning)' };
+    case 'error':
+      return { background: 'var(--color-error-light)', color: 'var(--color-error)' };
+    case 'success':
+      return { background: 'var(--color-success-light)', color: 'var(--color-success)' };
+    case 'info':
+      return { background: 'var(--color-info-light)', color: 'var(--color-info)' };
+    case 'brand':
+      return { background: 'var(--color-primary-light)', color: 'var(--color-primary)' };
+  }
+}
+
 export const SIGNALS = [
-  { id: 1, title: 'Below peak hours', summary: 'Footfall 15% below projected peak. Promo push recommended 2–4 PM.', icon: <TrendingDown size={14} strokeWidth={1.5} />, color: '#F59E0B' },
-  { id: 2, title: 'Queue alert — VivoCity', summary: 'Queue depth exceeded threshold for 40 min. Staff reallocation suggested.', icon: <AlertCircle size={14} strokeWidth={1.5} />, color: '#EF4444' },
-  { id: 3, title: 'Conversion trending up', summary: 'Marina Bay Sands leads at 16.2% vs 12.4% avg — best performer this week.', icon: <TrendingUp size={14} strokeWidth={1.5} />, color: '#10B981' },
-  { id: 4, title: 'New tenant impact', summary: 'Jurong Point saw +22% footfall increase after anchor tenant opened last week.', icon: <Activity size={14} strokeWidth={1.5} />, color: '#0EA5E9' },
-  { id: 5, title: 'Camera coverage gap', summary: 'Zone C at Bugis Junction has 18% lower detection confidence than baseline.', icon: <Video size={14} strokeWidth={1.5} />, color: '#8B5CF6' },
+  { id: 1, title: 'Below peak hours', summary: 'Footfall 15% below projected peak. Promo push recommended 2–4 PM.', icon: <TrendingDown size={14} strokeWidth={1.5} />, tone: 'warning' as const },
+  { id: 2, title: 'Queue alert — VivoCity', summary: 'Queue depth exceeded threshold for 40 min. Staff reallocation suggested.', icon: <AlertCircle size={14} strokeWidth={1.5} />, tone: 'error' as const },
+  { id: 3, title: 'Conversion trending up', summary: 'Marina Bay Sands leads at 16.2% vs 12.4% avg — best performer this week.', icon: <TrendingUp size={14} strokeWidth={1.5} />, tone: 'success' as const },
+  { id: 4, title: 'New tenant impact', summary: 'Jurong Point saw +22% footfall increase after anchor tenant opened last week.', icon: <Activity size={14} strokeWidth={1.5} />, tone: 'info' as const },
+  { id: 5, title: 'Camera coverage gap', summary: 'Zone C at Bugis Junction has 18% lower detection confidence than baseline.', icon: <Video size={14} strokeWidth={1.5} />, tone: 'brand' as const },
 ];
 
 export type TaskStatus = 'done' | 'pending' | 'overdue';
+
+export type Recurrence = 'none' | 'daily' | 'weekly' | 'biweekly' | 'monthly' | 'custom';
+export type DurationUnit = 'minutes' | 'hours';
+
+export const WEEKDAYS = [
+  { id: 'mon', label: 'Mon', full: 'Monday' },
+  { id: 'tue', label: 'Tue', full: 'Tuesday' },
+  { id: 'wed', label: 'Wed', full: 'Wednesday' },
+  { id: 'thu', label: 'Thu', full: 'Thursday' },
+  { id: 'fri', label: 'Fri', full: 'Friday' },
+  { id: 'sat', label: 'Sat', full: 'Saturday' },
+  { id: 'sun', label: 'Sun', full: 'Sunday' },
+] as const;
+
+export const RECURRENCE_OPTIONS: { value: Recurrence; label: string }[] = [
+  { value: 'none', label: 'Does not repeat' },
+  { value: 'daily', label: 'Every day' },
+  { value: 'weekly', label: 'Every week' },
+  { value: 'biweekly', label: 'Every 2 weeks' },
+  { value: 'monthly', label: 'Every month' },
+  { value: 'custom', label: 'Custom days' },
+];
 
 export interface Task {
   id: number;
   title: string;
   store: string;
   due: string;
+  dueBy?: string;
   status: TaskStatus;
   requiresPhoto: boolean;
   automated: boolean;
   assignedTo?: string;
+  recurrence?: Recurrence;
+  recurrenceWeekdays?: string[];
+  recurrenceMonthDays?: number[];
+  completeWithinValue?: number;
+  completeWithinUnit?: DurationUnit;
+}
+
+export function formatTaskRecurrence(task: Task): string | null {
+  if (!task.recurrence || task.recurrence === 'none') return null;
+  if (task.recurrence === 'daily') return 'Every day';
+  const weekdayLabels = (task.recurrenceWeekdays ?? [])
+    .map(id => WEEKDAYS.find(d => d.id === id)?.label ?? id)
+    .join(', ');
+  if (task.recurrence === 'monthly') {
+    const dates = (task.recurrenceMonthDays ?? []).sort((a, b) => a - b).join(', ');
+    return dates ? `Monthly · ${dates}` : 'Every month';
+  }
+  if (task.recurrence === 'weekly') {
+    return weekdayLabels ? `Weekly · ${weekdayLabels}` : 'Every week';
+  }
+  if (task.recurrence === 'biweekly') {
+    return weekdayLabels ? `Every 2 weeks · ${weekdayLabels}` : 'Every 2 weeks';
+  }
+  if (task.recurrence === 'custom') {
+    return weekdayLabels ? `Custom · ${weekdayLabels}` : 'Custom schedule';
+  }
+  return null;
+}
+
+export function formatTaskDueWindow(task: Task): string {
+  if (task.dueBy) return task.dueBy;
+  if (task.completeWithinValue != null && task.completeWithinValue > 0) {
+    const u = task.completeWithinUnit ?? 'minutes';
+    const n = task.completeWithinValue;
+    const unitLabel = u === 'hours' ? (n === 1 ? 'hour' : 'hours') : (n === 1 ? 'minute' : 'minutes');
+    return `Within ${n} ${unitLabel}`;
+  }
+  return task.due;
 }
 
 export const INITIAL_TASKS: Task[] = [
@@ -41,11 +119,17 @@ export const STATUS_CFG: Record<TaskStatus, { icon: React.ReactNode; label: stri
   overdue: { icon: <AlertCircle size={14} strokeWidth={2} />, label: 'Overdue', color: 'var(--color-error)', bg: 'var(--color-error-light)' },
 };
 
+export const PRESAVED_CONCERNS = [
+  { id: 'footfall', label: 'Footfall mismatch', description: 'Counts do not match accuracy report' },
+  { id: 'camera', label: 'Camera offline', description: 'Live feed or snapshot unavailable' },
+  { id: 'accuracy', label: 'Accuracy concern', description: 'Demographics or conversion data looks off' },
+];
+
 export const QUICK_ACTIONS = [
-  { label: 'Add a Member', href: '/dashboard/team?action=add-member', icon: <UserPlus size={16} strokeWidth={1.5} /> },
-  { label: 'Raise New Concern', href: '/dashboard/preferences/tickets?action=raise-concern', icon: <AlertCircle size={16} strokeWidth={1.5} /> },
-  { label: 'Create a New Page', href: '/dashboard/analytics?action=new-page', icon: <LayoutGrid size={16} strokeWidth={1.5} /> },
-  { label: 'View Snapshots', href: '/dashboard/analytics?action=view-snapshots', icon: <Video size={16} strokeWidth={1.5} /> },
+  { id: 'member', label: 'Add a Member', href: '/dashboard/team?action=add-member', icon: <UserPlus size={16} strokeWidth={1.5} /> },
+  { id: 'concern', label: 'Raise a Concern', icon: <AlertCircle size={16} strokeWidth={1.5} /> },
+  { id: 'page', label: 'Create a New Page', href: '/dashboard/analytics?action=new-page', icon: <LayoutGrid size={16} strokeWidth={1.5} /> },
+  { id: 'snapshots', label: 'View Snapshots', href: '/dashboard/analytics?action=view-snapshots', icon: <Video size={16} strokeWidth={1.5} /> },
 ];
 
 export interface RecentAlert {
@@ -78,21 +162,3 @@ export const RECENT_REPORTS = [
   { id: 4, name: 'Conversion Rate Analysis', scope: 'All Stores', date: 'May 2026', tag: 'Conversion' },
 ];
 
-export const SUMMARY_CHIPS: { accent: string; text: React.ReactNode }[] = [
-  {
-    accent: 'var(--color-success)',
-    text: <>Marina Bay Sands led footfall today with <strong style={{ color: 'var(--color-success)', fontWeight: 600 }}>15,234</strong> visitors — its highest this month.</>,
-  },
-  {
-    accent: 'var(--color-success)',
-    text: <>Conversion rate is tracking at <strong style={{ color: 'var(--color-success)', fontWeight: 600 }}>12.4%</strong>, up <strong style={{ color: 'var(--color-success)', fontWeight: 600 }}>+1.8 pts</strong> from yesterday.</>,
-  },
-  {
-    accent: 'var(--color-success)',
-    text: <>Peak hour was <strong style={{ color: 'var(--color-success)', fontWeight: 600 }}>1 PM</strong> across all stores — consider extra staffing 12–3 PM tomorrow.</>,
-  },
-  {
-    accent: 'var(--color-error)',
-    text: <><strong style={{ color: 'var(--color-error)', fontWeight: 600 }}>1 camera offline</strong> at Bugis Junction North Entry. Review recommended.</>,
-  },
-];

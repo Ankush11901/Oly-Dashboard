@@ -30,11 +30,9 @@ interface ModulePerm {
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 const ROLES: RoleDef[] = [
-  { id: 'super_admin',       name: 'Super Admin',       description: 'Full unrestricted access to all modules',         color: 'var(--color-primary)', userCount: 2,  isSystem: true  },
-  { id: 'regional_director', name: 'Regional Director', description: 'Cross-store analytics, team oversight',           color: '#3B82F6', userCount: 3,  isSystem: false },
-  { id: 'store_manager',     name: 'Store Manager',     description: 'Full access to assigned store data & team',       color: '#00CE9C', userCount: 8,  isSystem: false },
-  { id: 'security_ops',      name: 'Security Ops',      description: 'Live feed monitoring and incident reporting',      color: '#F59E0B', userCount: 5,  isSystem: false },
-  { id: 'staff',             name: 'Staff Associate',   description: 'Read-only access to dashboards and reports',      color: '#EC4899', userCount: 12, isSystem: false },
+  { id: 'admin', name: 'Admin', description: 'Full access across all regions and stores', color: 'var(--color-primary)', userCount: 2, isSystem: true },
+  { id: 'regional_manager', name: 'Regional Manager', description: 'Access to stores in assigned region', color: '#3B82F6', userCount: 3, isSystem: false },
+  { id: 'store_manager', name: 'Store Manager', description: 'Access to assigned store only', color: '#00CE9C', userCount: 8, isSystem: false },
 ];
 
 function makeModules(perms: [string, React.ReactNode, [string, PermLevel][]][]): ModulePerm[] {
@@ -55,7 +53,7 @@ const I = {
 };
 
 const PERM_MATRIX: Record<string, ModulePerm[]> = {
-  super_admin: makeModules([
+  admin: makeModules([
     ['Dashboard',       I.dash,     [['View',            'full'], ['Edit Layout',       'full']]],
     ['Analytics',       I.analytics,[['View Reports',    'full'], ['Export Data',       'full'], ['Custom Widgets', 'full']]],
     ['Live Feed',       I.feed,     [['View Cameras',    'full'], ['Control PTZ',       'full'], ['Download Footage','full']]],
@@ -63,7 +61,7 @@ const PERM_MATRIX: Record<string, ModulePerm[]> = {
     ['Preferences',     I.prefs,    [['View Settings',   'full'], ['Edit Settings',     'full']]],
     ['Reports',         I.reports,  [['View Reports',    'full'], ['Export Reports',    'full'], ['Schedule Reports','full']]],
   ]),
-  regional_director: makeModules([
+  regional_manager: makeModules([
     ['Dashboard',       I.dash,     [['View',            'full'], ['Edit Layout',       'view']]],
     ['Analytics',       I.analytics,[['View Reports',    'full'], ['Export Data',       'full'], ['Custom Widgets', 'view']]],
     ['Live Feed',       I.feed,     [['View Cameras',    'full'], ['Control PTZ',       'none'], ['Download Footage','view']]],
@@ -78,22 +76,6 @@ const PERM_MATRIX: Record<string, ModulePerm[]> = {
     ['Team Management', I.team,     [['View Team',       'full'], ['Add / Remove Members','view'],['Manage Roles',  'none']]],
     ['Preferences',     I.prefs,    [['View Settings',   'full'], ['Edit Settings',     'view']]],
     ['Reports',         I.reports,  [['View Reports',    'full'], ['Export Reports',    'view'], ['Schedule Reports','none']]],
-  ]),
-  security_ops: makeModules([
-    ['Dashboard',       I.dash,     [['View',            'view'], ['Edit Layout',       'none']]],
-    ['Analytics',       I.analytics,[['View Reports',    'none'], ['Export Data',       'none'], ['Custom Widgets', 'none']]],
-    ['Live Feed',       I.feed,     [['View Cameras',    'full'], ['Control PTZ',       'full'], ['Download Footage','view']]],
-    ['Team Management', I.team,     [['View Team',       'view'], ['Add / Remove Members','none'],['Manage Roles',  'none']]],
-    ['Preferences',     I.prefs,    [['View Settings',   'none'], ['Edit Settings',     'none']]],
-    ['Reports',         I.reports,  [['View Reports',    'view'], ['Export Reports',    'none'], ['Schedule Reports','none']]],
-  ]),
-  staff: makeModules([
-    ['Dashboard',       I.dash,     [['View',            'view'], ['Edit Layout',       'none']]],
-    ['Analytics',       I.analytics,[['View Reports',    'view'], ['Export Data',       'none'], ['Custom Widgets', 'none']]],
-    ['Live Feed',       I.feed,     [['View Cameras',    'view'], ['Control PTZ',       'none'], ['Download Footage','none']]],
-    ['Team Management', I.team,     [['View Team',       'view'], ['Add / Remove Members','none'],['Manage Roles',  'none']]],
-    ['Preferences',     I.prefs,    [['View Settings',   'view'], ['Edit Settings',     'none']]],
-    ['Reports',         I.reports,  [['View Reports',    'view'], ['Export Reports',    'none'], ['Schedule Reports','none']]],
   ]),
 };
 
@@ -164,7 +146,7 @@ const ROLE_COLORS = ['var(--chart-1)', 'var(--chart-4)', 'var(--chart-2)', 'var(
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function PermissionsPage() {
-  const [selectedRole, setSelectedRole] = useState('super_admin');
+  const [selectedRole, setSelectedRole] = useState('admin');
   const [perms, setPerms] = useState<Record<string, ModulePerm[]>>(PERM_MATRIX);
   const [roles, setRoles] = useState<RoleDef[]>(ROLES);
 
@@ -178,7 +160,7 @@ export default function PermissionsPage() {
   const [newRole, setNewRole] = useState({ name: '', description: '', color: ROLE_COLORS[1] });
 
   const role = roles.find(r => r.id === selectedRole) ?? roles[0];
-  const modules = perms[selectedRole] ?? perms['staff'] ?? [];
+  const modules = perms[selectedRole] ?? perms['store_manager'] ?? [];
   const totalUsers = roles.reduce((s, r) => s + r.userCount, 0);
 
   const updatePerm = (moduleIdx: number, actionIdx: number, level: PermLevel) => {
@@ -199,8 +181,7 @@ export default function PermissionsPage() {
     const id = newRole.name.toLowerCase().replace(/\s+/g, '_') + '_' + Date.now();
     const created: RoleDef = { id, name: newRole.name, description: newRole.description, color: newRole.color, userCount: 0, isSystem: false };
     setRoles(prev => [...prev, created]);
-    // Copy staff permissions as a starting template
-    setPerms(prev => ({ ...prev, [id]: prev['staff'] ?? [] }));
+    setPerms(prev => ({ ...prev, [id]: prev['store_manager'] ?? [] }));
     setSelectedRole(id);
     setNewRole({ name: '', description: '', color: ROLE_COLORS[1] });
     setCreateOpen(false);
@@ -217,7 +198,7 @@ export default function PermissionsPage() {
     if (!deleteRoleId) return;
     setRoles(prev => prev.filter(r => r.id !== deleteRoleId));
     setPerms(prev => { const next = { ...prev }; delete next[deleteRoleId]; return next; });
-    if (selectedRole === deleteRoleId) setSelectedRole('super_admin');
+    if (selectedRole === deleteRoleId) setSelectedRole('admin');
     setDeleteRoleId(null);
   };
 

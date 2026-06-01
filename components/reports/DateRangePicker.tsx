@@ -1,15 +1,12 @@
 'use client';
-import { useState, useRef, useEffect, useMemo } from 'react';
-import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { Calendar } from 'lucide-react';
+import { DateCalendarPanel } from '@/components/DateCalendarPanel';
 
 function formatDisplay(d: Date) {
   const dd = String(d.getDate()).padStart(2, '0');
   const mm = String(d.getMonth() + 1).padStart(2, '0');
   return `${dd}/${mm}/${d.getFullYear()}`;
-}
-
-function sameDay(a: Date, b: Date) {
-  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 }
 
 function dateKey(d: Date) {
@@ -37,128 +34,6 @@ interface Props {
   onChange: (range: { start: Date | null; end: Date | null }) => void;
 }
 
-function isDateDisabled(d: Date, activeField: 'from' | 'to', value: { start: Date | null; end: Date | null }) {
-  if (!AVAILABLE.has(dateKey(d))) return true;
-  if (activeField === 'to' && value.start && d.getTime() < value.start.getTime()) return true;
-  if (activeField === 'from' && value.end && d.getTime() > value.end.getTime()) return true;
-  return false;
-}
-
-function CalendarPanel({
-  viewMonth,
-  setViewMonth,
-  value,
-  activeField,
-  onSelect,
-}: {
-  viewMonth: Date;
-  setViewMonth: (d: Date) => void;
-  value: { start: Date | null; end: Date | null };
-  activeField: 'from' | 'to';
-  onSelect: (d: Date) => void;
-}) {
-  const calendarDays = useMemo(() => {
-    const year = viewMonth.getFullYear();
-    const month = viewMonth.getMonth();
-    const first = new Date(year, month, 1);
-    const startPad = first.getDay();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const cells: (Date | null)[] = [];
-    for (let i = 0; i < startPad; i++) cells.push(null);
-    for (let d = 1; d <= daysInMonth; d++) cells.push(new Date(year, month, d));
-    return cells;
-  }, [viewMonth]);
-
-  const monthLabel = viewMonth.toLocaleString('default', { month: 'long', year: 'numeric' });
-  const toBlockedWithoutFrom = activeField === 'to' && !value.start;
-
-  return (
-    <div
-      style={{
-        position: 'absolute',
-        top: 'calc(100% + 6px)',
-        left: 0,
-        zIndex: 70,
-        width: 280,
-        background: 'var(--color-surface)',
-        border: '1px solid var(--color-border)',
-        borderRadius: 10,
-        boxShadow: 'var(--shadow-dropdown)',
-        padding: '12px 14px',
-      }}
-    >
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-        <button
-          type="button"
-          onClick={() => setViewMonth(new Date(viewMonth.getFullYear(), viewMonth.getMonth() - 1, 1))}
-          style={{ width: 28, height: 28, borderRadius: 6, border: '1px solid var(--color-border)', background: 'var(--color-surface-2)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-text-2)' }}
-        >
-          <ChevronLeft size={14} />
-        </button>
-        <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--color-text-1)' }}>{monthLabel}</span>
-        <button
-          type="button"
-          onClick={() => setViewMonth(new Date(viewMonth.getFullYear(), viewMonth.getMonth() + 1, 1))}
-          style={{ width: 28, height: 28, borderRadius: 6, border: '1px solid var(--color-border)', background: 'var(--color-surface-2)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-text-2)' }}
-        >
-          <ChevronRight size={14} />
-        </button>
-      </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 2, marginBottom: 4 }}>
-        {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(d => (
-          <span key={d} style={{ fontSize: 10, fontWeight: 600, color: 'var(--color-text-4)', textAlign: 'center', padding: '4px 0' }}>{d}</span>
-        ))}
-      </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 2 }}>
-        {calendarDays.map((d, i) => {
-          if (!d) return <span key={`empty-${i}`} />;
-          const disabled = toBlockedWithoutFrom || isDateDisabled(d, activeField, value);
-          const selected =
-            activeField === 'from'
-              ? Boolean(value.start && sameDay(d, value.start))
-              : Boolean(value.end && sameDay(d, value.end));
-
-          return (
-            <button
-              key={dateKey(d)}
-              type="button"
-              disabled={disabled}
-              onClick={() => onSelect(d)}
-              style={{
-                height: 32,
-                borderRadius: 6,
-                border: selected ? '1px solid var(--color-primary)' : '1px solid transparent',
-                fontSize: 11.5,
-                fontWeight: selected ? 700 : 500,
-                cursor: disabled ? 'not-allowed' : 'pointer',
-                background: selected ? 'var(--color-primary-emphasis)' : 'transparent',
-                color: selected
-                  ? 'var(--color-on-primary)'
-                  : disabled
-                    ? 'var(--color-text-4)'
-                    : 'var(--color-text-2)',
-                opacity: disabled && !selected ? 0.35 : 1,
-              }}
-            >
-              {d.getDate()}
-            </button>
-          );
-        })}
-      </div>
-
-      <p style={{ fontSize: 10, color: 'var(--color-text-4)', marginTop: 10, lineHeight: 1.4 }}>
-        {activeField === 'from'
-          ? 'Select a start date. Only dates with report data are available.'
-          : toBlockedWithoutFrom
-            ? 'Select a From date first, then choose an end date.'
-            : 'Select an end date on or after the From date.'}
-      </p>
-    </div>
-  );
-}
-
 function DateField({
   label,
   date,
@@ -181,6 +56,7 @@ function DateField({
   onSelect: (d: Date) => void;
 }) {
   const hasValue = Boolean(date);
+  const toBlockedWithoutFrom = field === 'to' && !range.start;
 
   return (
     <div style={{ position: 'relative', flex: 1, minWidth: 0 }}>
@@ -197,13 +73,13 @@ function DateField({
           alignItems: 'center',
           justifyContent: 'space-between',
           gap: 8,
-          height: 36,
+          height: 34,
           paddingLeft: 10,
           paddingRight: 10,
           borderRadius: 8,
           border: `1.5px solid ${hasValue || isOpen ? 'var(--color-primary)' : 'var(--color-border)'}`,
           background: hasValue || isOpen ? 'var(--color-accent-bg)' : 'var(--color-surface-2)',
-          fontSize: 12.5,
+          fontSize: 12,
           fontWeight: hasValue ? 600 : 500,
           color: hasValue ? 'var(--color-primary)' : 'var(--color-text-4)',
           cursor: 'pointer',
@@ -217,13 +93,24 @@ function DateField({
       </button>
 
       {isOpen && (
-        <CalendarPanel
-          viewMonth={viewMonth}
-          setViewMonth={setViewMonth}
-          value={range}
-          activeField={field}
-          onSelect={onSelect}
-        />
+        <div style={{ position: 'absolute', top: 'calc(100% + 4px)', left: 0, zIndex: 70, width: 252 }}>
+          <DateCalendarPanel
+            className="oly-calendar--compact"
+            viewMonth={viewMonth}
+            onViewMonthChange={setViewMonth}
+            selected={field === 'from' ? range.start : range.end}
+            onSelect={onSelect}
+            availableDates={AVAILABLE}
+            minDate={field === 'to' ? range.start ?? undefined : undefined}
+            hint={
+              field === 'from'
+                ? 'Dates with report data only.'
+                : toBlockedWithoutFrom
+                  ? 'Pick a start date first.'
+                  : 'End date on or after start.'
+            }
+          />
+        </div>
       )}
     </div>
   );

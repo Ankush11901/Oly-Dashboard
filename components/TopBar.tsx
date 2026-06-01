@@ -1,18 +1,13 @@
 'use client';
-import { useState, useRef, useEffect, useCallback } from 'react';
-import { Bell, ChevronDown, Calendar, Store, RefreshCw, Settings, LogOut, UserCircle, TrendingUp, SlidersHorizontal, Video, Check, X, ArrowUpRight, ArrowDownRight, Users, Target, Clock, Moon, Sun } from 'lucide-react';
-import { useTheme } from '@/components/ThemeProvider';
+import { useState, useRef, useEffect, useCallback, type CSSProperties } from 'react';
+import { Bell, ChevronDown, Calendar, Store, RefreshCw, Settings, LogOut, UserCircle, TrendingUp, TrendingDown, SlidersHorizontal, Eye, Check, X, ArrowUpRight, ArrowDownRight, Users, Target, Clock } from 'lucide-react';
+import { ThemeToggle } from '@/components/ThemeToggle';
+import { HomeVariantToggle } from '@/components/HomeVariantToggle';
+import { DateCalendarPanel, isoToDate, dateToIso } from '@/components/DateCalendarPanel';
 import { usePathname } from 'next/navigation';
 import { useDashboardContext } from '@/components/DashboardProvider';
 
-type DropdownType = 'shoppers' | 'bell' | 'avatar' | 'date' | 'camera' | 'locationFilter' | null;
-
-// ── Camera options ─────────────────────────────────────────────────────────────
-const CAMERA_OPTIONS = [
-  { label: 'All Cameras',       total: 26, online: 24, offline: 2 },
-  { label: 'Entrance Cameras',  total: 12, online: 11, offline: 1 },
-  { label: 'Cash Bill Cameras', total: 8,  online: 8,  offline: 0 },
-];
+type DropdownType = 'shoppers' | 'bell' | 'alerts' | 'avatar' | 'date' | 'locationFilter' | null;
 
 // ── Location filter options ────────────────────────────────────────────────────
 const FILTER_OPTIONS = {
@@ -26,13 +21,6 @@ type FilterKey = keyof typeof FILTER_OPTIONS;
 
 // ── Insights of the Day Modal ─────────────────────────────────────────────────
 const PURPLE = 'var(--color-primary)';
-
-const HOURLY = [
-  { h: '9am',  v: 210 }, { h: '10am', v: 380 }, { h: '11am', v: 520 },
-  { h: '12pm', v: 680 }, { h: '1pm',  v: 750 }, { h: '2pm',  v: 710 },
-  { h: '3pm',  v: 640 }, { h: '4pm',  v: 590 }, { h: '5pm',  v: 480 },
-  { h: '6pm',  v: 320 }, { h: '7pm',  v: 190 },
-];
 
 const STORES_PERF = [
   { name: 'Marina Bay Sands', visitors: 15234, conv: 18.2, trend: 'up'   },
@@ -93,19 +81,32 @@ function InsightsModal({ onClose }: { onClose: () => void }) {
   const footfallArea = `M${tx(0)},${TH} ` + TRAFFIC.map((d, i) => `L${tx(i)},${ty(d.footfall)}`).join(' ') + ` L${tx(TRAFFIC.length - 1)},${TH}Z`;
 
   const insights = [
-    { icon: <TrendingUp size={13} strokeWidth={1.5} />, color: PURPLE,    bg: 'var(--color-primary-light)', text: 'Peak at 1 PM — deploy extra staff 12:30–2:30 PM across all stores.' },
-    { icon: <Users     size={13} strokeWidth={1.5} />, color: '#00CE9C',  bg: 'var(--color-secondary-light)', text: 'Marina Bay leads at 18.2% conversion — replicate its zone layout system-wide.' },
+    {
+      icon: <TrendingDown size={16} strokeWidth={2} />,
+      color: 'var(--color-error)',
+      bg: 'var(--color-error-light)',
+      text: 'Marina Bay conversion dipped 5% below usual at 5 PM — review hourly staffing and zone engagement.',
+    },
+    { icon: <Users size={16} strokeWidth={2} />, color: '#00CE9C', bg: 'var(--color-secondary-light)', text: 'Marina Bay leads at 18.2% conversion — replicate its zone layout system-wide.' },
   ];
 
   const recommendations = [
-    { title: 'Staff reallocation',          body: 'Shift 2–3 floor associates to 12–3 PM peak windows across all 5 stores.',                             priority: 'High'   },
-    { title: 'Zone A promotion push',        body: "Zone A dwell is 4.2 min — add interactive displays to lift engagement.",                               priority: 'Medium' },
-    { title: 'Replicate top-performer layout', body: "Apply Marina Bay's aisle-width and signage pattern to VivoCity for conversion lift.",               priority: 'High'   },
+    { title: 'Staff reallocation',   body: 'Shift 2–3 floor associates to 12–3 PM peak windows across all 5 stores.', priority: 'High' },
+    { title: 'Zone A promotion push', body: 'Zone A dwell is 4.2 min — add interactive displays to lift engagement.', priority: 'Medium' },
   ];
 
-  const priorityColor: Record<string, { bg: string; color: string }> = {
-    High:   { bg: 'var(--color-error-light)', color: '#DC2626' },
-    Medium: { bg: 'var(--color-warning-light)', color: '#D97706' },
+  const priorityColor: Record<string, { bg: string; color: string; border: string }> = {
+    High:   { bg: 'var(--color-error-light)', color: 'var(--color-error)', border: '#FECACA' },
+    Medium: { bg: 'var(--color-warning-light)', color: 'var(--color-warning)', border: '#FDE68A' },
+  };
+
+  const sectionLabel: CSSProperties = {
+    fontSize: 11,
+    fontWeight: 700,
+    letterSpacing: '0.06em',
+    textTransform: 'uppercase',
+    color: 'var(--color-text-3)',
+    margin: '0 0 10px',
   };
 
   return (
@@ -117,8 +118,8 @@ function InsightsModal({ onClose }: { onClose: () => void }) {
           position: 'fixed',
           inset: 0,
           zIndex: 9998,
-          background: 'var(--color-overlay)',
-          backdropFilter: 'blur(2px)',
+          background: 'var(--color-overlay-heavy)',
+          backdropFilter: 'blur(3px)',
           opacity: slideOpen ? 1 : 0,
           transition: 'opacity 320ms ease',
         }}
@@ -137,10 +138,10 @@ function InsightsModal({ onClose }: { onClose: () => void }) {
           bottom: 0,
           zIndex: 9999,
           width: '100%',
-          maxWidth: 520,
+          maxWidth: 540,
           display: 'flex',
           flexDirection: 'column',
-          background: 'var(--color-surface-elevated)',
+          background: 'var(--color-page-bg)',
           borderLeft: '1px solid var(--color-border)',
           boxShadow: 'var(--shadow-modal)',
           transform: slideOpen ? 'translateX(0)' : 'translateX(100%)',
@@ -149,147 +150,233 @@ function InsightsModal({ onClose }: { onClose: () => void }) {
       >
 
         {/* ── Header ── */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid var(--color-border)', flexShrink: 0, background: 'var(--color-surface)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 34, height: 34, borderRadius: 9, background: 'var(--color-primary-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: PURPLE }}>
-              <TrendingUp size={16} strokeWidth={1.5} />
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '18px 22px', borderBottom: '1px solid var(--color-border)',
+          flexShrink: 0, background: 'var(--color-surface)',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{
+              width: 40, height: 40, borderRadius: 10,
+              background: 'linear-gradient(135deg, var(--color-primary-light) 0%, var(--color-accent-bg) 100%)',
+              border: '1px solid var(--color-accent-border)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', color: PURPLE,
+            }}>
+              <TrendingUp size={18} strokeWidth={2} />
             </div>
             <div>
-              <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-text-1)' }}>Insights of the Day</p>
-              <p style={{ fontSize: 11, color: 'var(--color-text-4)', marginTop: 1 }}>AI-powered analysis · Updated 3 min ago</p>
+              <p style={{ fontSize: 17, fontWeight: 700, color: 'var(--color-text-1)', margin: 0, letterSpacing: '-0.02em' }}>
+                Insights of the Day
+              </p>
+              <p style={{ fontSize: 12.5, color: 'var(--color-text-3)', marginTop: 4, fontWeight: 500 }}>
+                AI-powered analysis · Updated 3 min ago
+              </p>
             </div>
           </div>
-          <button onClick={handleClose} style={{ width: 30, height: 30, borderRadius: 7, border: '1px solid var(--color-border)', background: 'var(--color-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--color-text-3)' }}
-            onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'var(--color-surface-2)'}
-            onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'var(--color-surface)'}>
-            <X size={13} strokeWidth={1.5} />
+          <button
+            type="button"
+            onClick={handleClose}
+            aria-label="Close insights"
+            style={{
+              width: 34, height: 34, borderRadius: 8,
+              border: '1px solid var(--color-border)', background: 'var(--color-surface)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', color: 'var(--color-text-2)',
+            }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--color-surface-2)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'var(--color-surface)'; }}
+          >
+            <X size={15} strokeWidth={2} />
           </button>
         </div>
 
         {/* ── Body ── */}
-        <div style={{ flex: 1, padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 12, overflowY: 'auto' }}>
+        <div style={{ flex: 1, padding: '20px 22px 28px', display: 'flex', flexDirection: 'column', gap: 20, overflowY: 'auto' }}>
 
-          {/* ── Row 1: Visitor Count + Hourly Traffic ── */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-
-            {/* Visitor Count by Store */}
-            <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 12, padding: '14px 14px' }}>
-              <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text-1)', marginBottom: 2 }}>Visitor Count by Store</p>
-              <p style={{ fontSize: 10.5, color: 'var(--color-text-3)', marginBottom: 12 }}>Today&apos;s footfall</p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {STORES_PERF.map((s, i) => (
-                  <div key={s.name} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{ width: 58, fontSize: 10, fontWeight: 500, color: 'var(--color-text-2)', flexShrink: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {s.name.split(' ').slice(0, 2).join(' ')}
-                    </span>
-                    <div style={{ flex: 1, height: 8, background: 'var(--color-surface-2)', borderRadius: 4, overflow: 'hidden' }}>
-                      <div style={{ width: `${(s.visitors / maxStore) * 100}%`, height: '100%', background: storeColors[i], borderRadius: 4 }} />
-                    </div>
-                    <span style={{ width: 32, fontSize: 10, fontWeight: 600, color: 'var(--color-text-2)', textAlign: 'right', flexShrink: 0 }}>
-                      {(s.visitors / 1000).toFixed(1)}K
-                    </span>
-                  </div>
-                ))}
-              </div>
+          {/* Primary: Insights & recommendations */}
+          <section
+            aria-labelledby="insights-primary-heading"
+            style={{
+              background: 'var(--color-surface)',
+              border: '1.5px solid var(--color-accent-border)',
+              borderRadius: 14,
+              padding: '20px 20px 18px',
+              boxShadow: 'var(--shadow-card)',
+            }}
+          >
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 8, marginBottom: 18,
+              paddingBottom: 14, borderBottom: '1px solid var(--color-border-subtle)',
+            }}>
+              <Target size={16} strokeWidth={2} style={{ color: PURPLE, flexShrink: 0 }} />
+              <h2 id="insights-primary-heading" style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-text-1)', margin: 0 }}>
+                Insights &amp; Recommendations
+              </h2>
             </div>
 
-            {/* Hourly Traffic Trends */}
-            <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 12, padding: '14px 14px' }}>
-              <div style={{ marginBottom: 10 }}>
-                <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text-1)' }}>Hourly Traffic Trends</p>
-                <p style={{ fontSize: 10.5, color: 'var(--color-text-3)', marginTop: 1 }}>Footfall vs. Passerby</p>
-              </div>
-              <div style={{ display: 'flex', gap: 10, marginBottom: 8 }}>
-                {[{ c: PURPLE, l: 'Footfall' }, { c: '#00CE9C', l: 'Passerby' }].map(({ c, l }) => (
-                  <div key={l} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                    <div style={{ width: 10, height: 2.5, borderRadius: 2, background: c }} />
-                    <span style={{ fontSize: 9.5, color: 'var(--color-text-3)' }}>{l}</span>
+            <p style={sectionLabel}>Key insights</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 22 }}>
+              {insights.map((ins, i) => (
+                <div
+                  key={i}
+                  style={{
+                    display: 'flex', gap: 12, padding: '14px 14px',
+                    background: 'var(--color-surface)',
+                    borderRadius: 10,
+                    border: '1px solid var(--color-border)',
+                    boxShadow: 'var(--shadow-xs)',
+                  }}
+                >
+                  <div style={{
+                    width: 36, height: 36, borderRadius: 9,
+                    background: ins.bg, border: `1px solid ${ins.color}22`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    color: ins.color, flexShrink: 0,
+                  }}>
+                    {ins.icon}
                   </div>
-                ))}
-              </div>
-              <svg viewBox={`0 0 ${TW} ${TH + 16}`} style={{ width: '100%', height: TH + 16, overflow: 'visible' }}>
-                <defs>
-                  <linearGradient id="ins-fg" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor={PURPLE} stopOpacity="0.14" />
-                    <stop offset="100%" stopColor={PURPLE} stopOpacity="0.01" />
-                  </linearGradient>
-                </defs>
-                {[0.25, 0.5, 0.75, 1].map(p => (
-                  <line key={p} x1={0} y1={TH - 4 - p * (TH - 12)} x2={TW} y2={TH - 4 - p * (TH - 12)}
-                    stroke="var(--color-border-subtle)" strokeWidth="1" strokeDasharray="4,3" />
-                ))}
-                <path d={footfallArea} fill="url(#ins-fg)" />
-                <polyline points={passerbyPts} fill="none" stroke="#00CE9C" strokeWidth="1.6" strokeLinejoin="round" strokeLinecap="round" />
-                <polyline points={footfallPts} fill="none" stroke={PURPLE} strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round" />
-                {TRAFFIC.map((d, i) => (
-                  <circle key={i} cx={tx(i)} cy={ty(d.footfall)} r="2" fill="var(--color-surface)" stroke={PURPLE} strokeWidth="1.5" />
-                ))}
-                {TRAFFIC.filter((_, i) => i % 2 === 0).map((d, idx) => {
-                  const i = idx * 2;
-                  return (
-                    <text key={i} x={tx(i)} y={TH + 12} textAnchor="middle" fontSize="8" fill="var(--color-text-4)">{d.h}</text>
-                  );
-                })}
-              </svg>
+                  <p style={{ fontSize: 13.5, fontWeight: 500, color: 'var(--color-text-1)', lineHeight: 1.55, margin: 0, alignSelf: 'center' }}>
+                    {ins.text}
+                  </p>
+                </div>
+              ))}
             </div>
-          </div>
 
-          {/* ── Row 2: Conversion Rate by Store ── */}
-          <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 12, padding: '14px 16px' }}>
-            <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text-1)', marginBottom: 2 }}>Conversion Rate by Store</p>
-            <p style={{ fontSize: 10.5, color: 'var(--color-text-3)', marginBottom: 10 }}>Passerby-to-entry conversion %</p>
-            <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end', height: 88 }}>
-              {STORES_PERF.map((s, i) => {
-                const barPx = Math.round((s.conv / maxConv) * 72);
+            <p style={sectionLabel}>What to do next</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {recommendations.map((r, i) => {
+                const pri = priorityColor[r.priority];
                 return (
-                  <div key={s.name} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
-                    <span style={{ fontSize: 8, fontWeight: 700, color: storeColors[i] }}>{s.conv}%</span>
-                    <div style={{ width: '72%', height: barPx, background: storeColors[i], borderRadius: '4px 4px 0 0', opacity: 0.88 }} />
+                  <div
+                    key={i}
+                    style={{
+                      display: 'flex', gap: 0, overflow: 'hidden',
+                      borderRadius: 10, border: '1px solid var(--color-border)',
+                      background: 'var(--color-surface)',
+                      boxShadow: 'var(--shadow-xs)',
+                    }}
+                  >
+                    <div style={{ width: 4, flexShrink: 0, background: pri.color }} />
+                    <div style={{ flex: 1, padding: '14px 16px', minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10, marginBottom: 6 }}>
+                        <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-1)', margin: 0, lineHeight: 1.35 }}>
+                          <span style={{ color: PURPLE, marginRight: 6 }}>{i + 1}.</span>
+                          {r.title}
+                        </p>
+                        <span style={{
+                          padding: '3px 9px', borderRadius: 9999, fontSize: 10.5, fontWeight: 700,
+                          background: pri.bg, color: pri.color, border: `1px solid ${pri.border}`,
+                          flexShrink: 0, textTransform: 'uppercase', letterSpacing: '0.04em',
+                        }}>
+                          {r.priority}
+                        </span>
+                      </div>
+                      <p style={{ fontSize: 13, color: 'var(--color-text-2)', lineHeight: 1.55, margin: 0 }}>
+                        {r.body}
+                      </p>
+                    </div>
                   </div>
                 );
               })}
             </div>
-            <div style={{ display: 'flex', gap: 8, borderTop: '1px solid var(--color-border-subtle)', paddingTop: 6, marginTop: 2 }}>
-              {STORES_PERF.map(s => (
-                <div key={s.name} style={{ flex: 1, fontSize: 7.5, color: 'var(--color-text-4)', textAlign: 'center', fontWeight: 500 }}>
-                  {s.name.split(' ')[0]}
-                </div>
-              ))}
-            </div>
-          </div>
+          </section>
 
-          {/* ── Row 3: Insights & Recommendations (combined, stacked) ── */}
-          <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 12, padding: '14px 16px' }}>
-            <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text-1)', marginBottom: 12 }}>Insights &amp; Recommendations</p>
+          {/* Supporting charts */}
+          <div>
+            <p style={{ ...sectionLabel, marginBottom: 12 }}>Supporting data</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
 
-            <p style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase', color: 'var(--color-text-4)', marginBottom: 8 }}>Key Insights</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 7, marginBottom: 16 }}>
-              {insights.map((ins, i) => (
-                <div key={i} style={{ display: 'flex', gap: 9, padding: '8px 10px', background: 'var(--color-surface-2)', borderRadius: 8, border: '1px solid var(--color-border-subtle)' }}>
-                  <div style={{ width: 22, height: 22, borderRadius: 6, background: ins.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: ins.color, flexShrink: 0 }}>
-                    {ins.icon}
-                  </div>
-                  <p style={{ fontSize: 11, color: 'var(--color-text-2)', lineHeight: 1.5, margin: 0 }}>{ins.text}</p>
-                </div>
-              ))}
-            </div>
-
-            <p style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase', color: 'var(--color-text-4)', marginBottom: 8 }}>Actionable Recommendations</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-              {recommendations.map((r, i) => (
-                <div key={i} style={{ display: 'flex', gap: 10, padding: '9px 12px', border: '1px solid var(--color-border)', borderRadius: 8 }}>
-                  <div style={{ width: 20, height: 20, borderRadius: 5, background: 'var(--color-primary-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: PURPLE, fontSize: 10, fontWeight: 700, flexShrink: 0 }}>
-                    {i + 1}
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3, flexWrap: 'wrap' }}>
-                      <p style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--color-text-1)', margin: 0 }}>{r.title}</p>
-                      <span style={{ padding: '1px 6px', borderRadius: 9999, fontSize: 9, fontWeight: 600, background: priorityColor[r.priority].bg, color: priorityColor[r.priority].color }}>{r.priority}</span>
+              <div style={{
+                background: 'var(--color-surface)', border: '1px solid var(--color-border)',
+                borderRadius: 12, padding: '16px 18px', boxShadow: 'var(--shadow-xs)',
+              }}>
+                <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-1)', margin: '0 0 4px' }}>Visitor count by store</p>
+                <p style={{ fontSize: 12, color: 'var(--color-text-3)', marginBottom: 14 }}>Today&apos;s footfall</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {STORES_PERF.map((s, i) => (
+                    <div key={s.name} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <span style={{
+                        width: 108, fontSize: 12, fontWeight: 600, color: 'var(--color-text-1)',
+                        flexShrink: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                      }}>
+                        {s.name}
+                      </span>
+                      <div style={{ flex: 1, height: 10, background: 'var(--color-surface-3)', borderRadius: 5, overflow: 'hidden' }}>
+                        <div style={{ width: `${(s.visitors / maxStore) * 100}%`, height: '100%', background: storeColors[i], borderRadius: 5 }} />
+                      </div>
+                      <span style={{ width: 40, fontSize: 12, fontWeight: 700, color: 'var(--color-text-1)', textAlign: 'right', flexShrink: 0 }}>
+                        {(s.visitors / 1000).toFixed(1)}K
+                      </span>
                     </div>
-                    <p style={{ fontSize: 11, color: 'var(--color-text-3)', lineHeight: 1.5, margin: 0 }}>{r.body}</p>
-                  </div>
+                  ))}
                 </div>
-              ))}
+              </div>
+
+              <div style={{
+                background: 'var(--color-surface)', border: '1px solid var(--color-border)',
+                borderRadius: 12, padding: '16px 18px', boxShadow: 'var(--shadow-xs)',
+              }}>
+                <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-1)', margin: '0 0 4px' }}>Hourly traffic trends</p>
+                <p style={{ fontSize: 12, color: 'var(--color-text-3)', marginBottom: 12 }}>Footfall vs. passerby</p>
+                <div style={{ display: 'flex', gap: 16, marginBottom: 10 }}>
+                  {[{ c: PURPLE, l: 'Footfall' }, { c: '#00CE9C', l: 'Passerby' }].map(({ c, l }) => (
+                    <div key={l} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <div style={{ width: 14, height: 3, borderRadius: 2, background: c }} />
+                      <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-2)' }}>{l}</span>
+                    </div>
+                  ))}
+                </div>
+                <svg viewBox={`0 0 ${TW} ${TH + 16}`} style={{ width: '100%', height: TH + 16, overflow: 'visible' }}>
+                  <defs>
+                    <linearGradient id="ins-fg" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor={PURPLE} stopOpacity="0.18" />
+                      <stop offset="100%" stopColor={PURPLE} stopOpacity="0.02" />
+                    </linearGradient>
+                  </defs>
+                  {[0.25, 0.5, 0.75, 1].map(p => (
+                    <line key={p} x1={0} y1={TH - 4 - p * (TH - 12)} x2={TW} y2={TH - 4 - p * (TH - 12)}
+                      stroke="var(--color-border)" strokeWidth="1" strokeDasharray="4,3" />
+                  ))}
+                  <path d={footfallArea} fill="url(#ins-fg)" />
+                  <polyline points={passerbyPts} fill="none" stroke="#00CE9C" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+                  <polyline points={footfallPts} fill="none" stroke={PURPLE} strokeWidth="2.2" strokeLinejoin="round" strokeLinecap="round" />
+                  {TRAFFIC.map((d, i) => (
+                    <circle key={i} cx={tx(i)} cy={ty(d.footfall)} r="2.5" fill="var(--color-surface)" stroke={PURPLE} strokeWidth="1.5" />
+                  ))}
+                  {TRAFFIC.filter((_, i) => i % 2 === 0).map((d, idx) => {
+                    const i = idx * 2;
+                    return (
+                      <text key={i} x={tx(i)} y={TH + 12} textAnchor="middle" fontSize="9.5" fontWeight="500" fill="var(--color-text-3)">{d.h}</text>
+                    );
+                  })}
+                </svg>
+              </div>
+
+              <div style={{
+                background: 'var(--color-surface)', border: '1px solid var(--color-border)',
+                borderRadius: 12, padding: '16px 18px', boxShadow: 'var(--shadow-xs)',
+              }}>
+                <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-1)', margin: '0 0 4px' }}>Conversion rate by store</p>
+                <p style={{ fontSize: 12, color: 'var(--color-text-3)', marginBottom: 12 }}>Passerby-to-entry conversion %</p>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end', height: 96 }}>
+                  {STORES_PERF.map((s, i) => {
+                    const barPx = Math.round((s.conv / maxConv) * 76);
+                    return (
+                      <div key={s.name} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: storeColors[i] }}>{s.conv}%</span>
+                        <div style={{ width: '76%', height: barPx, background: storeColors[i], borderRadius: '5px 5px 0 0' }} />
+                      </div>
+                    );
+                  })}
+                </div>
+                <div style={{ display: 'flex', gap: 8, borderTop: '1px solid var(--color-border)', paddingTop: 8, marginTop: 4 }}>
+                  {STORES_PERF.map(s => (
+                    <div key={s.name} style={{ flex: 1, fontSize: 10, color: 'var(--color-text-3)', textAlign: 'center', fontWeight: 600 }}>
+                      {s.name.split(' ')[0]}
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
 
@@ -299,18 +386,43 @@ function InsightsModal({ onClose }: { onClose: () => void }) {
   );
 }
 
+const MOCK_STORE_ALERTS = [
+  { id: 1, store: 'Marina Bay Sands', message: 'Queue depth exceeded threshold (40 min)', severity: 'high' as const, time: '12 min ago' },
+  { id: 2, store: 'Bugis Junction', message: 'Entrance camera offline — North Entry', severity: 'high' as const, time: '28 min ago' },
+  { id: 3, store: 'VivoCity', message: 'Footfall 32% below daily average', severity: 'medium' as const, time: '1 hr ago' },
+];
+
+function formatDateLabel(iso: string): string {
+  const d = new Date(iso + 'T12:00:00');
+  return d.toLocaleDateString('en-SG', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function formatDateFieldLabel(iso: string): string {
+  const d = new Date(iso + 'T12:00:00');
+  return d.toLocaleDateString('en-SG', { day: 'numeric', month: 'short', year: '2-digit' });
+}
+
 export function TopBar() {
-  const { theme, toggle } = useTheme();
-  const { triggerRefresh } = useDashboardContext();
+  const { triggerRefresh, insightsOpen, setInsightsOpen } = useDashboardContext();
   const pathname = usePathname();
-  const showQualifiedShopper = pathname?.startsWith('/dashboard/analytics') ?? false;
+  const isLiveFeed = pathname?.startsWith('/dashboard/live') ?? false;
+  const isTeamPage = pathname?.startsWith('/dashboard/team') ?? false;
+  const isAnalytics = pathname?.startsWith('/dashboard/analytics') ?? false;
+  const isHomePage = pathname === '/dashboard' || pathname === '/dashboard/';
+  const showQualifiedShopper = isAnalytics;
+  const showDateFilter = !isLiveFeed && !isTeamPage;
+  const showLocationFilter = !isLiveFeed;
+  const showStoreCameraStats = !isLiveFeed && !isTeamPage;
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<DropdownType>(null);
-  const [showInsights, setShowInsights] = useState(false);
-
-  // Camera selection
-  const [selectedCameraIdx, setSelectedCameraIdx] = useState(0);
-  const selectedCamera = CAMERA_OPTIONS[selectedCameraIdx];
+  const todayIso = new Date().toISOString().slice(0, 10);
+  const weekAgoIso = new Date(Date.now() - 6 * 86400000).toISOString().slice(0, 10);
+  const [dateStart, setDateStart] = useState(weekAgoIso);
+  const [dateEnd, setDateEnd] = useState(todayIso);
+  const [draftDateStart, setDraftDateStart] = useState(weekAgoIso);
+  const [draftDateEnd, setDraftDateEnd] = useState(todayIso);
+  const [datePickField, setDatePickField] = useState<'from' | 'to'>('from');
+  const [calendarMonth, setCalendarMonth] = useState(() => isoToDate(weekAgoIso));
 
   // Location filter drafts
   const emptyFilters = { Country: 'All Countries', Region: 'All Regions', State: 'All States', City: 'All Cities', 'Store Name': 'All Stores' } as Record<FilterKey, string>;
@@ -421,15 +533,6 @@ export function TopBar() {
         {/* Right */}
         <div className="flex items-center gap-3 relative" ref={rightSectionRef}>
 
-          {/* Insights of the Day */}
-          <button className="flex items-center gap-2 border transition-colors" style={{ height: 34, paddingLeft: 14, paddingRight: 14, borderRadius: 6, borderColor: 'var(--color-accent-border)', color: 'var(--color-primary)', background: 'var(--color-accent-bg)', fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap', cursor: 'pointer' }}
-            onClick={() => setShowInsights(true)}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--color-accent-bg-hover)'; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'var(--color-accent-bg)'; }}>
-            <TrendingUp size={14} strokeWidth={1.5} />
-            Insights of the Day
-          </button>
-
           {/* Qualified Shopper — analytics only */}
           {showQualifiedShopper ? (
             <div className="relative">
@@ -515,21 +618,9 @@ export function TopBar() {
           {/* Divider */}
           <div style={{ width: 1, height: 20, background: 'var(--color-border)', flexShrink: 0 }} />
 
-          {/* Dark mode toggle */}
-          <button
-            onClick={toggle}
-            className="p-2 rounded-md transition-colors"
-            style={{ color: 'var(--color-text-3)' }}
-            aria-label="Toggle dark mode"
-            title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-            onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'var(--color-surface-2)'}
-            onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
-          >
-            {theme === 'dark'
-              ? <Sun  size={18} strokeWidth={1.5} />
-              : <Moon size={18} strokeWidth={1.5} />
-            }
-          </button>
+          {isHomePage ? <HomeVariantToggle /> : null}
+
+          <ThemeToggle />
 
           {/* Bell */}
           <div className="relative">
@@ -628,7 +719,24 @@ export function TopBar() {
 
           <div className="flex items-center gap-2">
 
+            {isAnalytics && (
+              <button
+                type="button"
+                onClick={() => { window.location.href = '/dashboard/analytics?action=view-snapshots'; }}
+                className="flex items-center gap-2 rounded-md border transition-colors"
+                style={{
+                  height: 34, paddingLeft: 14, paddingRight: 14,
+                  borderColor: 'var(--color-accent-border)', color: 'var(--color-primary)',
+                  background: 'var(--color-accent-bg)', fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap',
+                }}
+              >
+                <Eye size={14} strokeWidth={1.5} />
+                View Snapshots
+              </button>
+            )}
+
             {/* ── Filter button ── */}
+            {showLocationFilter && (
             <div className="relative">
               <button
                 onClick={openLocationFilter}
@@ -743,35 +851,101 @@ export function TopBar() {
                 </div>
               )}
             </div>
+            )}
 
-            {/* Filter By Date */}
+            {/* Date range picker */}
+            {showDateFilter && (
             <div className="relative">
               <button
-                onClick={() => toggleDropdown('date')}
+                onClick={() => {
+                  setDraftDateStart(dateStart);
+                  setDraftDateEnd(dateEnd);
+                  setDatePickField('from');
+                  setCalendarMonth(isoToDate(dateStart));
+                  toggleDropdown('date');
+                }}
                 className="flex items-center gap-2 rounded-md border transition-colors"
                 style={{
                   height: 34, paddingLeft: 14, paddingRight: 14,
                   borderColor: activeDropdown === 'date' ? 'var(--color-primary)' : 'var(--color-border)',
                   color: activeDropdown === 'date' ? 'var(--color-primary)' : 'var(--color-text-2)',
                   background: activeDropdown === 'date' ? 'var(--color-primary-light)' : 'var(--color-surface)',
-                  fontSize: 13, fontWeight: 500,
+                  fontSize: 13, fontWeight: 500, whiteSpace: 'nowrap',
                 }}
               >
                 <Calendar size={14} strokeWidth={1.5} />
-                Filter by Date
+                {formatDateLabel(dateStart)} – {formatDateLabel(dateEnd)}
               </button>
               {activeDropdown === 'date' && (
-                <div className="absolute top-full right-0 mt-1 w-48 rounded-md border shadow-lg z-50 p-1" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
-                  {['Today', 'Yesterday', 'Last 7 Days', 'Last 30 Days', 'This Month', 'Custom Range'].map(f => (
-                    <button key={f} className="w-full text-left px-3 py-2 text-sm rounded transition-colors" style={{ color: 'var(--color-text-1)' }}
-                    onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'var(--color-surface-2)'}
-                    onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
-                  >{f}</button>
-                  ))}
+                <div className="oly-date-range-popover">
+                  <p className="oly-date-range-popover__title">Select date range</p>
+                  <div className="oly-date-range-fields">
+                    {(['from', 'to'] as const).map(field => {
+                      const active = datePickField === field;
+                      const iso = field === 'from' ? draftDateStart : draftDateEnd;
+                      return (
+                        <button
+                          key={field}
+                          type="button"
+                          className={`oly-date-range-field${active ? ' oly-date-range-field--active' : ''}`}
+                          onClick={() => {
+                            setDatePickField(field);
+                            setCalendarMonth(isoToDate(iso));
+                          }}
+                        >
+                          <span className="oly-date-range-field__label">{field === 'from' ? 'From' : 'To'}</span>
+                          <span className="oly-date-range-field__value">{formatDateFieldLabel(iso)}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <DateCalendarPanel
+                    className="oly-calendar--embedded oly-calendar--compact"
+                    viewMonth={calendarMonth}
+                    onViewMonthChange={setCalendarMonth}
+                    selected={isoToDate(datePickField === 'from' ? draftDateStart : draftDateEnd)}
+                    maxDate={datePickField === 'from' ? isoToDate(draftDateEnd) : isoToDate(todayIso)}
+                    minDate={datePickField === 'to' ? isoToDate(draftDateStart) : undefined}
+                    onSelect={d => {
+                      const iso = dateToIso(d);
+                      if (datePickField === 'from') {
+                        setDraftDateStart(iso);
+                        if (iso > draftDateEnd) setDraftDateEnd(iso);
+                      } else {
+                        setDraftDateEnd(iso);
+                      }
+                    }}
+                  />
+                  <div className="oly-date-range-presets">
+                    {[
+                      { label: 'Today', start: todayIso, end: todayIso },
+                      { label: 'Last 7 days', start: weekAgoIso, end: todayIso },
+                      { label: 'Last 30 days', start: new Date(Date.now() - 29 * 86400000).toISOString().slice(0, 10), end: todayIso },
+                    ].map(preset => (
+                      <button
+                        key={preset.label}
+                        type="button"
+                        className="oly-date-range-preset"
+                        onClick={() => { setDraftDateStart(preset.start); setDraftDateEnd(preset.end); }}
+                      >
+                        {preset.label}
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    className="oly-date-range-apply"
+                    onClick={() => { setDateStart(draftDateStart); setDateEnd(draftDateEnd); setActiveDropdown(null); }}
+                  >
+                    Apply range
+                  </button>
                 </div>
               )}
             </div>
+            )}
 
+            {showStoreCameraStats && (
+            <>
             {/* Stores */}
             <div className="flex items-center gap-2 rounded-md border" style={{ height: 34, paddingLeft: 14, paddingRight: 14, borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}>
               <Store size={14} strokeWidth={1.5} style={{ color: 'var(--color-text-3)' }} />
@@ -779,82 +953,45 @@ export function TopBar() {
               <span style={{ fontSize: 12, color: 'var(--color-text-3)' }}>Stores</span>
             </div>
 
-            {/* Total Alerts stat chip */}
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: 7,
-              height: 34, paddingLeft: 12, paddingRight: 12,
-              borderRadius: 6, border: '1px solid var(--color-border)',
-              background: 'var(--color-surface)', flexShrink: 0,
-            }}>
-              <span style={{ fontSize: 12.5, fontWeight: 500, color: 'var(--color-text-3)', whiteSpace: 'nowrap' }}>
-                Total Alerts:&nbsp;&nbsp;<span style={{ color: '#DC2626', fontWeight: 700 }}>{selectedCamera.offline}</span>
-              </span>
-            </div>
-
-            {/* ── Camera selector + original stat boxes ── */}
-            <div style={{ display: 'flex', height: 34, borderRadius: 6, overflow: 'visible', border: '1px solid var(--color-border)', position: 'relative' }}>
-              {/* "All Cameras ▾" label — dropdown trigger */}
+            {/* Total Alerts — clickable CTA */}
+            <div className="relative">
               <button
-                onClick={() => toggleDropdown('camera')}
+                type="button"
+                onClick={() => toggleDropdown('alerts')}
                 style={{
-                  display: 'flex', alignItems: 'center', gap: 5,
-                  height: '100%', paddingLeft: 12, paddingRight: 10,
-                  background: activeDropdown === 'camera' ? 'var(--color-accent-bg)' : 'var(--color-surface)',
-                  border: 'none', borderRight: '1px solid var(--color-border)',
-                  cursor: 'pointer',
-                  fontSize: 13, fontWeight: 500,
-                  color: activeDropdown === 'camera' ? 'var(--color-primary)' : 'var(--color-text-2)',
-                  whiteSpace: 'nowrap', borderRadius: '6px 0 0 6px',
+                  display: 'flex', alignItems: 'center', gap: 7,
+                  height: 34, paddingLeft: 12, paddingRight: 12,
+                  borderRadius: 6, border: `1px solid ${activeDropdown === 'alerts' ? 'var(--color-primary)' : 'var(--color-border)'}`,
+                  background: activeDropdown === 'alerts' ? 'var(--color-error-light)' : 'var(--color-surface)',
+                  flexShrink: 0, cursor: 'pointer',
                 }}
-                onMouseEnter={e => { if (activeDropdown !== 'camera') (e.currentTarget as HTMLElement).style.background = 'var(--color-surface-2)'; }}
-                onMouseLeave={e => { if (activeDropdown !== 'camera') (e.currentTarget as HTMLElement).style.background = 'var(--color-surface)'; }}
               >
-                {selectedCamera.label}
-                <ChevronDown size={12} strokeWidth={2} style={{ color: 'var(--color-text-3)', transform: activeDropdown === 'camera' ? 'rotate(180deg)' : 'none', transition: 'transform 150ms' }} />
+                <Bell size={14} strokeWidth={1.5} style={{ color: '#DC2626' }} />
+                <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--color-text-2)', whiteSpace: 'nowrap' }}>
+                  {MOCK_STORE_ALERTS.length} Alerts
+                </span>
+                <ChevronDown size={12} strokeWidth={2} style={{ color: 'var(--color-text-4)' }} />
               </button>
-
-              {/* Stat boxes — same styling as original */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 13px', background: '#64748B', borderRight: '1px solid rgba(255,255,255,0.12)' }}>
-                <span style={{ fontSize: 13, fontWeight: 600, color: 'white' }}>{selectedCamera.total}</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 13px', background: '#2D8A55', borderRight: '1px solid rgba(255,255,255,0.12)' }}>
-                <span style={{ fontSize: 13, fontWeight: 600, color: 'white' }}>{selectedCamera.online}</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 13px', background: selectedCamera.offline > 0 ? '#B54040' : '#2D8A55', borderRadius: '0 6px 6px 0' }}>
-                <span style={{ fontSize: 13, fontWeight: 600, color: 'white' }}>{selectedCamera.offline}</span>
-              </div>
-
-              {/* Camera dropdown */}
-              {activeDropdown === 'camera' && (
-                <div style={{ position: 'absolute', top: 'calc(100% + 6px)', left: 0, background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.10)', zIndex: 50, minWidth: 240, overflow: 'hidden', paddingTop: 4, paddingBottom: 4 }}>
-                  {CAMERA_OPTIONS.map((opt, idx) => {
-                    const active = selectedCameraIdx === idx;
-                    return (
-                      <button
-                        key={opt.label}
-                        onClick={() => { setSelectedCameraIdx(idx); setActiveDropdown(null); }}
-                        style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '9px 14px', background: active ? 'var(--color-accent-bg)' : 'transparent', border: 'none', cursor: 'pointer', transition: 'background 120ms' }}
-                        onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.background = 'var(--color-surface-2)'; }}
-                        onMouseLeave={e => { if (!active) (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
-                      >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          {active && <Check size={11} strokeWidth={2.5} style={{ color: 'var(--color-primary)' }} />}
-                          {!active && <span style={{ width: 11 }} />}
-                          <span style={{ fontSize: 13, fontWeight: active ? 600 : 400, color: active ? 'var(--color-primary)' : 'var(--color-text-2)' }}>{opt.label}</span>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-                          <span style={{ fontSize: 11, fontWeight: 600, color: 'white', background: '#64748B', borderRadius: 4, padding: '1px 5px' }}>{opt.total}</span>
-                          <span style={{ fontSize: 11, fontWeight: 600, color: 'white', background: '#2D8A55', borderRadius: 4, padding: '1px 5px' }}>{opt.online}</span>
-                          {opt.offline > 0 && <span style={{ fontSize: 11, fontWeight: 600, color: 'white', background: '#B54040', borderRadius: 4, padding: '1px 5px' }}>{opt.offline}</span>}
-                        </div>
-                      </button>
-                    );
-                  })}
+              {activeDropdown === 'alerts' && (
+                <div className="absolute top-full right-0 mt-2 rounded-lg shadow-xl border z-50" style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)', width: 320 }}>
+                  <div className="px-4 py-3 border-b" style={{ borderColor: 'var(--color-border-subtle)' }}>
+                    <span className="text-sm font-semibold" style={{ color: 'var(--color-text-1)' }}>Store alerts</span>
+                  </div>
+                  {MOCK_STORE_ALERTS.map((a, i) => (
+                    <div key={a.id} className="px-4 py-3" style={{ borderTop: i > 0 ? '1px solid var(--color-border-subtle)' : 'none' }}>
+                      <p style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--color-text-1)', margin: 0 }}>{a.store}</p>
+                      <p style={{ fontSize: 11.5, color: 'var(--color-text-3)', margin: '4px 0 0', lineHeight: 1.4 }}>{a.message}</p>
+                      <span style={{ fontSize: 10.5, color: 'var(--color-text-4)', marginTop: 4, display: 'block' }}>{a.time}</span>
+                    </div>
+                  ))}
+                  <div className="px-4 py-3 text-center" style={{ borderTop: '1px solid var(--color-border-subtle)' }}>
+                    <button type="button" className="text-xs font-medium" style={{ color: 'var(--color-primary)', background: 'none', border: 'none', cursor: 'pointer' }}>View all alerts</button>
+                  </div>
                 </div>
               )}
             </div>
-
-            <div style={{ width: 1, height: 20, background: 'var(--color-border)', flexShrink: 0 }} />
+            </>
+            )}
 
             {/* Refresh */}
             <button
@@ -873,7 +1010,7 @@ export function TopBar() {
     </header>
 
     {/* Insights of the Day modal — rendered outside <header> to escape stacking context */}
-    {showInsights && <InsightsModal onClose={() => setShowInsights(false)} />}
+    {insightsOpen && <InsightsModal onClose={() => setInsightsOpen(false)} />}
   </>
   );
 }

@@ -1,31 +1,33 @@
 'use client';
 
-export type RolePillTier = 'super_admin' | 'regional_director' | 'standard';
+import type { UserType } from '@/lib/team-data';
 
-const TIER_CLASS: Record<RolePillTier, string> = {
-  super_admin: 'role-pill--super-admin',
-  regional_director: 'role-pill--regional-director',
-  standard: 'role-pill--standard',
+export type RolePillVariant = UserType;
+
+const VARIANT_CLASS: Record<RolePillVariant, string> = {
+  admin: 'role-pill--admin',
+  regional_manager: 'role-pill--regional-manager',
+  store_manager: 'role-pill--store-manager',
 };
 
-/** Map role id or display name to a pill tier. */
-export function getRolePillTier(roleIdOrName: string): RolePillTier {
+/** Map role id or display name to a user-type pill variant. */
+export function getRolePillVariant(roleIdOrName: string): RolePillVariant {
   const key = roleIdOrName.toLowerCase().replace(/\s+/g, '_');
-  if (key === 'super_admin') return 'super_admin';
-  if (key === 'regional_director') return 'regional_director';
-  return 'standard';
+  if (key === 'admin' || key === 'super_admin') return 'admin';
+  if (key === 'regional_manager' || key === 'regional_director') return 'regional_manager';
+  return 'store_manager';
 }
 
 interface RolePillProps {
-  /** Role id (e.g. super_admin) or display name (e.g. Super Admin) */
+  /** Role id (e.g. store_manager) or display name (e.g. Store Manager) */
   roleIdOrName: string;
   label?: string;
   className?: string;
 }
 
 export function RolePill({ roleIdOrName, label, className }: RolePillProps) {
-  const tier = getRolePillTier(roleIdOrName);
-  const classes = ['role-pill', TIER_CLASS[tier], className].filter(Boolean).join(' ');
+  const variant = getRolePillVariant(roleIdOrName);
+  const classes = ['role-pill', VARIANT_CLASS[variant], className].filter(Boolean).join(' ');
 
   return (
     <span className={classes}>

@@ -198,19 +198,19 @@
   --color-on-primary:              #FFFFFF;
 }
 
-/* ── Team role pill tokens (light) ─────────────────────────────────────── */
+/* ── Team user-type pill tokens (light) — distinct from permission (brand purple) */
 [data-theme="light"], :root {
-  --role-super-admin-bg:           #EEE9FF;
-  --role-super-admin-text:         #5B4FCF;
-  --role-super-admin-border:       #DDD6FE;
+  --role-admin-bg:                 #EEF2FF;
+  --role-admin-text:               #4338CA;
+  --role-admin-border:             #C7D2FE;
 
-  --role-regional-director-bg:     #E6FAF5;
-  --role-regional-director-text:   #0F766E;
-  --role-regional-director-border: #99F6E4;
+  --role-regional-manager-bg:      #E6FAF5;
+  --role-regional-manager-text:    #0F766E;
+  --role-regional-manager-border:  #99F6E4;
 
-  --role-standard-bg:              var(--color-surface-2);
-  --role-standard-text:            var(--color-text-2);
-  --role-standard-border:          var(--color-border);
+  --role-store-manager-bg:         #F1F5F9;
+  --role-store-manager-text:       #475569;
+  --role-store-manager-border:     #CBD5E1;
 
   /* Status & permission badges */
   --status-active-text:            #15803D;
@@ -338,18 +338,18 @@
   --color-insights-strip:          linear-gradient(135deg, rgba(155, 168, 245, 0.08) 0%, rgba(110, 120, 150, 0.05) 100%);
   --color-insights-chip:           var(--color-surface-2);
 
-  /* Team role pills (dark) */
-  --role-super-admin-bg:           rgba(155, 168, 245, 0.16);
-  --role-super-admin-text:         #D4DCFF;
-  --role-super-admin-border:       rgba(155, 168, 245, 0.36);
+  /* Team user-type pills (dark) */
+  --role-admin-bg:                 rgba(129, 140, 248, 0.18);
+  --role-admin-text:               #C7D2FE;
+  --role-admin-border:             rgba(129, 140, 248, 0.38);
 
-  --role-regional-director-bg:     rgba(93, 191, 163, 0.14);
-  --role-regional-director-text:   #8AE0C8;
-  --role-regional-director-border: rgba(93, 191, 163, 0.32);
+  --role-regional-manager-bg:      rgba(93, 191, 163, 0.14);
+  --role-regional-manager-text:    #8AE0C8;
+  --role-regional-manager-border:  rgba(93, 191, 163, 0.32);
 
-  --role-standard-bg:              var(--color-surface-2);
-  --role-standard-text:            var(--color-text-2);
-  --role-standard-border:          var(--color-border);
+  --role-store-manager-bg:         rgba(148, 163, 184, 0.12);
+  --role-store-manager-text:       #CBD5E1;
+  --role-store-manager-border:     rgba(148, 163, 184, 0.28);
 
   /* Status & permission badges (dark) */
   --status-active-text:            #4ADE80;
@@ -458,6 +458,12 @@ body {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--color-neutral-300); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--color-text-4); }
+
+/* ── Home variant transition ────────────────────────────────────────────── */
+@keyframes homeVariantIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
 
 /* ── ApexCharts overrides ───────────────────────────────────────────────── */
 .apexcharts-tooltip {
@@ -708,6 +714,403 @@ button:focus-visible {
   background: var(--color-surface-3);
 }
 
+/* Live feed — filter bar + zone tabs */
+.vms-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+  min-height: 44px;
+  padding: 0 24px;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border-subtle);
+  overflow-x: auto;
+  overflow-y: visible;
+  position: relative;
+  z-index: 2;
+}
+.vms-filter-bar__filters {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+}
+.vms-zone-tabs {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: flex-end;
+  gap: 10px;
+  flex-shrink: 0;
+  border-bottom: 2px solid var(--color-border-subtle);
+}
+.vms-zone-tab {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+.vms-zone-tab__group {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  height: 32px;
+  padding: 0 4px 0 8px;
+  margin-bottom: -2px;
+}
+.vms-zone-tab.is-active .vms-zone-tab__group::after {
+  content: '';
+  position: absolute;
+  left: 6px;
+  right: 2px;
+  bottom: 0;
+  height: 2px;
+  background: var(--color-primary-emphasis);
+  border-radius: 2px 2px 0 0;
+  z-index: 1;
+}
+.vms-zone-tab__filter {
+  display: inline-flex;
+  align-items: center;
+  height: 100%;
+  padding: 0 2px 0 0;
+  border: none;
+  cursor: pointer;
+  background: transparent;
+  font-size: 11.5px;
+  line-height: 1;
+  font-weight: 400;
+  color: var(--color-text-3);
+  transition: color 150ms ease;
+  white-space: nowrap;
+}
+.vms-zone-tab.is-active .vms-zone-tab__filter {
+  font-weight: 600;
+  color: var(--color-primary);
+}
+.vms-zone-tab__rename {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  margin: 0;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  padding: 0;
+  color: var(--color-text-4);
+  background: transparent;
+  opacity: 0.75;
+  transition: opacity 150ms ease, color 150ms ease, background 150ms ease;
+}
+.vms-zone-tab__rename:hover {
+  opacity: 1;
+  color: var(--color-primary);
+  background: var(--color-accent-bg);
+}
+.vms-zone-tab__rename:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+  opacity: 1;
+}
+.vms-feed-area {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/* ── Oly calendar (date range / top bar) ───────────────────────────────── */
+.oly-calendar {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  box-shadow: var(--shadow-dropdown);
+  padding: 8px 10px 6px;
+}
+.oly-calendar__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+.oly-calendar__title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-1);
+}
+.oly-calendar__nav {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-2);
+  color: var(--color-text-2);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+.oly-calendar__nav:hover {
+  background: var(--color-accent-bg);
+  border-color: var(--color-accent-border);
+  color: var(--color-primary);
+}
+.oly-calendar__weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+  margin-bottom: 2px;
+}
+.oly-calendar__weekday {
+  font-size: 9.5px;
+  font-weight: 600;
+  color: var(--color-text-4);
+  text-align: center;
+  padding: 2px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.oly-calendar__grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+}
+.oly-calendar__cell {
+  height: 26px;
+  width: 100%;
+  border: none;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1;
+  color: var(--color-text-2);
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  transition: background 100ms ease, color 100ms ease;
+}
+.oly-calendar__cell--empty {
+  pointer-events: none;
+}
+.oly-calendar__cell:not(.oly-calendar__cell--disabled):not(.oly-calendar__cell--selected):hover {
+  background: var(--color-surface-2);
+  color: var(--color-text-1);
+}
+.oly-calendar__cell--selected {
+  background: var(--color-primary-emphasis);
+  color: var(--color-on-primary);
+  font-weight: 700;
+}
+.oly-calendar__cell--disabled {
+  color: var(--color-text-4);
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.oly-calendar__hint {
+  font-size: 9.5px;
+  color: var(--color-text-4);
+  margin: 6px 0 0;
+  line-height: 1.35;
+}
+.oly-calendar--embedded {
+  box-shadow: none;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 8px;
+  width: 100%;
+}
+.oly-calendar--compact {
+  padding: 5px 8px 4px;
+}
+.oly-calendar--compact .oly-calendar__header {
+  margin-bottom: 4px;
+}
+.oly-calendar--compact .oly-calendar__title {
+  font-size: 11px;
+}
+.oly-calendar--compact .oly-calendar__nav {
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+}
+.oly-calendar--compact .oly-calendar__weekday {
+  font-size: 8.5px;
+  padding: 0;
+}
+.oly-calendar--compact .oly-calendar__grid {
+  gap: 0;
+}
+.oly-calendar--compact .oly-calendar__cell {
+  height: 22px;
+  font-size: 10px;
+  border-radius: 5px;
+}
+
+/* Date range popover (top bar) */
+.oly-date-range-popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 50;
+  width: 256px;
+  padding: 10px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-dropdown);
+}
+.oly-date-range-popover__title {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-1);
+  line-height: 1.2;
+}
+.oly-date-range-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+.oly-date-range-field {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+  min-height: 42px;
+  padding: 6px 8px;
+  box-sizing: border-box;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-2);
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color 150ms ease, background 150ms ease;
+}
+.oly-date-range-field--active {
+  border-color: var(--color-primary);
+  background: var(--color-accent-bg);
+}
+.oly-date-range-field__label {
+  margin: 0;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-text-4);
+}
+.oly-date-range-field__value {
+  margin: 0;
+  font-size: 10.5px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--color-text-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.oly-date-range-field--active .oly-date-range-field__value {
+  color: var(--color-primary);
+}
+.oly-date-range-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 6px;
+  margin-bottom: 8px;
+}
+.oly-date-range-preset {
+  padding: 4px 9px;
+  border-radius: 6px;
+  font-size: 10.5px;
+  font-weight: 600;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-2);
+  color: var(--color-text-2);
+  cursor: pointer;
+  line-height: 1.2;
+}
+.oly-date-range-preset:hover {
+  border-color: var(--color-accent-border);
+  background: var(--color-accent-bg);
+  color: var(--color-primary);
+}
+.oly-date-range-apply {
+  width: 100%;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  background: var(--color-primary-emphasis);
+  color: var(--color-on-primary);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  line-height: 1;
+}
+.oly-date-range-apply:hover {
+  background: var(--color-primary-emphasis-hover);
+}
+
+/* Team page — Users / Groups switch (below KPI strip) */
+.team-view-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin-bottom: 16px;
+  padding: 3px;
+  border-radius: 10px;
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border-subtle);
+}
+.team-view-switch--inline {
+  margin-bottom: 0;
+  flex-shrink: 0;
+  align-self: center;
+  height: 36px;
+  box-sizing: border-box;
+  padding: 3px;
+  border-width: 1.5px;
+}
+.team-view-switch--inline .team-view-switch__btn {
+  gap: 0;
+  width: 32px;
+  height: 28px;
+  padding: 0;
+  justify-content: center;
+}
+.team-view-switch__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 16px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-text-3);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 150ms ease, color 150ms ease, box-shadow 150ms ease;
+}
+.team-view-switch__btn--active {
+  background: var(--color-primary-emphasis);
+  color: var(--color-on-primary);
+  box-shadow: var(--shadow-xs);
+}
+.team-view-switch__btn:not(.team-view-switch__btn--active):hover {
+  color: var(--color-text-2);
+  background: var(--color-surface);
+}
+
 /* Compact preferences layout helper */
 .prefs-compact-page {
   padding: 24px 28px;
@@ -842,44 +1245,34 @@ button:focus-visible {
   padding: 16px 18px 20px;
 }
 
-/* ── Team role pills ───────────────────────────────────────────────────── */
+/* ── Team user-type pills (permissions column stays brand purple) ──────── */
 .role-pill {
   display: inline-block;
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 10.5px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11.5px;
   font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  text-transform: none;
   white-space: nowrap;
   border: 1px solid transparent;
-  line-height: 1.45;
+  line-height: 1.35;
 }
 
-.role-pill--super-admin {
-  background: var(--role-super-admin-bg);
-  color: var(--role-super-admin-text);
-  border-color: var(--role-super-admin-border);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+.role-pill--admin {
+  background: var(--role-admin-bg);
+  color: var(--role-admin-text);
+  border-color: var(--role-admin-border);
 }
 
-.role-pill--regional-director {
-  background: var(--role-regional-director-bg);
-  color: var(--role-regional-director-text);
-  border-color: var(--role-regional-director-border);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+.role-pill--regional-manager {
+  background: var(--role-regional-manager-bg);
+  color: var(--role-regional-manager-text);
+  border-color: var(--role-regional-manager-border);
 }
 
-.role-pill--standard {
-  background: var(--role-standard-bg);
-  color: var(--role-standard-text);
-  border-color: var(--role-standard-border);
-}
-
-[data-theme="dark"] .role-pill--super-admin {
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
-}
-
-[data-theme="dark"] .role-pill--regional-director {
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+.role-pill--store-manager {
+  background: var(--role-store-manager-bg);
+  color: var(--role-store-manager-text);
+  border-color: var(--role-store-manager-border);
 }

@@ -44,7 +44,8 @@
       "Bash(pandoc \"/Users/ankush/Downloads/All Charts.docx\" -t markdown)",
       "Bash(pip3 install *)",
       "Bash(kill 1896)",
-      "Bash(node -e ' *)"
+      "Bash(node -e ' *)",
+      "Bash(kill 1335)"
     ]
   }
 }

@@ -651,20 +651,21 @@ export default function VMSPage() {
       </div>
 
       {/* Filter bar */}
-      <div
-        className="flex items-center gap-3 px-6 flex-shrink-0"
-        style={{ background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border-subtle)', height: 44 }}
-      >
+      <div className="vms-filter-bar">
         {/* Filters — left side */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div className="vms-filter-bar__filters">
 
           {/* ZONE — underline-tab style with inline rename */}
-          <div className="flex items-center gap-0" style={{ borderBottom: '2px solid var(--color-border-subtle)' }}>
+          <div className="vms-zone-tabs">
             {ZONES.map(z => {
               const active = zoneFilter === z;
+              const editable = z !== 'all';
               const displayLabel = z === 'all' ? 'All' : getZoneLabel(z);
               return (
-                <div key={z} className="relative flex items-center group" style={{ marginBottom: -2 }}>
+                <div
+                  key={z}
+                  className={`vms-zone-tab${active ? ' is-active' : ''}`}
+                >
                   {editingZone === z ? (
                     <input
                       autoFocus
@@ -688,28 +689,30 @@ export default function VMSPage() {
                       }}
                     />
                   ) : (
-                    <button
-                      onClick={() => { setZoneFilter(z); setPage(0); }}
-                      style={{
-                        height: 30, paddingLeft: 10, paddingRight: z !== 'all' ? 24 : 10,
-                        border: 'none', cursor: 'pointer', background: 'transparent',
-                        fontSize: 11.5, fontWeight: active ? 600 : 400,
-                        color: active ? 'var(--color-primary)' : 'var(--color-text-3)',
-                        borderBottom: active ? '2px solid var(--color-primary)' : '2px solid transparent',
-                        transition: 'all 150ms ease', whiteSpace: 'nowrap',
-                      }}
-                    >
-                      {displayLabel}
-                    </button>
-                  )}
-                  {z !== 'all' && editingZone !== z && (
-                    <button
-                      onClick={e => { e.stopPropagation(); setZoneEditValue(getZoneLabel(z)); setEditingZone(z); }}
-                      className="absolute right-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-4)', padding: 0, display: 'flex' }}
-                    >
-                      <Pencil size={9} strokeWidth={2} />
-                    </button>
+                    <div className="vms-zone-tab__group">
+                      <button
+                        type="button"
+                        className="vms-zone-tab__filter"
+                        onClick={() => { setZoneFilter(z); setPage(0); }}
+                      >
+                        {displayLabel}
+                      </button>
+                      {editable && (
+                        <button
+                          type="button"
+                          className="vms-zone-tab__rename"
+                          aria-label={`Rename ${displayLabel} zone tab`}
+                          title="Rename zone tab"
+                          onClick={e => {
+                            e.stopPropagation();
+                            setZoneEditValue(getZoneLabel(z));
+                            setEditingZone(z);
+                          }}
+                        >
+                          <Pencil size={9} strokeWidth={2} aria-hidden />
+                        </button>
+                      )}
+                    </div>
                   )}
                 </div>
               );
@@ -873,7 +876,7 @@ export default function VMSPage() {
       )}
 
       {/* Feed area */}
-      <div className="flex-1 overflow-y-auto p-4">
+      <div className="vms-feed-area p-4">
         {activeCams.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full gap-4">
             <Monitor size={40} strokeWidth={1} style={{ color: 'var(--color-border)' }} />

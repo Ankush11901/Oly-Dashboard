@@ -2148,24 +2148,6 @@ function PlacedWidget({
           <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text-1)' }}>{def.label}</p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          {!editMode && widgetId === 'footfall_trend' && (
-            <button
-              onClick={() => setShowSnapshots(true)}
-              style={{
-                display: 'inline-flex', alignItems: 'center', gap: 5,
-                padding: '4px 10px', height: 26, borderRadius: 6,
-                background: 'transparent', border: '1px solid var(--color-accent-border)',
-                color: 'var(--color-primary)', cursor: 'pointer',
-                fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap',
-                transition: 'background 150ms, border-color 150ms',
-              }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--color-accent-bg)'; (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-primary)'; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-accent-border)'; }}
-            >
-              <Eye size={12} strokeWidth={1.5} />
-              View Snapshots
-            </button>
-          )}
           {editMode ? (
             <button
               onClick={onRemove}

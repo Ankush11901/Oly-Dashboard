@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 const DEFAULT_ENABLED = new Set(['footfall_trend', 'top_stores', 'kpi_metrics', 'demographics_donut', 'conversion_donut']);
 
 export type NavStyle = 'sidebar' | 'topnav';
+export type HomeVariant = 0 | 1 | 2;
 
 interface DashboardContextType {
   enabledWidgets: Set<string>;
@@ -14,6 +15,10 @@ interface DashboardContextType {
   setNavStyle: (style: NavStyle) => void;
   refreshCount: number;
   triggerRefresh: () => void;
+  insightsOpen: boolean;
+  setInsightsOpen: (open: boolean) => void;
+  homeVariant: HomeVariant;
+  setHomeVariant: (variant: HomeVariant) => void;
 }
 
 const DashboardContext = createContext<DashboardContextType>({
@@ -25,6 +30,10 @@ const DashboardContext = createContext<DashboardContextType>({
   setNavStyle: () => {},
   refreshCount: 0,
   triggerRefresh: () => {},
+  insightsOpen: false,
+  setInsightsOpen: () => {},
+  homeVariant: 0,
+  setHomeVariant: () => {},
 });
 
 export function useDashboardContext() {
@@ -36,6 +45,8 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
   const [isChartSelectorOpen, setChartSelectorOpen] = useState(false);
   const [navStyle, setNavStyleState] = useState<NavStyle>('sidebar');
   const [refreshCount, setRefreshCount] = useState(0);
+  const [insightsOpen, setInsightsOpen] = useState(false);
+  const [homeVariant, setHomeVariantState] = useState<HomeVariant>(0);
   const triggerRefresh = () => setRefreshCount(c => c + 1);
 
   useEffect(() => {
@@ -47,10 +58,24 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
       }
       const storedNav = localStorage.getItem('oly-nav-style') as NavStyle | null;
       if (storedNav === 'sidebar' || storedNav === 'topnav') setNavStyleState(storedNav);
+      const storedHome = localStorage.getItem('oly-home-variant');
+      if (storedHome === '0' || storedHome === '1' || storedHome === '2') {
+        setHomeVariantState(Number(storedHome) as HomeVariant);
+      } else if (storedHome === '3') {
+        setHomeVariantState(0);
+        localStorage.setItem('oly-home-variant', '0');
+      }
     } catch (e) {
       console.error('Failed to load preferences from localStorage', e);
     }
   }, []);
+
+  const setHomeVariant = (variant: HomeVariant) => {
+    setHomeVariantState(variant);
+    try {
+      localStorage.setItem('oly-home-variant', String(variant));
+    } catch (e) { /* noop */ }
+  };
 
   const toggleWidget = (id: string) => {
     setEnabledWidgets((prev) => {
@@ -71,7 +96,7 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <DashboardContext.Provider value={{ enabledWidgets, toggleWidget, isChartSelectorOpen, setChartSelectorOpen, navStyle, setNavStyle, refreshCount, triggerRefresh }}>
+    <DashboardContext.Provider value={{ enabledWidgets, toggleWidget, isChartSelectorOpen, setChartSelectorOpen, navStyle, setNavStyle, refreshCount, triggerRefresh, insightsOpen, setInsightsOpen, homeVariant, setHomeVariant }}>
       {children}
     </DashboardContext.Provider>
   );

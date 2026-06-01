@@ -30,12 +30,6 @@ const NAV_NODES: NavNode[] = [
   },
   {
     type: 'flat',
-    label: 'Team Management',
-    href: '/dashboard/team',
-    icon: <Users size={16} strokeWidth={1.5} />,
-  },
-  {
-    type: 'flat',
     label: 'Analytics',
     href: '/dashboard/analytics',
     icon: <BarChart2 size={16} strokeWidth={1.5} />,
@@ -51,6 +45,12 @@ const NAV_NODES: NavNode[] = [
     label: 'Reports',
     href: '/dashboard/reports',
     icon: <FileText size={16} strokeWidth={1.5} />,
+  },
+  {
+    type: 'flat',
+    label: 'Team Management',
+    href: '/dashboard/team',
+    icon: <Users size={16} strokeWidth={1.5} />,
   },
   {
     type: 'section',

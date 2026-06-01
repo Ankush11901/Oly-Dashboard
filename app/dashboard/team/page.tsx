@@ -2,22 +2,23 @@
 import React, { useState, useRef, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import {
-  Plus, Search, X, Edit2, Trash2, Check, Filter,
+  Plus, Search, X, Edit2, Trash2, Check, Filter, ChevronDown,
   LayoutDashboard, BarChart2, Video, UserCog, FileText,
   Store, Users, UsersRound,
   Activity, Download, Camera, KeyRound, ShieldCheck, LogIn,
 } from 'lucide-react';
 import { CustomSelect } from '@/components/CustomSelect';
-import { RolePill } from '@/components/team/RolePill';
 import { TeamKpiStrip } from '@/components/team/TeamKpiStrip';
 import { TeamFiltersPanel } from '@/components/team/TeamFiltersPanel';
 import { GroupsPanel, GroupsToolbarExtras } from '@/components/team/GroupsPanel';
+import { RolePill } from '@/components/team/RolePill';
+import { MemberStoreAccessLabel } from '@/components/team/MemberStoreAccessLabel';
 import {
   type Member, type Status, type PermLevel, type UserType, type UserCategory,
   type TeamViewMode, type GroupViewLayout, type TeamGroup, type TeamFilters,
   ROLE_DEFS, MODULES, DEFAULT_ROLE_PERMS, LOCATIONS, STATUS_CFG, PERM_CFG,
   INITIAL_MEMBERS, INITIAL_GROUPS, EMPTY_FILTERS,
-  getRoleDef, getInitials, memberMatchesSearch,
+  getRoleDef, getInitials, memberMatchesSearch, countMemberPermissions,
 } from '@/lib/team-data';
 
 const MODULE_ICONS: Record<string, React.ReactNode> = {
@@ -31,130 +32,65 @@ const MODULE_ICONS: Record<string, React.ReactNode> = {
 // avatar bg colors by index
 const AVATAR_COLORS = ['var(--chart-1)', 'var(--chart-2)', 'var(--chart-4)', 'var(--chart-3)', 'var(--chart-5)'];
 
-// ── Access cell — pills + smart viewport-aware fixed popover ──────────────────
-function AccessCell({ member }: { member: Member }) {
-  const SHOW     = 2;
-  const visible  = member.storeAccess.slice(0, SHOW);
-  const overflow = member.storeAccess.length - SHOW;
-  // Cap the displayed overflow label at 3 — avoids "+7 more" etc.
-  const overflowLabel = Math.min(overflow, 3);
-
-  const [open,   setOpen]   = useState(false);
-  const [pos,    setPos]    = useState({ top: 0, left: 0 });
-  const btnRef     = useRef<HTMLButtonElement>(null);
+// ── Permissions summary (compact table cell) ───────────────────────────────────
+function PermissionsSummaryCell({ member }: { member: Member }) {
+  const count = countMemberPermissions(member);
+  const perms = member.customPerms ?? DEFAULT_ROLE_PERMS[member.userType] ?? {};
+  const [open, setOpen] = useState(false);
+  const btnRef = useRef<HTMLButtonElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
 
-  const toggle = () => {
-    if (!open && btnRef.current) {
-      const r = btnRef.current.getBoundingClientRect();
-      // Initial anchor: below button, horizontally centred
-      setPos({ top: r.bottom + 6, left: r.left + r.width / 2 });
-    }
-    setOpen(v => !v);
-  };
-
-  // After the popover renders, clamp it fully inside the viewport.
-  // Prefer opening below; only flip above when there is genuinely not enough room.
-  useEffect(() => {
-    if (!open || !popoverRef.current || !btnRef.current) return;
-    const el  = popoverRef.current;
-    const btn = btnRef.current.getBoundingClientRect();
-    const box = el.getBoundingClientRect();
-    const vw  = window.innerWidth;
-    const vh  = window.innerHeight;
-    const GAP = 8;
-
-    // Always try below first
-    let newTop  = btn.bottom + 6;
-    let newLeft = pos.left - box.width / 2;
-
-    // Only flip above if it genuinely overflows AND there is more room above
-    const spaceBelow = vh - btn.bottom - GAP;
-    const spaceAbove = btn.top - GAP;
-    if (box.height > spaceBelow && spaceAbove > spaceBelow) {
-      newTop = btn.top - 6 - box.height;
-    }
-    if (newTop < GAP) newTop = GAP;
-
-    // Clamp horizontal edges
-    if (newLeft + box.width > vw - GAP) newLeft = vw - GAP - box.width;
-    if (newLeft < GAP) newLeft = GAP;
-
-    el.style.top       = `${newTop}px`;
-    el.style.left      = `${newLeft}px`;
-    el.style.transform = 'none';
-  }, [open, pos]);
-
-  // Close on outside click
   useEffect(() => {
     if (!open) return;
     const close = (e: MouseEvent) => {
-      if (
-        btnRef.current     && !btnRef.current.contains(e.target as Node) &&
-        popoverRef.current && !popoverRef.current.contains(e.target as Node)
-      ) setOpen(false);
+      if (btnRef.current?.contains(e.target as Node)) return;
+      if (popoverRef.current?.contains(e.target as Node)) return;
+      setOpen(false);
     };
     document.addEventListener('mousedown', close);
     return () => document.removeEventListener('mousedown', close);
   }, [open]);
 
   return (
-    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, alignItems: 'center', justifyContent: 'center' }}>
-      {visible.map(s => (
-        <span key={s} style={{
-          padding: '4px 10px', borderRadius: 6, fontSize: 11.5, fontWeight: 500,
-          background: 'var(--color-surface-2)', color: 'var(--color-text-2)', border: '1px solid var(--color-border)',
-          whiteSpace: 'nowrap', maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', display: 'inline-block',
-        }}>
-          {s}
-        </span>
-      ))}
-      {overflow > 0 && (
-        <button
-          ref={btnRef}
-          onClick={toggle}
-          style={{
-            padding: '4px 10px', borderRadius: 6, fontSize: 11.5, fontWeight: 600,
-            background: open ? 'var(--color-accent-bg-hover)' : 'var(--color-accent-bg)', color: 'var(--color-primary)',
-            border: `1px solid ${open ? '#C4B5FD' : 'var(--color-accent-bg-hover)'}`,
-            whiteSpace: 'nowrap', cursor: 'pointer', transition: 'all 120ms',
-          }}
-        >
-          +{overflowLabel} more
-        </button>
-      )}
-
-      {/* Viewport-aware fixed popover */}
-      {open && (
+    <div style={{ display: 'flex', justifyContent: 'center' }}>
+      <button
+        ref={btnRef}
+        type="button"
+        onClick={() => setOpen(v => !v)}
+        style={{
+          padding: '5px 12px', borderRadius: 6, fontSize: 11.5, fontWeight: 600,
+          background: 'var(--color-primary-light)', color: 'var(--color-primary)',
+          border: '1px solid var(--color-accent-border)', cursor: 'pointer',
+        }}
+      >
+        {count} permission{count === 1 ? '' : 's'}
+      </button>
+      {open && btnRef.current && (
         <div
           ref={popoverRef}
           style={{
             position: 'fixed',
-            top: pos.top,
-            left: pos.left,
-            transform: 'translateX(-50%)', // overridden by useEffect clamp
+            top: btnRef.current.getBoundingClientRect().bottom + 6,
+            left: btnRef.current.getBoundingClientRect().left,
+            zIndex: 10000,
+            minWidth: 220,
             background: 'var(--color-surface)',
             border: '1px solid var(--color-border)',
             borderRadius: 10,
-            boxShadow: '0 8px 28px rgba(0,0,0,0.14)',
-            zIndex: 9999,
-            minWidth: 210,
-            padding: 12,
+            boxShadow: 'var(--shadow-dropdown)',
+            padding: '10px 12px',
           }}
         >
-          <p style={{ fontSize: 10, fontWeight: 700, color: 'var(--color-text-4)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8 }}>
-            More Stores
-          </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-            {member.storeAccess.slice(SHOW, SHOW + overflowLabel).map(s => (
-              <span key={s} style={{
-                padding: '5px 10px', borderRadius: 6, fontSize: 12, fontWeight: 500,
-                background: 'var(--color-surface-2)', color: 'var(--color-text-2)', border: '1px solid var(--color-border)', display: 'block',
-              }}>
-                {s}
-              </span>
-            ))}
-          </div>
+          {MODULES.map(m => {
+            const level = (perms[m.key] ?? 'none') as PermLevel;
+            const cfg = PERM_CFG[level];
+            return (
+              <div key={m.key} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, padding: '5px 0', fontSize: 11.5 }}>
+                <span style={{ color: 'var(--color-text-2)' }}>{m.label}</span>
+                <span style={{ fontWeight: 600, color: cfg.color }}>{cfg.label}</span>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
@@ -453,7 +389,7 @@ function PermToggleRow({ module, icon, level, onChange }: {
 
 // ── Add / Edit Member Modal ───────────────────────────────────────────────────
 const BLANK_FORM = {
-  name: '', email: '', roleId: 'store_manager', userType: 'regular' as UserType,
+  name: '', email: '', roleId: 'store_manager' as UserType, userType: 'store_manager' as UserType,
   location: 'Marina Bay Sands', storeAccess: ['Marina Bay Sands'], status: 'Active' as Status,
 };
 
@@ -465,16 +401,15 @@ function MemberModal({
   onClose: () => void;
   onSave: (data: typeof BLANK_FORM & { customPerms: Record<string, PermLevel> }) => void;
 }) {
-  const [tab, setTab] = useState<'details' | 'permissions'>('details');
+  const [permsOpen, setPermsOpen] = useState(false);
   const [form, setForm] = useState(initial);
   const [perms, setPerms] = useState<Record<string, PermLevel>>(
-    initial.customPerms ?? { ...DEFAULT_ROLE_PERMS[initial.roleId] ?? DEFAULT_ROLE_PERMS['staff'] }
+    initial.customPerms ?? { ...DEFAULT_ROLE_PERMS[initial.roleId as UserType] }
   );
 
-  const handleRoleChange = (roleId: string) => {
-    const roleDef = ROLE_DEFS.find(r => r.id === roleId);
-    setForm(f => ({ ...f, roleId, userType: roleDef?.userType ?? f.userType }));
-    setPerms({ ...DEFAULT_ROLE_PERMS[roleId] ?? DEFAULT_ROLE_PERMS['staff'] });
+  const handleRoleChange = (roleId: UserType) => {
+    setForm(f => ({ ...f, roleId, userType: roleId }));
+    setPerms({ ...DEFAULT_ROLE_PERMS[roleId] });
   };
 
   const toggleStore = (store: string) => {
@@ -493,7 +428,6 @@ function MemberModal({
   };
 
   const selectedRole = ROLE_DEFS.find(r => r.id === form.roleId) ?? ROLE_DEFS[2];
-  const filteredRoles = ROLE_DEFS.filter(r => r.userType === form.userType);
 
   const inputStyle: React.CSSProperties = {
     width: '100%', border: '1.5px solid var(--color-border)', borderRadius: 8,
@@ -552,33 +486,10 @@ function MemberModal({
             </button>
           </div>
 
-          {/* Tab strip */}
-          <div style={{ display: 'flex', gap: 0, borderBottom: '1.5px solid var(--color-border-subtle)' }}>
-            {(['details', 'permissions'] as const).map(t => (
-              <button
-                key={t}
-                type="button"
-                onClick={() => setTab(t)}
-                style={{
-                  padding: '9px 18px',
-                  fontSize: 13, fontWeight: tab === t ? 700 : 500,
-                  border: 'none', background: 'transparent', cursor: 'pointer',
-                  color: tab === t ? 'var(--color-primary)' : 'var(--color-text-4)',
-                  borderBottom: tab === t ? '2px solid var(--color-primary)' : '2px solid transparent',
-                  marginBottom: -1.5,
-                  transition: 'color 150ms ease',
-                }}
-              >
-                {t === 'details' ? 'User Details' : 'Permissions'}
-              </button>
-            ))}
-          </div>
         </div>
 
         {/* ── Body ── */}
         <form onSubmit={handleSubmit} style={{ flex: 1, overflowY: 'auto', padding: '20px 24px 24px' }}>
-
-          {tab === 'details' ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
 
               {/* Name + Email */}
@@ -609,122 +520,45 @@ function MemberModal({
                 </div>
               </div>
 
-              {/* User Type segmented control */}
-              <div>
-                <label style={{ display: 'block', fontSize: 11.5, fontWeight: 600, color: 'var(--color-text-2)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.04em' }}>User Type</label>
-                <div style={{
-                  display: 'flex', gap: 0,
-                  background: 'var(--color-surface-2)', borderRadius: 10, padding: 3,
-                }}>
-                  {(['admin', 'regular'] as UserType[]).map(ut => {
-                    const active = form.userType === ut;
-                    return (
-                      <button
-                        key={ut} type="button"
-                        onClick={() => setForm(f => ({ ...f, userType: ut }))}
-                        style={{
-                          flex: 1, height: 34, borderRadius: 8,
-                          border: 'none',
-                          background: active ? 'var(--color-surface)' : 'transparent',
-                          color: active ? 'var(--color-primary)' : 'var(--color-text-3)',
-                          fontSize: 13, fontWeight: active ? 700 : 500,
-                          cursor: 'pointer',
-                          boxShadow: active ? '0 1px 4px rgba(0,0,0,0.10)' : 'none',
-                          transition: 'all 150ms ease',
-                        }}
-                      >
-                        {ut === 'admin' ? 'Admin User' : 'Regular User'}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Role — 3-column compact cards */}
+              {/* Role */}
               <div>
                 <label style={{ display: 'block', fontSize: 11.5, fontWeight: 600, color: 'var(--color-text-2)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Role</label>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 7 }}>
-                  {filteredRoles.map(r => {
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 8 }}>
+                  {ROLE_DEFS.map(r => {
                     const active = form.roleId === r.id;
                     return (
                       <button
                         key={r.id} type="button"
                         onClick={() => handleRoleChange(r.id)}
                         style={{
-                          padding: '10px 12px', borderRadius: 9,
+                          padding: '10px 10px', borderRadius: 9, minHeight: 72,
                           border: `1.5px solid ${active ? 'var(--color-primary)' : 'var(--color-border)'}`,
                           background: active ? 'var(--color-primary-light)' : 'var(--color-surface)',
                           textAlign: 'left', cursor: 'pointer',
                           transition: 'all 150ms ease',
                         }}
                       >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                          <span style={{ fontSize: 12.5, fontWeight: 700, color: active ? 'var(--color-primary)' : 'var(--color-text-1)', flex: 1 }}>{r.name}</span>
-                        </div>
-                        <p style={{ fontSize: 11, color: active ? 'var(--color-text-2)' : 'var(--color-text-4)', margin: 0, lineHeight: 1.4 }}>{r.description}</p>
+                        <span style={{ display: 'block', fontSize: 12, fontWeight: 700, color: active ? 'var(--color-primary)' : 'var(--color-text-1)', marginBottom: 4, lineHeight: 1.3 }}>
+                          {r.name}
+                        </span>
+                        <p style={{ fontSize: 10.5, color: active ? 'var(--color-text-2)' : 'var(--color-text-4)', margin: 0, lineHeight: 1.35 }}>{r.description}</p>
                       </button>
                     );
                   })}
                 </div>
               </div>
 
-              {/* Location + Status */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: 11.5, fontWeight: 600, color: 'var(--color-text-2)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Primary Location</label>
-                  <CustomSelect
-                    value={form.location}
-                    onChange={v => setForm(f => ({ ...f, location: v }))}
-                    options={LOCATIONS.map(l => ({ value: l, label: l }))}
-                    size="md"
-                  />
-                </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: 11.5, fontWeight: 600, color: 'var(--color-text-2)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Status</label>
-                  <CustomSelect
-                    value={form.status}
-                    onChange={v => setForm(f => ({ ...f, status: v as Status }))}
-                    options={(['Active', 'On Leave', 'Inactive'] as Status[]).map(s => ({ value: s, label: s }))}
-                    size="md"
-                  />
-                </div>
-              </div>
-
-            </div>
-
-          ) : (
-            /* ── Permissions Tab ── */
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-
-              {/* Role context banner */}
-              <div style={{
-                display: 'flex', alignItems: 'center', gap: 10,
-                padding: '10px 14px', borderRadius: 9, marginBottom: 18,
-                background: 'var(--color-primary-light)',
-                border: '1.5px solid var(--color-accent-border)',
-              }}>
-                <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--color-primary)' }}>
-                  {selectedRole.name}
-                </span>
-                <span style={{ fontSize: 12, color: 'var(--color-text-2)' }}>
-                  — default permissions applied. Customise below.
-                </span>
-              </div>
-
-              {/* Module toggles */}
-              <p style={{ fontSize: 10.5, fontWeight: 700, color: 'var(--color-text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>Module Access</p>
-              {MODULES.map(m => (
-                <PermToggleRow
-                  key={m.key}
-                  module={m.label}
-                  icon={MODULE_ICONS[m.key]}
-                  level={(perms[m.key] ?? 'none') as PermLevel}
-                  onChange={l => setPerms(p => ({ ...p, [m.key]: l }))}
+              <div>
+                <label style={{ display: 'block', fontSize: 11.5, fontWeight: 600, color: 'var(--color-text-2)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Primary Location</label>
+                <CustomSelect
+                  value={form.location}
+                  onChange={v => setForm(f => ({ ...f, location: v }))}
+                  options={LOCATIONS.map(l => ({ value: l, label: l }))}
+                  size="md"
                 />
-              ))}
+              </div>
 
-              {/* Store access */}
-              <p style={{ fontSize: 10.5, fontWeight: 700, color: 'var(--color-text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 20, marginBottom: 10 }}>Store Access</p>
+              <p style={{ fontSize: 10.5, fontWeight: 700, color: 'var(--color-text-4)', textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 4, marginBottom: 10 }}>Store Access</p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                 {LOCATIONS.map(store => {
                   const active = form.storeAccess.includes(store);
@@ -748,8 +582,34 @@ function MemberModal({
                   );
                 })}
               </div>
+
+              <button
+                type="button"
+                onClick={() => setPermsOpen(v => !v)}
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%',
+                  padding: '10px 12px', borderRadius: 9, border: '1.5px solid var(--color-border)',
+                  background: 'var(--color-surface-2)', cursor: 'pointer', fontSize: 12.5, fontWeight: 600,
+                  color: 'var(--color-text-2)',
+                }}
+              >
+                <span>Customize permissions ({selectedRole.name} defaults)</span>
+                <ChevronDown size={14} style={{ transform: permsOpen ? 'rotate(180deg)' : 'none', transition: 'transform 150ms' }} />
+              </button>
+              {permsOpen && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 0, padding: '4px 0' }}>
+                  {MODULES.map(m => (
+                    <PermToggleRow
+                      key={m.key}
+                      module={m.label}
+                      icon={MODULE_ICONS[m.key]}
+                      level={(perms[m.key] ?? 'none') as PermLevel}
+                      onChange={l => setPerms(p => ({ ...p, [m.key]: l }))}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
-          )}
         </form>
 
         {/* ── Footer ── */}
@@ -820,10 +680,7 @@ function TeamPageContent() {
   };
 
   const filtered = members.filter(m => {
-    const matchesCategory =
-      category === 'all' ||
-      (category === 'admin' && m.userType === 'admin') ||
-      (category === 'regular' && m.userType === 'regular');
+    const matchesCategory = category === 'all' || m.userType === category;
     if (!matchesCategory) return false;
     if (!memberMatchesSearch(m, search)) return false;
     if (filters.roleId && m.roleId !== filters.roleId) return false;
@@ -841,6 +698,20 @@ function TeamPageContent() {
       return next;
     });
   };
+
+  useEffect(() => {
+    if (selectedIds.size === 0 || viewMode !== 'users') return;
+
+    const handlePointerDown = (e: PointerEvent) => {
+      const target = e.target;
+      if (!(target instanceof Element)) return;
+      if (target.closest('[data-member-selection]')) return;
+      setSelectedIds(new Set());
+    };
+
+    document.addEventListener('pointerdown', handlePointerDown);
+    return () => document.removeEventListener('pointerdown', handlePointerDown);
+  }, [selectedIds.size, viewMode]);
 
   const handleCreateGroupFromSelection = () => {
     if (selectedIds.size === 0) return;
@@ -871,38 +742,12 @@ function TeamPageContent() {
   };
 
   const adminCount = members.filter(m => m.userType === 'admin').length;
-  const regularCount = members.filter(m => m.userType === 'regular').length;
+  const regionalCount = members.filter(m => m.userType === 'regional_manager').length;
+  const storeMgrCount = members.filter(m => m.userType === 'store_manager').length;
   const hasFilters = !!(filters.roleId || filters.status || filters.store || filters.groupId);
 
   return (
     <div style={{ padding: '28px 32px', minHeight: '100%', background: 'var(--color-page-bg)' }}>
-
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginBottom: 16 }}>
-        <div style={{ display: 'flex', background: 'var(--color-surface-2)', borderRadius: 10, padding: 3 }}>
-          {([
-            { key: 'users' as const, label: 'Users', icon: <Users size={14} strokeWidth={1.5} /> },
-            { key: 'groups' as const, label: 'Groups', icon: <UsersRound size={14} strokeWidth={1.5} /> },
-          ]).map(tab => {
-            const active = viewMode === tab.key;
-            return (
-              <button
-                key={tab.key}
-                type="button"
-                onClick={() => setViewMode(tab.key)}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 7, padding: '7px 16px', borderRadius: 8, border: 'none',
-                  background: active ? 'var(--color-primary-emphasis)' : 'transparent',
-                  color: active ? '#fff' : 'var(--color-text-3)',
-                  fontSize: 13, fontWeight: 600, cursor: 'pointer', transition: 'all 150ms ease',
-                }}
-              >
-                {tab.icon}
-                {tab.label}
-              </button>
-            );
-          })}
-        </div>
-      </div>
 
       <TeamKpiStrip members={members} groups={groups} />
 
@@ -919,8 +764,9 @@ function TeamPageContent() {
         }}>
           {([
             { key: 'all',     label: 'All Users',     count: members.length },
-            { key: 'admin',   label: 'Admin Users',   count: adminCount     },
-            { key: 'regular', label: 'Regular Users', count: regularCount   },
+            { key: 'admin', label: 'Admin', count: adminCount },
+            { key: 'regional_manager', label: 'Regional Manager', count: regionalCount },
+            { key: 'store_manager', label: 'Store Manager', count: storeMgrCount },
           ] as { key: UserCategory; label: string; count: number }[]).map(tab => {
             const active = category === tab.key;
             return (
@@ -989,9 +835,32 @@ function TeamPageContent() {
             <Filter size={14} />
             Filters
           </button>
+          <div className="team-view-switch team-view-switch--inline" role="tablist" aria-label="Team view">
+            {([
+              { key: 'users' as const, label: 'Users', icon: <Users size={14} strokeWidth={1.5} /> },
+              { key: 'groups' as const, label: 'Groups', icon: <UsersRound size={14} strokeWidth={1.5} /> },
+            ]).map(tab => {
+              const active = viewMode === tab.key;
+              return (
+                <button
+                  key={tab.key}
+                  type="button"
+                  role="tab"
+                  aria-selected={active}
+                  onClick={() => setViewMode(tab.key)}
+                  className={`team-view-switch__btn${active ? ' team-view-switch__btn--active' : ''}`}
+                  aria-label={tab.label}
+                  title={tab.label}
+                >
+                  {tab.icon}
+                </button>
+              );
+            })}
+          </div>
           {viewMode === 'users' && selectedIds.size > 0 && (
             <button
               type="button"
+              data-member-selection
               onClick={handleCreateGroupFromSelection}
               style={{
                 display: 'flex', alignItems: 'center', gap: 6, height: 36, padding: '0 14px',
@@ -1039,20 +908,18 @@ function TeamPageContent() {
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
         <table className="table-surface" style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
           <colgroup>
-            <col style={{ width: 40 }} />
-            <col style={{ width: '22%' }} />
-            <col style={{ width: '12%' }} />
-            <col style={{ width: '12%' }} />
-            <col style={{ width: '20%' }} />
+            <col style={{ width: '28%' }} />
+            <col style={{ width: '16%' }} />
+            <col style={{ width: '24%' }} />
             <col style={{ width: 'auto' }} />
             <col style={{ width: 136 }} />
           </colgroup>
           <thead>
             <tr style={{ background: 'var(--color-surface-2)', borderBottom: '1.5px solid var(--color-border-subtle)' }}>
-              {(['', 'Member Name', 'User Type', 'Role', 'Email', 'Access', 'Actions'] as const).map((h, i) => (
+              {(['Member Name', 'User Type', 'Email', 'Permissions', 'Actions'] as const).map((h, i) => (
                 <th key={i} style={{
                   padding: '11px 20px',
-                  textAlign: i <= 1 ? 'left' : 'center',
+                  textAlign: i === 0 ? 'left' : 'center',
                   fontSize: 10.5, fontWeight: 700, color: 'var(--color-text-4)',
                   textTransform: 'uppercase', letterSpacing: '0.07em',
                 }}>
@@ -1064,14 +931,13 @@ function TeamPageContent() {
           <tbody>
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={7} style={{ padding: '48px 20px', textAlign: 'center', color: 'var(--color-text-4)', fontSize: 13 }}>
+                <td colSpan={5} style={{ padding: '48px 20px', textAlign: 'center', color: 'var(--color-text-4)', fontSize: 13 }}>
                   No members match your search.
                 </td>
               </tr>
             )}
             {filtered.map((member, idx) => {
-              const role   = getRoleDef(member.roleId);
-              const sc     = STATUS_CFG[member.status];
+              const role = getRoleDef(member.roleId);
               const bgColor = AVATAR_COLORS[idx % AVATAR_COLORS.length];
               const checked = selectedIds.has(member.id);
 
@@ -1082,12 +948,25 @@ function TeamPageContent() {
                   onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'var(--color-surface-2)'}
                   onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
                 >
-                  <td style={{ padding: '13px 12px', verticalAlign: 'middle', textAlign: 'center' }}>
-                    <input type="checkbox" checked={checked} onChange={() => toggleSelect(member.id)} style={{ width: 16, height: 16, cursor: 'pointer', accentColor: 'var(--color-primary-emphasis)' }} />
-                  </td>
                   {/* Member Name */}
                   <td style={{ padding: '13px 20px', verticalAlign: 'middle', textAlign: 'left' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 10 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
+                      <input
+                        type="checkbox"
+                        data-member-selection
+                        checked={checked}
+                        onChange={() => toggleSelect(member.id)}
+                        aria-label={`Select ${member.name}`}
+                        style={{
+                          width: 16,
+                          height: 16,
+                          margin: 0,
+                          flexShrink: 0,
+                          cursor: 'pointer',
+                          accentColor: 'var(--color-primary-emphasis)',
+                        }}
+                      />
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0, flex: 1 }}>
                       <div style={{
                         width: 34, height: 34, borderRadius: '50%',
                         background: bgColor,
@@ -1100,32 +979,18 @@ function TeamPageContent() {
                           ? <img src={member.avatar} alt={member.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                           : getInitials(member.name)}
                       </div>
-                      <div style={{ minWidth: 0 }}>
-                        <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-1)', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      <div style={{ minWidth: 0, flex: 1, display: 'flex', flexDirection: 'column', gap: 0 }}>
+                        <p style={{ fontSize: 13, fontWeight: 600, lineHeight: 1.2, color: 'var(--color-text-1)', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                           {member.name}
                         </p>
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, marginTop: 4, fontSize: 11, fontWeight: 500, color: sc.color }}>
-                          <span style={{ width: 6, height: 6, borderRadius: '50%', background: sc.dot, flexShrink: 0 }} />
-                          {member.status}
-                        </span>
+                        <MemberStoreAccessLabel member={member} />
+                      </div>
                       </div>
                     </div>
                   </td>
 
                   <td style={{ padding: '13px 20px', verticalAlign: 'middle', textAlign: 'center' }}>
-                    <span style={{
-                      fontSize: 11.5, fontWeight: 600, padding: '4px 10px', borderRadius: 6,
-                      background: member.userType === 'admin' ? 'var(--color-primary-light)' : 'var(--color-surface-2)',
-                      color: member.userType === 'admin' ? 'var(--color-primary)' : 'var(--color-text-3)',
-                      border: `1px solid ${member.userType === 'admin' ? 'var(--color-accent-border)' : 'var(--color-border)'}`,
-                    }}>
-                      {member.userType === 'admin' ? 'Admin' : 'Regular'}
-                    </span>
-                  </td>
-
-                  {/* Role */}
-                  <td style={{ padding: '13px 20px', verticalAlign: 'middle', textAlign: 'center' }}>
-                    <RolePill roleIdOrName={role.id} label={role.name} />
+                    <RolePill roleIdOrName={member.roleId} label={role.name} />
                   </td>
 
                   {/* Email */}
@@ -1135,9 +1000,8 @@ function TeamPageContent() {
                     </span>
                   </td>
 
-                  {/* Access */}
                   <td style={{ padding: '13px 20px', verticalAlign: 'middle', textAlign: 'center' }}>
-                    <AccessCell member={member} />
+                    <PermissionsSummaryCell member={member} />
                   </td>
 
                   {/* Actions */}
