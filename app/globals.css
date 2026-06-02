@@ -952,6 +952,12 @@ button:focus-visible {
   border-radius: 5px;
 }
 
+/* Add Task modal calendar (no outer popover shell) */
+.oly-calendar--add-task {
+  width: 256px;
+  padding: 10px 12px 8px;
+}
+
 /* Date range popover (top bar) */
 .oly-date-range-popover {
   position: absolute;

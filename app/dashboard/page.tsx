@@ -1,17 +1,18 @@
 'use client';
-import { useState, useRef, type CSSProperties } from 'react';
+import { useState, useRef, useEffect, type CSSProperties } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   CheckCircle2, Circle, Upload, Plus, ChevronDown, ChevronUp,
   UserPlus, LayoutGrid, Video,
-  FileText, Download, ChevronRight,
+  FileText, Download, ChevronRight, CalendarDays,
   Search, ListChecks,
 } from 'lucide-react';
 import { CustomSelect } from '@/components/CustomSelect';
+import { DateCalendarPanel, dateToIso, isoToDate } from '@/components/DateCalendarPanel';
 import { useDashboardContext } from '@/components/DashboardProvider';
 import { WhatsNewCarousel } from '@/components/WhatsNewCarousel';
 import { dashboardCardStyle } from '@/lib/theme';
-import { KpiCard, KPI_CARDS, KpiPanelGrouped } from '@/components/home/KpiCard';
+import { KpiPanelGrouped } from '@/components/home/KpiCard';
 import { HomeBentoView } from '@/components/home/HomeBentoView';
 import { HomeRedesignView } from '@/components/home/HomeRedesignView';
 import {
@@ -27,8 +28,36 @@ const STORES   = ['Marina Bay Sands', 'Orchard Central', 'VivoCity', 'Bugis Junc
 const MANAGERS = ['Sarah Tan', 'John Lim', 'Priya S.', 'Ali Hassan', 'Wei Chen'];
 const cardStyle = dashboardCardStyle;
 
+const toLocalISODate = (d: Date) => {
+  const y = d.getFullYear();
+  const m = `${d.getMonth() + 1}`.padStart(2, '0');
+  const day = `${d.getDate()}`.padStart(2, '0');
+  return `${y}-${m}-${day}`;
+};
+
+const parseISODate = (iso: string) => {
+  const [y, m, d] = iso.split('-').map(Number);
+  if (!y || !m || !d) return null;
+  return new Date(y, m - 1, d);
+};
+
+const formatDueLabelFromISO = (iso: string) => {
+  if (!iso) return 'Today';
+  const today = new Date();
+  const tomorrow = new Date();
+  tomorrow.setDate(today.getDate() + 1);
+  const todayISO = toLocalISODate(today);
+  const tomorrowISO = toLocalISODate(tomorrow);
+  if (iso === todayISO) return 'Today';
+  if (iso === tomorrowISO) return 'Tomorrow';
+  const date = parseISODate(iso);
+  if (!date) return 'Today';
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+};
+
+const initialDueISO = toLocalISODate(new Date());
 const EMPTY_NEW_TASK = {
-  title: '', store: 'Marina Bay Sands', due: 'Today', requiresPhoto: false, assignedTo: '',
+  title: '', store: 'Marina Bay Sands', due: 'Today', dueDateISO: initialDueISO, requiresPhoto: false, assignedTo: '',
   recurrence: 'none' as Recurrence, recurrenceWeekdays: [] as string[], recurrenceMonthDays: [] as number[],
   completeWithinValue: '', completeWithinUnit: 'minutes' as DurationUnit,
 };
@@ -47,6 +76,8 @@ export default function DashboardPage() {
   const [showAllTasks,     setShowAll]   = useState(false);
   const [isAddTaskOpen,    setAddOpen]   = useState(false);
   const [newTask,          setNewTask]   = useState(EMPTY_NEW_TASK);
+  const [dueCalendarOpen,  setDueCalendarOpen] = useState(false);
+  const [dueCalendarMonth, setDueCalendarMonth] = useState(() => isoToDate(initialDueISO));
   const [concernOpen,      setConcernOpen]  = useState(false);
   const [concernSent,      setConcernSent]  = useState<string | null>(null);
   const [tasksHistoryOpen, setTasksHistoryOpen] = useState(false);
@@ -54,10 +85,13 @@ export default function DashboardPage() {
   const [uploadingId,      setUploading] = useState<number | null>(null);
   const [activitySearch,   setSearch]   = useState('');
   const [activityTab,      setActTab]   = useState<'activity' | 'reports'>('activity');
-  const [kpiStyle,         setKpiStyle] = useState<0 | 1 | 2 | 3>(2);
   const photoRef = useRef<HTMLInputElement>(null);
   const isAdmin = true;
   const DEFAULT_SHOW = 3;
+
+  useEffect(() => {
+    if (!isAddTaskOpen) setDueCalendarOpen(false);
+  }, [isAddTaskOpen]);
 
   const toggleTask = (id: number) =>
     setTasks(ts => ts.map(t => t.id === id ? { ...t, status: t.status === 'done' ? 'pending' : 'done' } : t));
@@ -79,12 +113,13 @@ export default function DashboardPage() {
   const addTask = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTask.title.trim()) return;
+    const dueLabel = formatDueLabelFromISO(newTask.dueDateISO);
     const withinVal = newTask.completeWithinValue ? Number(newTask.completeWithinValue) : undefined;
     const dueBy = withinVal && withinVal > 0
       ? `Within ${withinVal} ${newTask.completeWithinUnit === 'hours' ? (withinVal === 1 ? 'hour' : 'hours') : (withinVal === 1 ? 'minute' : 'minutes')}`
       : undefined;
     setTasks(ts => [{
-      title: newTask.title, store: newTask.store, due: dueBy ?? newTask.due,
+      title: newTask.title, store: newTask.store, due: dueBy ?? dueLabel,
       requiresPhoto: newTask.requiresPhoto, id: Date.now(), status: 'pending' as TaskStatus,
       automated: false, assignedTo: newTask.assignedTo || undefined, dueBy,
       recurrence: newTask.recurrence,
@@ -107,7 +142,7 @@ export default function DashboardPage() {
         style={{
           padding: homeVariant === 2 ? '18px 22px' : '28px 32px',
           background: homeVariant === 2 ? '#eef1f6' : 'var(--color-page-bg)',
-          minHeight: '100vh',
+          minHeight: '100%',
         }}
       >
 
@@ -128,17 +163,7 @@ export default function DashboardPage() {
               </div>
 
               <div style={{ marginBottom: 20 }}>
-                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 10, gap: 6, alignItems: 'center' }}>
-                  <span style={{ fontSize: 11, color: 'var(--color-text-4)', fontWeight: 500, marginRight: 4 }}>Style</span>
-                  {([0, 1, 2, 3] as const).map(s => (
-                    <button key={s} onClick={() => setKpiStyle(s)} style={{ width: 8, height: 8, borderRadius: '50%', border: 'none', cursor: 'pointer', padding: 0, background: kpiStyle === s ? 'var(--color-primary)' : 'var(--color-border)', transform: kpiStyle === s ? 'scale(1.4)' : 'scale(1)', transition: 'all 150ms ease' }} aria-label={`KPI style ${s + 1}`} />
-                  ))}
-                </div>
-                {kpiStyle === 2 ? <KpiPanelGrouped refreshCount={refreshCount} /> : (
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
-                    {KPI_CARDS.map((card, i) => <KpiCard key={`${card.label}-${refreshCount}`} card={card} styleVariant={kpiStyle} sparkIndex={i} />)}
-                  </div>
-                )}
+                <KpiPanelGrouped refreshCount={refreshCount} />
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 20, marginBottom: 20 }}>
@@ -323,7 +348,49 @@ export default function DashboardPage() {
               <div><label style={fieldLabel}>Task Title</label><input type="text" placeholder="Describe the task..." value={newTask.title} onChange={e => setNewTask({ ...newTask, title: e.target.value })} style={{ width: '100%', border: '1.5px solid var(--color-border)', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: 'var(--color-text-1)', background: 'var(--color-surface)', outline: 'none', boxSizing: 'border-box' }} autoFocus /></div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <div><label style={fieldLabel}>Store</label><CustomSelect value={newTask.store} onChange={v => setNewTask({ ...newTask, store: v })} options={STORES.map(s => ({ value: s, label: s }))} /></div>
-                <div><label style={fieldLabel}>Due Date</label><input type="text" placeholder="Today / Jun 5..." value={newTask.due} onChange={e => setNewTask({ ...newTask, due: e.target.value })} style={{ width: '100%', border: '1.5px solid var(--color-border)', borderRadius: 8, padding: '9px 12px', fontSize: 13, color: 'var(--color-text-1)', background: 'var(--color-surface)', outline: 'none', boxSizing: 'border-box' }} /></div>
+                <div>
+                  <label style={fieldLabel}>Due Date</label>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 8, position: 'relative' }}>
+                    <div className="oly-date-range-field oly-date-range-field--active" style={{ minHeight: 38, padding: '6px 10px' }}>
+                      <span className="oly-date-range-field__label">Due</span>
+                      <span className="oly-date-range-field__value">{formatDueLabelFromISO(newTask.dueDateISO)}</span>
+                    </div>
+                    <button
+                      type="button"
+                      className="oly-calendar__nav"
+                      style={{
+                        width: 38,
+                        height: 38,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                      }}
+                      aria-label="Toggle due date calendar"
+                      onClick={() => {
+                        setDueCalendarMonth(isoToDate(newTask.dueDateISO || initialDueISO));
+                        setDueCalendarOpen(v => !v);
+                      }}
+                    >
+                      <CalendarDays size={16} strokeWidth={2} />
+                    </button>
+                    {dueCalendarOpen && (
+                      <div style={{ position: 'absolute', top: 'calc(100% + 6px)', right: 0, zIndex: 50 }}>
+                        <DateCalendarPanel
+                          className="oly-calendar--compact oly-calendar--add-task"
+                          viewMonth={dueCalendarMonth}
+                          onViewMonthChange={setDueCalendarMonth}
+                          selected={isoToDate(newTask.dueDateISO || initialDueISO)}
+                          onSelect={d => {
+                            const nextISO = dateToIso(d);
+                            setNewTask({ ...newTask, dueDateISO: nextISO, due: formatDueLabelFromISO(nextISO) });
+                            setDueCalendarOpen(false);
+                          }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
               <div><label style={fieldLabel}>Assign To <span style={{ color: 'var(--color-text-4)', fontWeight: 400, textTransform: 'none' }}>(optional)</span></label><CustomSelect value={newTask.assignedTo || '__none__'} onChange={v => setNewTask({ ...newTask, assignedTo: v === '__none__' ? '' : v })} options={[{ value: '__none__', label: '— Unassigned —' }, ...MANAGERS.map(m => ({ value: m, label: m }))]} placeholder="— Unassigned —" /></div>
               <div><label style={fieldLabel}>Repeat</label><CustomSelect value={newTask.recurrence} onChange={v => setNewTask({ ...newTask, recurrence: v as Recurrence, recurrenceWeekdays: needsWeekdayPicker(v as Recurrence) ? newTask.recurrenceWeekdays : [], recurrenceMonthDays: v === 'monthly' ? newTask.recurrenceMonthDays : [] })} options={RECURRENCE_OPTIONS} /></div>

@@ -415,6 +415,7 @@ export function TopBar() {
   const showStoreCameraStats = !isLiveFeed && !isTeamPage;
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<DropdownType>(null);
+  const [storeAlertsOpen, setStoreAlertsOpen] = useState(false);
   const todayIso = new Date().toISOString().slice(0, 10);
   const weekAgoIso = new Date(Date.now() - 6 * 86400000).toISOString().slice(0, 10);
   const [dateStart, setDateStart] = useState(weekAgoIso);
@@ -985,7 +986,24 @@ export function TopBar() {
                     </div>
                   ))}
                   <div className="px-4 py-3 text-center" style={{ borderTop: '1px solid var(--color-border-subtle)' }}>
-                    <button type="button" className="text-xs font-medium" style={{ color: 'var(--color-primary)', background: 'none', border: 'none', cursor: 'pointer' }}>View all alerts</button>
+                    <button
+                      type="button"
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 600,
+                        color: 'var(--color-primary)',
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        lineHeight: 1.2,
+                      }}
+                      onClick={() => {
+                        setActiveDropdown(null);
+                        setStoreAlertsOpen(true);
+                      }}
+                    >
+                      View all alerts
+                    </button>
                   </div>
                 </div>
               )}
@@ -1011,6 +1029,79 @@ export function TopBar() {
 
     {/* Insights of the Day modal — rendered outside <header> to escape stacking context */}
     {insightsOpen && <InsightsModal onClose={() => setInsightsOpen(false)} />}
+
+    {/* Store alerts popup */}
+    {storeAlertsOpen && (
+      <div
+        className="fixed inset-0 z-[100] flex items-center justify-center theme-overlay"
+        onClick={() => setStoreAlertsOpen(false)}
+      >
+        <div
+          className="modal-panel"
+          style={{
+            width: '100%',
+            maxWidth: 460,
+            borderRadius: 16,
+            overflow: 'hidden',
+          }}
+          onClick={e => e.stopPropagation()}
+        >
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '16px 18px',
+              borderBottom: '1px solid var(--color-border-subtle)',
+            }}
+          >
+            <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: 'var(--color-text-1)' }}>
+              Store alerts
+            </h3>
+            <button
+              type="button"
+              aria-label="Close store alerts"
+              onClick={() => setStoreAlertsOpen(false)}
+              style={{
+                width: 28,
+                height: 28,
+                borderRadius: 8,
+                border: '1px solid var(--color-border)',
+                background: 'var(--color-surface-2)',
+                color: 'var(--color-text-3)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+              }}
+            >
+              <X size={14} strokeWidth={2} />
+            </button>
+          </div>
+          <div style={{ maxHeight: 360, overflowY: 'auto' }}>
+            {MOCK_STORE_ALERTS.map((a, i) => (
+              <div
+                key={a.id}
+                style={{
+                  padding: '12px 18px',
+                  borderTop: i > 0 ? '1px solid var(--color-border-subtle)' : 'none',
+                }}
+              >
+                <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-1)', margin: 0 }}>
+                  {a.store}
+                </p>
+                <p style={{ fontSize: 12, color: 'var(--color-text-2)', margin: '4px 0 0', lineHeight: 1.4 }}>
+                  {a.message}
+                </p>
+                <span style={{ fontSize: 11, color: 'var(--color-text-4)', marginTop: 4, display: 'block' }}>
+                  {a.time}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    )}
   </>
   );
 }

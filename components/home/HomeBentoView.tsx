@@ -77,20 +77,19 @@ function BentoQuickActionsCard({
   onConcernOpen: () => void;
 }) {
   const router = useRouter();
-  const { background: _bg, border: _border, ...cardShell } = cardBase;
   return (
     <div
       className="bento-card bento-card--hover bento-quick-actions-card"
       style={{
-        ...cardShell,
+        ...cardBase,
         padding: 0,
         display: 'flex',
         flexDirection: 'column',
         height: '100%',
       }}
     >
-      <div className="bento-card-head">
-        <p className="bento-title" style={{ margin: 0 }}>Quick actions</p>
+      <div className="bento-card-head bento-quick-actions-card__head">
+        <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--color-text-1)' }}>Quick Actions</p>
       </div>
       <div className="bento-card-body">
         {QUICK_ACTIONS.map(action => (
@@ -224,10 +223,13 @@ export function HomeBentoView({
   onConcernOpen,
 }: HomeBentoViewProps) {
   const [activeConvBar, setActiveConvBar] = useState(DIP_BAR_INDEX >= 0 ? DIP_BAR_INDEX : 0);
+  const [showOverdueTasks, setShowOverdueTasks] = useState(false);
   const cardBase = { ...dashboardCardStyle, borderRadius: 20, overflow: 'hidden' as const };
-  const overdueCount = tasks.filter(t => t.status === 'overdue').length;
+  const overdueTasks = tasks.filter(t => t.status === 'overdue');
+  const overdueCount = overdueTasks.length;
   const pendingCount = tasks.filter(t => t.status === 'pending').length;
   const criticalAlert = RECENT_ALERTS.find(a => a.type === 'critical' || a.type === 'warning');
+  const recapConv = KPI_CARDS[2];
 
   return (
     <>
@@ -348,9 +350,20 @@ export function HomeBentoView({
             </div>
 
             <div className="bento-recap__footer">
-              <p className="bento-recap__summary">
-                Network conversion <strong>12.4%</strong> · {SIGNALS.length} insights this week · 2 stores flagged
-              </p>
+              <div className="bento-recap__summary-row" aria-label="Weekly network summary">
+                <span className="bento-recap__summary-seg">
+                  <strong>{recapConv.actual}%</strong>
+                  <span>conversion</span>
+                </span>
+                <span className="bento-recap__summary-seg">
+                  <strong>{SIGNALS.length}</strong>
+                  <span>insights</span>
+                </span>
+                <span className="bento-recap__summary-seg bento-recap__summary-seg--warn">
+                  <strong>2</strong>
+                  <span>flagged</span>
+                </span>
+              </div>
               <button
                 type="button"
                 className="bento-btn-primary"
@@ -379,7 +392,6 @@ export function HomeBentoView({
                   borderRadius: 18,
                   padding: '18px 18px 16px',
                   background: theme.bg,
-                  boxShadow: `0 8px 24px ${theme.glow}`,
                   minHeight: 122,
                 }}
               >
@@ -409,26 +421,6 @@ export function HomeBentoView({
           })}
         </div>
 
-        {(overdueCount > 0 || criticalAlert) && (
-          <div className="bento-ops-strip" role="status">
-            {overdueCount > 0 && (
-              <button type="button" className="bento-ops-strip__chip bento-ops-strip__chip--warn" onClick={() => { haptic('selection'); onAllTasks(); }}>
-                {overdueCount} overdue task{overdueCount !== 1 ? 's' : ''}
-              </button>
-            )}
-            {pendingCount > 0 && overdueCount === 0 && (
-              <button type="button" className="bento-ops-strip__chip" onClick={() => { haptic('selection'); onAllTasks(); }}>
-                {pendingCount} task{pendingCount !== 1 ? 's' : ''} due today
-              </button>
-            )}
-            {criticalAlert && (
-              <span className="bento-ops-strip__text">
-                {criticalAlert.message} · {criticalAlert.store}
-              </span>
-            )}
-          </div>
-        )}
-
         {/* Tasks + What's New + Live signals */}
         <div className="bento-triple-row">
 
@@ -437,7 +429,19 @@ export function HomeBentoView({
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
                 <p className="bento-title" style={{ margin: 0 }}>Checklist &amp; tasks</p>
                 {overdueCount > 0 && (
-                  <span className="bento-task-badge">{overdueCount} overdue</span>
+                  <button
+                    type="button"
+                    className="bento-task-badge bento-task-badge--button"
+                    aria-expanded={showOverdueTasks}
+                    aria-controls="bento-overdue-panel"
+                    onClick={() => {
+                      haptic('selection');
+                      setShowOverdueTasks(v => !v);
+                    }}
+                  >
+                    {String(overdueCount).padStart(2, '0')} overdue
+                    {showOverdueTasks ? <ChevronUp size={11} strokeWidth={2.5} /> : <ChevronDown size={11} strokeWidth={2.5} />}
+                  </button>
                 )}
               </div>
               <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
@@ -453,6 +457,39 @@ export function HomeBentoView({
                 )}
               </div>
             </div>
+            {overdueCount > 0 && (
+              <div
+                className="bento-overdue-panel-wrap"
+                style={{
+                  display: 'grid',
+                  gridTemplateRows: showOverdueTasks ? '1fr' : '0fr',
+                  transition: showOverdueTasks
+                    ? 'grid-template-rows 240ms cubic-bezier(0.34,1.2,0.64,1)'
+                    : 'grid-template-rows 180ms cubic-bezier(0.4,0,0.6,1)',
+                }}
+              >
+                <div style={{ overflow: 'hidden', minHeight: 0 }} id="bento-overdue-panel">
+                  <div
+                    className="bento-overdue-panel"
+                    style={{
+                      transform: showOverdueTasks ? 'translateY(0)' : 'translateY(-8px)',
+                      opacity: showOverdueTasks ? 1 : 0,
+                      transition: showOverdueTasks
+                        ? 'transform 260ms cubic-bezier(0.34,1.56,0.64,1), opacity 200ms ease'
+                        : 'transform 160ms ease-in, opacity 140ms ease-in',
+                    }}
+                  >
+                    <p className="bento-overdue-panel__title">Overdue tasks</p>
+                    {overdueTasks.map(task => (
+                      <div key={task.id} className="bento-overdue-panel__row">
+                        <span className="bento-overdue-panel__task">{task.title}</span>
+                        <span className="bento-overdue-panel__due">{formatTaskDueWindow(task)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
             <div>
               {tasks.slice(0, defaultShow).map((task, idx) => (
                 <TaskRow
@@ -563,7 +600,20 @@ export function HomeBentoView({
                 </div>
                 <div>
                   <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text-1)', margin: '0 0 4px' }}>{s.title}</p>
-                  <p style={{ fontSize: 12, color: 'var(--color-text-2)', margin: 0, lineHeight: 1.45 }}>{s.summary}</p>
+                  <p
+                    style={{
+                      fontSize: 12,
+                      color: 'var(--color-text-2)',
+                      margin: 0,
+                      lineHeight: 1.45,
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      maxWidth: 260,
+                    }}
+                  >
+                    {s.summary}
+                  </p>
                 </div>
               </button>
             );})}

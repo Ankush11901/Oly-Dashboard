@@ -211,7 +211,7 @@
   align-items: stretch;
   justify-content: flex-start;
   min-height: 0;
-  padding: 14px 16px 12px;
+  padding: 12px 14px 10px;
 }
 
 .acru-card--goals {
@@ -699,7 +699,7 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 10px;
+  gap: 8px;
   width: 100%;
   min-height: 0;
 }
@@ -710,19 +710,20 @@
   flex: 1;
   display: flex;
   align-items: flex-end;
-  min-height: 88px;
+  min-height: 74px;
 }
 
 .acru-gauge__svg {
-  width: 100%;
+  width: min(100%, 220px);
   height: auto;
   display: block;
+  margin: 0 auto;
 }
 
 .acru-gauge__center {
   position: absolute;
   left: 50%;
-  bottom: 2px;
+  bottom: 4px;
   transform: translateX(-50%);
   text-align: center;
   pointer-events: none;
@@ -730,7 +731,7 @@
 
 .acru-gauge__value {
   margin: 0;
-  font-size: 22px;
+  font-size: 18px;
   font-weight: 800;
   color: var(--acru-text);
   line-height: 1;
@@ -738,8 +739,8 @@
 }
 
 .acru-gauge__sub {
-  margin: 3px 0 0;
-  font-size: 10.5px;
+  margin: 2px 0 0;
+  font-size: 9.5px;
   color: var(--acru-muted);
   white-space: nowrap;
 }
@@ -747,27 +748,28 @@
 .acru-gauge__stats {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 6px;
+  gap: 5px;
   flex-shrink: 0;
 }
 
 .acru-gauge__stat {
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  padding: 8px 6px;
-  border-radius: 10px;
-  background: var(--acru-primary-soft);
+  gap: 2px;
+  padding: 6px 5px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--acru-card) 88%, var(--acru-primary-soft) 12%);
+  border: 1px solid var(--acru-border);
   text-align: center;
   min-width: 0;
 }
 
 .acru-gauge__stat span {
-  font-size: 9.5px;
+  font-size: 9px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: var(--acru-muted);
+  color: color-mix(in srgb, var(--acru-text) 72%, var(--acru-muted) 28%);
 }
 
 .acru-gauge__stat strong {
@@ -775,7 +777,7 @@
   align-items: center;
   justify-content: center;
   gap: 2px;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   color: var(--acru-text);
 }
