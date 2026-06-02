@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useId } from 'react';
 import { useRouter } from 'next/navigation';
 import { cloneElement, isValidElement, type ReactNode } from 'react';
 import {
@@ -39,30 +39,57 @@ function formatKpi(card: (typeof KPI_CARDS)[0]) {
   return `${card.prefix ?? ''}${v}${card.suffix ?? ''}`;
 }
 
-function Gauge({ value, target }: { value: number; target: number }) {
+function Gauge({ value, target, change }: { value: number; target: number; change: number }) {
+  const gradId = useId().replace(/:/g, '');
   const pct = Math.min(100, Math.round((value / target) * 100));
   const dash = (pct / 100) * 126;
+  const gap = value - target;
+  const pos = change >= 0;
+
   return (
     <div className="acru-gauge">
-      <svg viewBox="0 0 128 72" aria-hidden>
-        <path d="M 14 62 A 50 50 0 0 1 114 62" fill="none" stroke="#E8ECF2" strokeWidth="11" strokeLinecap="round" />
-        <path
-          d="M 14 62 A 50 50 0 0 1 114 62"
-          fill="none"
-          stroke="url(#acruGaugeGrad)"
-          strokeWidth="11"
-          strokeLinecap="round"
-          strokeDasharray={`${dash} 126`}
-        />
-        <defs>
-          <linearGradient id="acruGaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#4338CA" />
-            <stop offset="100%" stopColor="#A78BFA" />
-          </linearGradient>
-        </defs>
-      </svg>
-      <p className="acru-gauge__value">{value}%</p>
-      <p className="acru-gauge__sub">{pct}% of {target}% target</p>
+      <div className="acru-gauge__ring">
+        <svg viewBox="0 0 128 72" className="acru-gauge__svg" aria-hidden>
+          <path d="M 14 62 A 50 50 0 0 1 114 62" fill="none" stroke="#E8ECF2" strokeWidth="10" strokeLinecap="round" />
+          <path
+            d="M 14 62 A 50 50 0 0 1 114 62"
+            fill="none"
+            stroke={`url(#${gradId})`}
+            strokeWidth="10"
+            strokeLinecap="round"
+            strokeDasharray={`${dash} 126`}
+          />
+          <defs>
+            <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#4338CA" />
+              <stop offset="100%" stopColor="#A78BFA" />
+            </linearGradient>
+          </defs>
+        </svg>
+        <div className="acru-gauge__center">
+          <p className="acru-gauge__value">{value}%</p>
+          <p className="acru-gauge__sub">{pct}% of target</p>
+        </div>
+      </div>
+      <div className="acru-gauge__stats">
+        <div className="acru-gauge__stat">
+          <span>Target</span>
+          <strong>{target}%</strong>
+        </div>
+        <div className="acru-gauge__stat">
+          <span>Gap</span>
+          <strong className={gap >= 0 ? 'up' : 'down'}>
+            {gap >= 0 ? '+' : ''}{gap.toFixed(1)}%
+          </strong>
+        </div>
+        <div className="acru-gauge__stat">
+          <span>vs last week</span>
+          <strong className={pos ? 'up' : 'down'}>
+            {pos ? <ArrowUpRight size={11} strokeWidth={2.5} /> : <ArrowDownRight size={11} strokeWidth={2.5} />}
+            {Math.abs(change)}%
+          </strong>
+        </div>
+      </div>
     </div>
   );
 }
@@ -231,8 +258,11 @@ export function HomeRedesignView({
         </section>
 
         <section className="acru-card acru-card--gauge">
-          <h2 className="acru-card__title">Conversion health</h2>
-          <Gauge value={conv.actual} target={conv.expected} />
+          <div className="acru-gauge__head">
+            <h2 className="acru-card__title">Conversion health</h2>
+            <p className="acru-card__sub">Network average · today</p>
+          </div>
+          <Gauge value={conv.actual} target={conv.expected} change={conv.change} />
         </section>
 
         {/* Row 3 — task tracker + store signals (matched height) */}

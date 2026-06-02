@@ -124,6 +124,198 @@
 
 /* Cards */
 /* Three-column row — equal card height */
+.bento-hero-row {
+  align-items: stretch;
+}
+
+/* Hero card header — anchors title row above body */
+.bento-card-head {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-shrink: 0;
+  padding: 18px 20px 14px;
+}
+
+.bento-card-head::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: var(--color-border-subtle);
+}
+
+.bento-card-head--on-gradient::after {
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.bento-card-head--on-gradient {
+  padding: 18px 22px 14px;
+}
+
+.bento-card-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.bento-conversion-card .bento-card-body {
+  padding: 16px 20px 20px;
+  justify-content: flex-end;
+}
+
+.bento-quick-actions-card .bento-card-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8;
+  padding: 14px 16px 16px;
+  align-content: center;
+}
+
+.bento-hero-row > .bento-card,
+.bento-hero-row > .bento-quick-actions-card {
+  height: 100%;
+  min-height: 280px;
+}
+
+.bento-recap__insight {
+  flex: 0 0 auto;
+  padding: 14px 22px 18px;
+}
+
+.bento-recap__insight-box {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  border-radius: 14px;
+  padding: 14px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.bento-quick-actions-card {
+  background: linear-gradient(
+    165deg,
+    var(--color-primary-light) 0%,
+    color-mix(in srgb, var(--color-primary-light) 40%, var(--color-surface)) 42%,
+    var(--color-surface) 100%
+  ) !important;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 16%, var(--color-border)) !important;
+}
+
+.bento-quick-actions-card .bento-card-head,
+.bento-quick-actions-card .bento-card-body {
+  background: transparent;
+}
+
+.bento-quick-actions-card .bento-card-head {
+  border-bottom: 1px solid color-mix(in srgb, var(--color-primary) 16%, var(--color-border));
+}
+
+.bento-quick-actions-card .bento-card-head::after {
+  display: none;
+}
+
+.bento-conversion-card,
+.bento-recap-card {
+  min-height: 280px;
+}
+
+.bento-recap-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.bento-recap__gradient {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  min-height: 0;
+}
+
+.bento-recap__footer {
+  flex-shrink: 0;
+  margin-top: auto;
+  padding: 18px 22px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--color-surface);
+}
+
+.bento-recap__summary {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--color-text-2);
+}
+
+.bento-recap__summary strong {
+  color: var(--color-text-1);
+  font-weight: 700;
+}
+
+.bento-ops-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-subtle);
+  box-shadow: var(--shadow-card);
+}
+
+.bento-ops-strip__chip {
+  padding: 0;
+  border: none;
+  background: none;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-primary);
+  cursor: pointer;
+}
+
+.bento-ops-strip__chip--warn {
+  color: var(--color-error);
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: var(--color-error-light);
+}
+
+.bento-ops-strip__chip--warn:hover {
+  filter: brightness(0.97);
+}
+
+.bento-ops-strip__text {
+  font-size: 12px;
+  color: var(--color-text-2);
+  min-width: 0;
+}
+
+.bento-task-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: var(--color-error-light);
+  color: var(--color-error);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.bento-whats-new-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
 .bento-triple-row {
   display: grid;
   grid-template-columns: 1.2fr 0.9fr 0.9fr;
@@ -214,9 +406,12 @@
 /* Conversion chart — fixed track + pixel bar heights */
 .bento-conversion-chart {
   display: flex;
+  flex-direction: row;
   align-items: flex-end;
+  justify-content: stretch;
   gap: 6px;
-  margin-top: auto;
+  width: 100%;
+  min-height: 0;
   padding-top: 4px;
 }
 .bento-bar-wrap {

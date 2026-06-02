@@ -54,7 +54,7 @@ export default function DashboardPage() {
   const [uploadingId,      setUploading] = useState<number | null>(null);
   const [activitySearch,   setSearch]   = useState('');
   const [activityTab,      setActTab]   = useState<'activity' | 'reports'>('activity');
-  const [kpiStyle,         setKpiStyle] = useState<0 | 1 | 2 | 3>(0);
+  const [kpiStyle,         setKpiStyle] = useState<0 | 1 | 2 | 3>(2);
   const photoRef = useRef<HTMLInputElement>(null);
   const isAdmin = true;
   const DEFAULT_SHOW = 3;

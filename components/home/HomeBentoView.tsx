@@ -9,10 +9,11 @@ import {
 } from 'lucide-react';
 import { KPI_CARDS, buildKpiSparkline, KpiSparklineArea } from '@/components/home/KpiCard';
 import {
-  SIGNALS, QUICK_ACTIONS, STATUS_CFG, signalIconStyle,
+  SIGNALS, QUICK_ACTIONS, STATUS_CFG, RECENT_ALERTS, signalIconStyle,
   formatTaskRecurrence, formatTaskDueWindow,
   type Task,
 } from '@/components/home/home-data';
+import { WhatsNewCarousel } from '@/components/WhatsNewCarousel';
 import { dashboardCardStyle } from '@/lib/theme';
 import { haptic } from '@/lib/haptics';
 import './home-bento.css';
@@ -50,6 +51,11 @@ const CONVERSION_BARS = [
 const DIP_BAR_INDEX = CONVERSION_BARS.findIndex(b => b.isDip);
 const CONV_TRACK_HEIGHT = 140;
 
+/** Urgent / operational signals for the live column (not duplicated in weekly recap) */
+const LIVE_SIGNALS = SIGNALS.filter(s =>
+  s.tone === 'error' || s.tone === 'warning' || s.tone === 'brand',
+).slice(0, 3);
+
 function conversionBarHeightPx(hPercent: number): number {
   return Math.max(40, Math.round((hPercent / 100) * CONV_TRACK_HEIGHT));
 }
@@ -59,6 +65,55 @@ function quickActionIcon(icon: ReactNode) {
     return cloneElement(icon, { size: 16, strokeWidth: 1.5 });
   }
   return icon;
+}
+
+type BentoCardBase = typeof dashboardCardStyle & { borderRadius: number; overflow: 'hidden' };
+
+function BentoQuickActionsCard({
+  cardBase,
+  onConcernOpen,
+}: {
+  cardBase: BentoCardBase;
+  onConcernOpen: () => void;
+}) {
+  const router = useRouter();
+  const { background: _bg, border: _border, ...cardShell } = cardBase;
+  return (
+    <div
+      className="bento-card bento-card--hover bento-quick-actions-card"
+      style={{
+        ...cardShell,
+        padding: 0,
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
+      }}
+    >
+      <div className="bento-card-head">
+        <p className="bento-title" style={{ margin: 0 }}>Quick actions</p>
+      </div>
+      <div className="bento-card-body">
+        {QUICK_ACTIONS.map(action => (
+          <button
+            key={action.id}
+            type="button"
+            className="bento-quick-action"
+            onClick={() => {
+              haptic('medium');
+              if (action.id === 'concern') onConcernOpen();
+              else if (action.href) router.push(action.href);
+            }}
+          >
+            <div className="bento-quick-action__icon">{quickActionIcon(action.icon)}</div>
+            <div className="bento-quick-action__label">
+              {action.label}
+              <ChevronRight size={12} strokeWidth={2} />
+            </div>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 function TaskRow({
@@ -168,72 +223,50 @@ export function HomeBentoView({
   onInsightsOpen,
   onConcernOpen,
 }: HomeBentoViewProps) {
-  const router = useRouter();
   const [activeConvBar, setActiveConvBar] = useState(DIP_BAR_INDEX >= 0 ? DIP_BAR_INDEX : 0);
   const cardBase = { ...dashboardCardStyle, borderRadius: 20, overflow: 'hidden' as const };
-  const activeConv = CONVERSION_BARS[activeConvBar];
+  const overdueCount = tasks.filter(t => t.status === 'overdue').length;
+  const pendingCount = tasks.filter(t => t.status === 'pending').length;
+  const criticalAlert = RECENT_ALERTS.find(a => a.type === 'critical' || a.type === 'warning');
 
   return (
     <>
       <div className="home-bento" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
-        <div className="bento-stagger" style={{ display: 'grid', gridTemplateColumns: '1.15fr 0.85fr', gap: 18, minHeight: 280 }}>
+        <div className="bento-stagger bento-hero-row" style={{ display: 'grid', gridTemplateColumns: '1.06fr 0.86fr 0.9fr', gap: 18, alignItems: 'stretch' }}>
 
           {/* Conversion dip — hourly bar chart */}
           <div
             className="bento-card bento-card--hover bento-conversion-card"
             style={{
               ...cardBase,
-              padding: '24px 26px',
+              padding: 0,
               display: 'flex',
               flexDirection: 'column',
+              minHeight: 280,
+              height: '100%',
+              background: 'var(--color-surface)',
             }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, marginBottom: 16 }}>
-              <div style={{ minWidth: 0, flex: 1 }}>
-                <p className="bento-title" style={{ margin: '0 0 6px' }}>Conversion dipped at 5 PM</p>
-                <p className="bento-body-sm" style={{ margin: 0, maxWidth: 340, lineHeight: 1.5 }}>
-                  Marina Bay is 5% below usual — open insights for recommended actions.
-                </p>
-              </div>
+            <div className="bento-card-head">
+              <p className="bento-title" style={{ margin: 0, minWidth: 0, flex: 1 }}>Conversion dipped at 5 PM</p>
               <button
                 type="button"
-                className="bento-btn-primary"
-                style={{ flexShrink: 0, height: 36, padding: '0 14px', borderRadius: 8 }}
-                onClick={() => { haptic('medium'); onInsightsOpen(); }}
+                className="bento-btn-outline"
+                style={{ flexShrink: 0, minHeight: 34, padding: '0 12px', fontSize: 12 }}
+                onClick={() => { haptic('selection'); onInsightsOpen(); }}
               >
-                Open insights
+                See recommendations
                 <ChevronRight size={14} strokeWidth={2} />
               </button>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-              <p className="bento-overline" style={{ margin: 0, textTransform: 'none', letterSpacing: 0 }}>
-                Conversion by hour · Marina Bay
-              </p>
-              <span
-                style={{
-                  fontSize: 12,
-                  fontWeight: 700,
-                  padding: '5px 10px',
-                  borderRadius: 8,
-                  background: activeConv?.isDip ? 'var(--color-error-light)' : 'var(--color-primary-light)',
-                  color: activeConv?.isDip ? 'var(--color-error)' : 'var(--color-primary)',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 4,
-                }}
+            <div className="bento-card-body">
+              <div
+                className="bento-conversion-chart"
+                style={{ ['--bento-conv-track-h' as string]: `${CONV_TRACK_HEIGHT}px` }}
               >
-                {activeConv?.isDip ? <ArrowDownRight size={12} strokeWidth={2.5} /> : null}
-                {activeConv?.rate}% {activeConv?.label === '5PM' ? '· −5% vs usual' : ''}
-              </span>
-            </div>
-
-            <div
-              className="bento-conversion-chart"
-              style={{ ['--bento-conv-track-h' as string]: `${CONV_TRACK_HEIGHT}px` }}
-            >
-              {CONVERSION_BARS.map((b, i) => {
+                {CONVERSION_BARS.map((b, i) => {
                 const isActive = activeConvBar === i;
                 const isDip = !!b.isDip;
                 const barPx = conversionBarHeightPx(b.h);
@@ -284,81 +317,44 @@ export function HomeBentoView({
                     </span>
                   </button>
                 );
-              })}
+                })}
+              </div>
             </div>
           </div>
 
+          <BentoQuickActionsCard cardBase={cardBase} onConcernOpen={onConcernOpen} />
+
           {/* Weekly recap */}
-          <div className="bento-card" style={{ ...cardBase, display: 'flex', flexDirection: 'column', background: 'var(--color-surface)' }}>
+          <div className="bento-card bento-recap-card" style={{ ...cardBase, display: 'flex', flexDirection: 'column', background: 'var(--color-surface)', minHeight: 280, height: '100%' }}>
             <div
-              className="bento-on-gradient"
+              className="bento-on-gradient bento-recap__gradient"
               style={{
-                padding: '20px 22px',
                 background: 'linear-gradient(135deg, #4338CA 0%, #655BD3 40%, #8B5CF6 72%, #C4B5FD 100%)',
               }}
             >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+              <div className="bento-card-head bento-card-head--on-gradient">
                 <p className="bento-title-lg" style={{ margin: 0 }}>Weekly recap</p>
                 <Sparkles size={18} strokeWidth={1.5} className="bento-sparkle" />
               </div>
-              <div
-                style={{
-                  background: 'rgba(255,255,255,0.2)',
-                  backdropFilter: 'blur(10px)',
-                  borderRadius: 14,
-                  padding: '14px 16px',
-                  border: '1px solid rgba(255,255,255,0.3)',
-                }}
-              >
-                <p className="bento-overline" style={{ margin: '0 0 6px' }}>Peak insight</p>
-                <p className="bento-metric-md" style={{ margin: 0 }}>1 PM peak</p>
-                <p className="bento-body-sm" style={{ margin: '8px 0 0' }}>
-                  Staff 12:30–2:30 PM across top stores for best conversion lift.
-                </p>
+              <div className="bento-recap__insight">
+                <div className="bento-recap__insight-box">
+                  <p className="bento-overline" style={{ margin: '0 0 6px' }}>Peak insight</p>
+                  <p className="bento-metric-md" style={{ margin: 0 }}>1 PM peak</p>
+                  <p className="bento-body-sm" style={{ margin: '8px 0 0' }}>
+                    Staff 12:30–2:30 PM across top stores for best conversion lift.
+                  </p>
+                </div>
               </div>
             </div>
 
-            <div style={{ padding: '16px 20px 20px', flex: 1, display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {SIGNALS.slice(0, 2).map(s => {
-                const iconStyle = signalIconStyle(s.tone);
-                return (
-                <button
-                  key={s.id}
-                  type="button"
-                  className="bento-signal"
-                  onClick={() => { haptic('selection'); onInsightsOpen(); }}
-                  style={{
-                    display: 'flex',
-                    gap: 10,
-                    padding: '10px 12px',
-                    borderRadius: 12,
-                    background: 'var(--color-surface-2)',
-                    border: '1px solid var(--color-border-subtle)',
-                    cursor: 'pointer',
-                    textAlign: 'left',
-                    width: '100%',
-                  }}
-                >
-                  <div
-                    className="bento-signal-icon"
-                    style={{
-                      background: iconStyle.background,
-                      color: iconStyle.color,
-                      border: `1px solid color-mix(in srgb, ${iconStyle.color} 22%, transparent)`,
-                    }}
-                  >
-                    {s.icon}
-                  </div>
-                  <div style={{ minWidth: 0 }}>
-                    <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text-1)', margin: '0 0 4px' }}>{s.title}</p>
-                    <p style={{ fontSize: 12, color: 'var(--color-text-2)', margin: 0, lineHeight: 1.45 }}>{s.summary}</p>
-                  </div>
-                </button>
-              );})}
+            <div className="bento-recap__footer">
+              <p className="bento-recap__summary">
+                Network conversion <strong>12.4%</strong> · {SIGNALS.length} insights this week · 2 stores flagged
+              </p>
               <button
                 type="button"
                 className="bento-btn-primary"
-                style={{ marginTop: 'auto', height: 40, width: '100%', borderRadius: 10 }}
+                style={{ height: 40, width: '100%', borderRadius: 10 }}
                 onClick={() => { haptic('medium'); onInsightsOpen(); }}
               >
                 View full insights
@@ -413,12 +409,37 @@ export function HomeBentoView({
           })}
         </div>
 
-        {/* Tasks + Actions + Highlights */}
+        {(overdueCount > 0 || criticalAlert) && (
+          <div className="bento-ops-strip" role="status">
+            {overdueCount > 0 && (
+              <button type="button" className="bento-ops-strip__chip bento-ops-strip__chip--warn" onClick={() => { haptic('selection'); onAllTasks(); }}>
+                {overdueCount} overdue task{overdueCount !== 1 ? 's' : ''}
+              </button>
+            )}
+            {pendingCount > 0 && overdueCount === 0 && (
+              <button type="button" className="bento-ops-strip__chip" onClick={() => { haptic('selection'); onAllTasks(); }}>
+                {pendingCount} task{pendingCount !== 1 ? 's' : ''} due today
+              </button>
+            )}
+            {criticalAlert && (
+              <span className="bento-ops-strip__text">
+                {criticalAlert.message} · {criticalAlert.store}
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Tasks + What's New + Live signals */}
         <div className="bento-triple-row">
 
           <div className="bento-card bento-triple-row__card" style={{ ...cardBase, background: 'var(--color-surface)' }}>
-            <div style={{ padding: '16px 20px 12px', borderBottom: '1px solid var(--color-border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <p className="bento-title" style={{ margin: 0 }}>Checklist &amp; tasks</p>
+            <div style={{ padding: '16px 20px 12px', borderBottom: '1px solid var(--color-border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+                <p className="bento-title" style={{ margin: 0 }}>Checklist &amp; tasks</p>
+                {overdueCount > 0 && (
+                  <span className="bento-task-badge">{overdueCount} overdue</span>
+                )}
+              </div>
               <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
                 <button type="button" className="bento-btn-outline" onClick={() => { haptic('selection'); onAllTasks(); }}>
                   <ListChecks size={13} strokeWidth={2} />
@@ -490,44 +511,24 @@ export function HomeBentoView({
             )}
           </div>
 
-          <div className="bento-card bento-triple-row__card" style={{ ...cardBase, background: 'var(--color-surface)', padding: '16px 16px 18px' }}>
-            <p className="bento-title" style={{ margin: '0 0 14px', padding: '0 4px' }}>Quick actions</p>
-            <div className="bento-triple-row__fill" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, alignContent: 'start' }}>
-              {QUICK_ACTIONS.map(action => (
-                <button
-                  key={action.id}
-                  type="button"
-                  className="bento-quick-action"
-                  onClick={() => {
-                    haptic('medium');
-                    if (action.id === 'concern') onConcernOpen();
-                    else if (action.href) router.push(action.href);
-                  }}
-                >
-                  <div className="bento-quick-action__icon">{quickActionIcon(action.icon)}</div>
-                  <div className="bento-quick-action__label">
-                    {action.label}
-                    <ChevronRight size={12} strokeWidth={2} />
-                  </div>
-                </button>
-              ))}
-            </div>
+          <div className="bento-card bento-triple-row__card bento-whats-new-card" style={{ ...cardBase, background: 'var(--color-surface)', padding: 0 }}>
+            <WhatsNewCarousel />
           </div>
 
           <div className="bento-card bento-triple-row__card" style={{ ...cardBase, background: 'var(--color-surface)' }}>
             <div style={{ padding: '16px 20px 12px', borderBottom: '1px solid var(--color-border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <p className="bento-title" style={{ margin: 0 }}>Store highlights</p>
+              <p className="bento-title" style={{ margin: 0 }}>Live signals</p>
               <button
                 type="button"
                 className="bento-btn-outline"
-                style={{ padding: '4px 10px', border: 'none', background: 'transparent' }}
+                style={{ padding: '4px 10px', minHeight: 30, fontSize: 11 }}
                 onClick={() => { haptic('selection'); onInsightsOpen(); }}
               >
-                More
+                All signals
                 <ChevronRight size={12} strokeWidth={2} />
               </button>
             </div>
-            {SIGNALS.slice(0, 2).map((s, idx) => {
+            {LIVE_SIGNALS.map((s, idx) => {
               const accent = signalIconStyle(s.tone);
               return (
               <button
