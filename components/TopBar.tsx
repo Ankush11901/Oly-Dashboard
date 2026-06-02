@@ -1007,6 +1007,8 @@ export function TopBar() {
             </div>
             )}
 
+            <div className="topbar-utilities__divider topbar-filter__divider" aria-hidden />
+
             {/* Refresh */}
             <button
               onClick={handleRefresh}

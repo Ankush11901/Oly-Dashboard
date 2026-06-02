@@ -232,10 +232,25 @@ export const ALERT_CFG = {
   success: { color: 'var(--color-success)', bg: 'var(--color-success-light)', label: 'Resolved' },
 };
 
-export const RECENT_REPORTS = [
+export type ReportItem = {
+  id: number;
+  name: string;
+  scope: string;
+  date: string;
+  tag: string;
+};
+
+export const ALL_REPORTS: ReportItem[] = [
   { id: 1, name: 'Monthly Footfall Summary', scope: 'All Stores', date: 'May 2026', tag: 'Footfall' },
   { id: 2, name: 'Demographics Breakdown', scope: 'Marina Bay Sands', date: 'Week 21', tag: 'Demographics' },
   { id: 3, name: 'Queue Performance Report', scope: 'VivoCity', date: 'May 2026', tag: 'Queue' },
   { id: 4, name: 'Conversion Rate Analysis', scope: 'All Stores', date: 'May 2026', tag: 'Conversion' },
+  { id: 5, name: 'Heatmap Density Export', scope: 'Orchard Central', date: 'May 2026', tag: 'Heatmap' },
+  { id: 6, name: 'Staffing vs Footfall', scope: 'Tampines Mall', date: 'Week 20', tag: 'Operations' },
+  { id: 7, name: 'Dwell Time by Zone', scope: 'Bugis Junction', date: 'May 2026', tag: 'Dwell' },
+  { id: 8, name: 'Weekly Executive Summary', scope: 'All Stores', date: 'Week 21', tag: 'Executive' },
 ];
+
+/** Preview rows on the hybrid home card */
+export const RECENT_REPORTS = ALL_REPORTS.slice(0, 4);
 

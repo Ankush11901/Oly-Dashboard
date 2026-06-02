@@ -7,6 +7,7 @@ import { KpiPanelSpaced } from '@/components/home/KpiCard';
 import { WhatsNewCarousel } from '@/components/WhatsNewCarousel';
 import { HybridInsightsStrip, type InsightStripSlide } from '@/components/home/HybridInsightsStrip';
 import { HybridQuickActionsModal } from '@/components/home/HybridQuickActionsModal';
+import { HybridReportsModal } from '@/components/home/HybridReportsModal';
 import {
   QUICK_ACTION_POOL, ALERT_CFG, RECENT_REPORTS,
   HYBRID_QUICK_ACTIONS_STORAGE_KEY, DEFAULT_HYBRID_QUICK_ACTION_IDS,
@@ -107,6 +108,7 @@ export function HomeHybridView({
   const router = useRouter();
   const [quickActionIds, setQuickActionIds] = useState<string[]>(DEFAULT_HYBRID_QUICK_ACTION_IDS);
   const [qaModalOpen, setQaModalOpen] = useState(false);
+  const [reportsModalOpen, setReportsModalOpen] = useState(false);
 
   useEffect(() => {
     setQuickActionIds(loadQuickActionIds());
@@ -150,7 +152,7 @@ export function HomeHybridView({
             <h3>Checklist progress</h3>
             <div className="hybrid-card__head-actions">
               <button type="button" className="hybrid-link-btn" onClick={() => { haptic('selection'); onOpenTaskPanel(); }}>
-                See all tasks
+                See all tasks <ChevronRight size={12} strokeWidth={2} />
               </button>
             </div>
           </header>
@@ -280,7 +282,7 @@ export function HomeHybridView({
           <header className="hybrid-card__head">
             <h3>Recent reports</h3>
             <div className="hybrid-card__head-actions">
-              <button type="button" className="hybrid-link-btn" onClick={() => router.push('/dashboard/reports')}>
+              <button type="button" className="hybrid-link-btn" onClick={() => setReportsModalOpen(true)}>
                 View all <ChevronRight size={12} />
               </button>
             </div>
@@ -319,6 +321,11 @@ export function HomeHybridView({
         selectedIds={quickActionIds}
         onClose={() => setQaModalOpen(false)}
         onSave={saveQuickActions}
+      />
+
+      <HybridReportsModal
+        open={reportsModalOpen}
+        onClose={() => setReportsModalOpen(false)}
       />
     </div>
   );

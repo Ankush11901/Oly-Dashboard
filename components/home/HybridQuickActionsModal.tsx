@@ -81,23 +81,27 @@ export function HybridQuickActionsModal({
       <div className="hybrid-qa-modal" onClick={e => e.stopPropagation()}>
         <header className="hybrid-qa-modal__head">
           <div>
-            <h2 id="hybrid-qa-modal-title">Manage quick actions</h2>
-            <p>Pick up to {HYBRID_QUICK_ACTION_SLOT_COUNT} shortcuts. Recent actions help you add what you use most.</p>
+            <h2 id="hybrid-qa-modal-title">Quick actions</h2>
+            <p>Choose up to {HYBRID_QUICK_ACTION_SLOT_COUNT} actions for your home card. Add from recent usage or browse all actions.</p>
           </div>
           <button type="button" className="hybrid-qa-modal__close" onClick={onClose} aria-label="Close">
             <X size={16} />
           </button>
         </header>
 
-        <nav className="hybrid-qa-modal__tabs" aria-label="Quick action sections">
+        <nav className="hybrid-qa-modal__tabs" role="tablist" aria-label="Quick action sections">
           {([
-            ['shortcuts', 'Your shortcuts'],
+            ['shortcuts', 'Your quick actions'],
             ['recent', 'Recent actions'],
             ['all', 'All actions'],
           ] as const).map(([id, label]) => (
             <button
               key={id}
+              id={`hybrid-qa-tab-${id}`}
               type="button"
+              role="tab"
+              aria-selected={tab === id}
+              aria-controls={`hybrid-qa-panel-${id}`}
               className={tab === id ? 'is-active' : ''}
               onClick={() => setTab(id)}
             >
@@ -107,10 +111,16 @@ export function HybridQuickActionsModal({
         </nav>
 
         <div className="hybrid-qa-modal__body">
-          {tab === 'shortcuts' && (
+          <div
+            className="hybrid-qa-modal__panel"
+            role="tabpanel"
+            id="hybrid-qa-panel-shortcuts"
+            aria-labelledby="hybrid-qa-tab-shortcuts"
+            hidden={tab !== 'shortcuts'}
+          >
             <div className="hybrid-qa-modal__shortcuts">
               {draft.length === 0 ? (
-                <p className="hybrid-qa-modal__empty">No shortcuts yet. Add from Recent or All actions.</p>
+                <p className="hybrid-qa-modal__empty">No quick actions yet. Add from Recent or All actions.</p>
               ) : (
                 draft.map(id => {
                   const action = actionById(id);
@@ -132,9 +142,15 @@ export function HybridQuickActionsModal({
                 </p>
               )}
             </div>
-          )}
+          </div>
 
-          {tab === 'recent' && (
+          <div
+            className="hybrid-qa-modal__panel"
+            role="tabpanel"
+            id="hybrid-qa-panel-recent"
+            aria-labelledby="hybrid-qa-tab-recent"
+            hidden={tab !== 'recent'}
+          >
             <ul className="hybrid-qa-modal__list">
               {recentActions.map(({ actionId, usedAgo, action }) => {
                 const added = draft.includes(actionId);
@@ -159,9 +175,15 @@ export function HybridQuickActionsModal({
                 );
               })}
             </ul>
-          )}
+          </div>
 
-          {tab === 'all' && (
+          <div
+            className="hybrid-qa-modal__panel"
+            role="tabpanel"
+            id="hybrid-qa-panel-all"
+            aria-labelledby="hybrid-qa-tab-all"
+            hidden={tab !== 'all'}
+          >
             <ul className="hybrid-qa-modal__list">
               {poolAvailable.map(action => (
                 <li key={action.id}>
@@ -181,7 +203,7 @@ export function HybridQuickActionsModal({
                 </li>
               ))}
             </ul>
-          )}
+          </div>
         </div>
 
         <footer className="hybrid-qa-modal__foot">
@@ -191,7 +213,7 @@ export function HybridQuickActionsModal({
             className="hybrid-qa-modal__save"
             onClick={() => { onSave(draft); onClose(); }}
           >
-            Save shortcuts
+            Save actions
           </button>
         </footer>
       </div>

@@ -1224,6 +1224,11 @@ button:focus-visible {
   flex-shrink: 0;
 }
 
+/* Filter bar — separates filter/date controls from refresh */
+.topbar-filter__divider {
+  margin-left: 4px;
+}
+
 /* Store & alert summary chips (home) */
 .topbar-summary {
   display: flex;
