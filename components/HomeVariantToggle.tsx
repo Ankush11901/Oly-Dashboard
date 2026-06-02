@@ -2,7 +2,7 @@
 
 import { useDashboardContext } from '@/components/DashboardProvider';
 
-const VARIANT_LABELS = ['Classic', 'Bento Board', 'Widgets', 'Hybrid'] as const;
+const VARIANT_LABELS = ['Hybrid', 'Classic', 'Bento Board', 'Widgets'] as const;
 
 export function HomeVariantToggle() {
   const { homeVariant, setHomeVariant } = useDashboardContext();

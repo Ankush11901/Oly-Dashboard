@@ -6,6 +6,18 @@ const DEFAULT_ENABLED = new Set(['footfall_trend', 'top_stores', 'kpi_metrics', 
 export type NavStyle = 'sidebar' | 'topnav';
 export type HomeVariant = 0 | 1 | 2 | 3;
 
+/** 0 = Hybrid, 1 = Classic, 2 = Bento, 3 = Widgets */
+const HOME_VARIANT_STORAGE_KEY = 'oly-home-variant';
+const HOME_VARIANT_ORDER_KEY = 'oly-home-variant-order-v2';
+
+/** Maps pre-v2 indices (Classic=0 … Hybrid=3) to current order (Hybrid=0 … Widgets=3). */
+const LEGACY_HOME_VARIANT_MAP: Record<HomeVariant, HomeVariant> = {
+  0: 1,
+  1: 2,
+  2: 3,
+  3: 0,
+};
+
 interface DashboardContextType {
   enabledWidgets: Set<string>;
   toggleWidget: (id: string) => void;
@@ -58,9 +70,18 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
       }
       const storedNav = localStorage.getItem('oly-nav-style') as NavStyle | null;
       if (storedNav === 'sidebar' || storedNav === 'topnav') setNavStyleState(storedNav);
-      const storedHome = localStorage.getItem('oly-home-variant');
+      const storedHome = localStorage.getItem(HOME_VARIANT_STORAGE_KEY);
       if (storedHome === '0' || storedHome === '1' || storedHome === '2' || storedHome === '3') {
-        setHomeVariantState(Number(storedHome) as HomeVariant);
+        const stored = Number(storedHome) as HomeVariant;
+        const orderMigrated = localStorage.getItem(HOME_VARIANT_ORDER_KEY);
+        if (!orderMigrated) {
+          const mapped = LEGACY_HOME_VARIANT_MAP[stored];
+          setHomeVariantState(mapped);
+          localStorage.setItem(HOME_VARIANT_STORAGE_KEY, String(mapped));
+          localStorage.setItem(HOME_VARIANT_ORDER_KEY, '1');
+        } else {
+          setHomeVariantState(stored);
+        }
       }
     } catch (e) {
       console.error('Failed to load preferences from localStorage', e);
@@ -70,7 +91,8 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
   const setHomeVariant = (variant: HomeVariant) => {
     setHomeVariantState(variant);
     try {
-      localStorage.setItem('oly-home-variant', String(variant));
+      localStorage.setItem(HOME_VARIANT_STORAGE_KEY, String(variant));
+      localStorage.setItem(HOME_VARIANT_ORDER_KEY, '1');
     } catch (e) { /* noop */ }
   };
 

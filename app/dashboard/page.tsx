@@ -158,10 +158,25 @@ export default function DashboardPage() {
           style={{ animationName: 'homeVariantIn', animationDuration: '220ms', animationTimingFunction: 'cubic-bezier(0,0,0.2,1)', animationFillMode: 'both' }}
         >
 
-          {/* ══════════════════════════════════════════════════════════════════
-              VARIANT 1 — CLASSIC (original, fully preserved)
-          ══════════════════════════════════════════════════════════════════ */}
           {homeVariant === 0 && (
+            <HomeHybridView
+              tasks={tasks}
+              isAdmin={isAdmin}
+              refreshCount={refreshCount}
+              activitySearch={activitySearch}
+              setActivitySearch={setSearch}
+              filteredAlerts={filteredAlerts}
+              onAddTask={openAddTask}
+              onOpenTaskPanel={() => setTaskTrackerOpen(true)}
+              onInsightsOpen={() => setInsightsOpen(true)}
+              onConcernOpen={() => setConcernOpen(true)}
+            />
+          )}
+
+          {/* ══════════════════════════════════════════════════════════════════
+              CLASSIC (original, fully preserved)
+          ══════════════════════════════════════════════════════════════════ */}
+          {homeVariant === 1 && (
             <>
               <div className="card" style={{ ...cardStyle, marginBottom: 0, padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, background: 'linear-gradient(135deg, var(--color-primary-light) 0%, var(--color-surface) 55%)', border: '1px solid var(--color-accent-border)' }}>
                 <div style={{ minWidth: 0 }}>
@@ -309,7 +324,7 @@ export default function DashboardPage() {
             </>
           )}
 
-          {homeVariant === 1 && (
+          {homeVariant === 2 && (
             <HomeBentoView
               tasks={tasks}
               taskPhotos={taskPhotos}
@@ -326,7 +341,7 @@ export default function DashboardPage() {
             />
           )}
 
-          {homeVariant === 2 && (
+          {homeVariant === 3 && (
             <HomeRedesignView
               tasks={tasks}
               taskPhotos={taskPhotos}
@@ -339,21 +354,6 @@ export default function DashboardPage() {
               onAllTasks={() => setTasksHistoryOpen(true)}
               onToggleTask={toggleTask}
               onUploadPhoto={taskId => { setUploading(taskId); photoRef.current?.click(); }}
-              onInsightsOpen={() => setInsightsOpen(true)}
-              onConcernOpen={() => setConcernOpen(true)}
-            />
-          )}
-
-          {homeVariant === 3 && (
-            <HomeHybridView
-              tasks={tasks}
-              isAdmin={isAdmin}
-              refreshCount={refreshCount}
-              activitySearch={activitySearch}
-              setActivitySearch={setSearch}
-              filteredAlerts={filteredAlerts}
-              onAddTask={openAddTask}
-              onOpenTaskPanel={() => setTaskTrackerOpen(true)}
               onInsightsOpen={() => setInsightsOpen(true)}
               onConcernOpen={() => setConcernOpen(true)}
             />
