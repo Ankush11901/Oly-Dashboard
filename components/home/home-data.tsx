@@ -125,11 +125,88 @@ export const PRESAVED_CONCERNS = [
   { id: 'accuracy', label: 'Accuracy concern', description: 'Demographics or conversion data looks off' },
 ];
 
-export const QUICK_ACTIONS = [
+export interface QuickActionDef {
+  id: string;
+  label: string;
+  href?: string;
+  icon: React.ReactNode;
+}
+
+export type QuickActionIconTone = {
+  color: string;
+  background: string;
+};
+
+function qaIconTone(colorVar: string, backgroundVar: string): QuickActionIconTone {
+  return { color: colorVar, background: backgroundVar };
+}
+
+/** Per-action icon colors for hybrid quick-action tiles (theme-aware tokens). */
+export const QUICK_ACTION_ICON_TONES: Record<string, QuickActionIconTone> = {
+  member: qaIconTone('var(--color-primary)', 'var(--color-primary-light)'),
+  concern: qaIconTone('var(--color-error)', 'var(--color-error-light)'),
+  page: qaIconTone('var(--color-info)', 'var(--color-info-light)'),
+  snapshots: qaIconTone('var(--color-warning)', 'var(--color-warning-light)'),
+  'add-task': qaIconTone('var(--color-success)', 'var(--color-success-light)'),
+  reports: qaIconTone('var(--color-secondary)', 'var(--color-secondary-light)'),
+  'task-tracker': qaIconTone('var(--color-info)', 'var(--color-info-light)'),
+  insights: qaIconTone('var(--color-primary)', 'var(--color-primary-light)'),
+  analytics: qaIconTone('var(--color-info)', 'var(--color-info-light)'),
+  team: qaIconTone('var(--color-success)', 'var(--color-success-light)'),
+  'export-report': qaIconTone('var(--color-warning)', 'var(--color-warning-light)'),
+};
+
+const QUICK_ACTION_ICON_TONE_FALLBACKS: QuickActionIconTone[] = [
+  qaIconTone('var(--color-primary)', 'var(--color-primary-light)'),
+  qaIconTone('var(--color-info)', 'var(--color-info-light)'),
+  qaIconTone('var(--color-success)', 'var(--color-success-light)'),
+  qaIconTone('var(--color-warning)', 'var(--color-warning-light)'),
+  qaIconTone('var(--color-error)', 'var(--color-error-light)'),
+  qaIconTone('var(--color-secondary)', 'var(--color-secondary-light)'),
+];
+
+export function getQuickActionIconTone(actionId: string, index = 0): QuickActionIconTone {
+  return (
+    QUICK_ACTION_ICON_TONES[actionId] ??
+    QUICK_ACTION_ICON_TONE_FALLBACKS[index % QUICK_ACTION_ICON_TONE_FALLBACKS.length]
+  );
+}
+
+export const QUICK_ACTIONS: QuickActionDef[] = [
   { id: 'member', label: 'Add a Member', href: '/dashboard/team?action=add-member', icon: <UserPlus size={16} strokeWidth={1.5} /> },
   { id: 'concern', label: 'Raise a Concern', icon: <AlertCircle size={16} strokeWidth={1.5} /> },
   { id: 'page', label: 'Create a New Page', href: '/dashboard/analytics?action=new-page', icon: <LayoutGrid size={16} strokeWidth={1.5} /> },
   { id: 'snapshots', label: 'View Snapshots', href: '/dashboard/analytics?action=view-snapshots', icon: <Video size={16} strokeWidth={1.5} /> },
+];
+
+/** Full catalog for hybrid quick-action picker (includes recent-style shortcuts). */
+export const QUICK_ACTION_POOL: QuickActionDef[] = [
+  ...QUICK_ACTIONS,
+  { id: 'add-task', label: 'Add a Task', icon: <CheckCircle2 size={16} strokeWidth={1.5} /> },
+  { id: 'task-tracker', label: 'Open Task Tracker', icon: <Clock size={16} strokeWidth={1.5} /> },
+  { id: 'insights', label: 'Store Insights', icon: <Activity size={16} strokeWidth={1.5} /> },
+  { id: 'reports', label: 'View Reports', href: '/dashboard/reports', icon: <FileText size={16} strokeWidth={1.5} /> },
+  { id: 'analytics', label: 'Analytics Overview', href: '/dashboard/analytics', icon: <BarChart2 size={16} strokeWidth={1.5} /> },
+  { id: 'team', label: 'Team Management', href: '/dashboard/team', icon: <Users size={16} strokeWidth={1.5} /> },
+  { id: 'export-report', label: 'Export Footfall Report', icon: <Download size={16} strokeWidth={1.5} /> },
+];
+
+/** Suggested from recent usage (shown in quick-action manager). */
+export const RECENT_ACTION_SUGGESTIONS: { actionId: string; usedAgo: string }[] = [
+  { actionId: 'snapshots', usedAgo: '2h ago' },
+  { actionId: 'concern', usedAgo: 'Yesterday' },
+  { actionId: 'page', usedAgo: '2 days ago' },
+  { actionId: 'export-report', usedAgo: '3 days ago' },
+  { actionId: 'insights', usedAgo: '4 days ago' },
+  { actionId: 'member', usedAgo: 'Last week' },
+];
+
+export const HYBRID_QUICK_ACTIONS_STORAGE_KEY = 'oly-hybrid-quick-actions';
+export const HYBRID_QUICK_ACTION_SLOT_COUNT = 6;
+export const DEFAULT_HYBRID_QUICK_ACTION_IDS = [
+  ...QUICK_ACTIONS.map(a => a.id),
+  'add-task',
+  'reports',
 ];
 
 export interface RecentAlert {

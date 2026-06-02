@@ -2,7 +2,7 @@
 
 import { useDashboardContext } from '@/components/DashboardProvider';
 
-const VARIANT_LABELS = ['Classic', 'Bento Board', 'Widgets'] as const;
+const VARIANT_LABELS = ['Classic', 'Bento Board', 'Widgets', 'Hybrid'] as const;
 
 export function HomeVariantToggle() {
   const { homeVariant, setHomeVariant } = useDashboardContext();
@@ -17,7 +17,7 @@ export function HomeVariantToggle() {
         {VARIANT_LABELS[homeVariant]}
       </span>
       <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
-        {([0, 1, 2] as const).map(v => (
+        {([0, 1, 2, 3] as const).map(v => (
           <button
             key={v}
             type="button"

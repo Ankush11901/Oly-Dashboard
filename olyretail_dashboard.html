@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OlyRetail — Home Dashboard</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --page:#ECEAE4;--white:#FFF;--s2:#F5F3EE;--bdr:#E1DED7;
+  --t1:#111112;--t2:#64625E;--t3:#AEACA8;
+  --pu:#4F4DE8;--pu2:#EEEDFD;
+  --gr:#15A066;--gr2:#E0F5EB;
+  --am:#D97500;--am2:#FEF2C0;
+  --re:#D42B20;--re2:#FDEBE9;
+  --dk:#111112;--r:14px;
+  --nhg:'Helvetica Neue','Arial Nova',Arial,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--nhg);background:var(--page);display:flex;min-height:100vh;font-size:14px;color:var(--t1);-webkit-font-smoothing:antialiased}
+
+/* ── SIDEBAR ── */
+.sb{width:210px;min-width:210px;background:var(--white);border-right:1px solid var(--bdr);display:flex;flex-direction:column;height:100vh;position:sticky;top:0}
+.sb-logo{padding:22px 20px 18px;font-size:20px;font-weight:800;letter-spacing:-0.5px;border-bottom:1px solid var(--bdr)}
+.sb-logo em{color:var(--pu);font-style:normal}
+.sb-grp{padding:16px 16px 5px;font-size:9px;font-weight:600;color:var(--t3);letter-spacing:1.2px;text-transform:uppercase}
+.ni{display:flex;align-items:center;gap:10px;padding:9px 12px;margin:1px 8px;border-radius:9px;font-size:13px;font-weight:400;color:var(--t2);cursor:pointer;transition:all .12s}
+.ni i{font-size:17px;flex-shrink:0}
+.ni:hover{background:var(--s2);color:var(--t1)}
+.ni.on{background:var(--pu2);color:var(--pu);font-weight:600}
+.ni .bj{margin-left:auto;font-size:9.5px;font-weight:700;background:var(--re2);color:var(--re);padding:2px 7px;border-radius:20px}
+.sb-sp{flex:1}
+.sb-ft{padding:14px 16px;border-top:1px solid var(--bdr);display:flex;align-items:center;gap:10px}
+.ava{width:32px;height:32px;border-radius:50%;background:var(--pu);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0}
+.avn{font-size:12.5px;font-weight:600;color:var(--t1)}
+.avr{font-size:10.5px;color:var(--t3)}
+
+/* ── MAIN ── */
+.main{flex:1;display:flex;flex-direction:column;min-width:0;overflow-x:hidden}
+
+/* ── TOPBAR ── */
+.top{height:54px;background:var(--white);border-bottom:1px solid var(--bdr);display:flex;align-items:center;padding:0 22px;gap:10px;position:sticky;top:0;z-index:50}
+.top-title{font-weight:800;font-size:15px;color:var(--t1);letter-spacing:-0.3px}
+.top-sep{color:var(--bdr);font-size:18px;margin:0 2px}
+.top-crumb{font-size:12px;color:var(--t3)}
+.tsp{flex:1}
+.top-date{font-size:11.5px;color:var(--t3);white-space:nowrap}
+.tbtn{display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--t2);background:var(--white);border:1px solid var(--bdr);border-radius:8px;padding:6px 12px;cursor:pointer;transition:.12s;white-space:nowrap}
+.tbtn:hover{background:var(--s2)}
+.tbtn i{font-size:14px}
+.cam-wrap{position:relative}
+.cam-btn{display:flex;align-items:center;gap:7px;font-size:11.5px;font-weight:500;color:var(--t1);background:var(--white);border:1px solid var(--bdr);border-radius:8px;padding:6px 12px;cursor:pointer;transition:.12s;white-space:nowrap;user-select:none}
+.cam-btn:hover{background:var(--s2)}
+.cam-btn i{font-size:14px;color:var(--t2)}
+.cam-pips{display:flex;margin-left:2px}
+.cam-pip{width:8px;height:8px;border-radius:50%;border:1.5px solid var(--white)}
+.cam-cnt{font-size:10.5px;font-weight:700;color:var(--t2);margin-left:4px}
+.cam-chev{font-size:12px;color:var(--t3);transition:transform .2s}
+.cam-drop{position:absolute;top:calc(100% + 7px);right:0;background:var(--white);border:1px solid var(--bdr);border-radius:11px;box-shadow:0 10px 28px rgba(0,0,0,.11);min-width:220px;padding:7px;z-index:200;display:none}
+.cam-drop.open{display:block;animation:fdrop .15s ease}
+.cam-opt{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;cursor:pointer;font-size:12.5px;color:var(--t2);transition:.1s}
+.cam-opt:hover{background:var(--s2);color:var(--t1)}
+.cam-opt.sel{background:var(--pu2);color:var(--pu);font-weight:600}
+.cam-opt-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.cam-opt-cnt{margin-left:auto;font-size:10.5px;font-weight:700;color:var(--t3)}
+.cam-div{height:1px;background:var(--bdr);margin:5px 8px}
+.notif-wrap{position:relative}
+.notif-btn{width:36px;height:36px;display:flex;align-items:center;justify-content:center;background:var(--white);border:1px solid var(--bdr);border-radius:8px;cursor:pointer;position:relative;transition:.12s}
+.notif-btn:hover{background:var(--s2)}
+.notif-btn i{font-size:18px;color:var(--t2)}
+.notif-dot{position:absolute;top:7px;right:8px;width:7px;height:7px;border-radius:50%;background:var(--re);border:2px solid var(--white)}
+.notif-panel{position:absolute;top:calc(100% + 9px);right:0;width:310px;background:var(--white);border:1px solid var(--bdr);border-radius:13px;box-shadow:0 14px 36px rgba(0,0,0,.13);z-index:200;display:none;overflow:hidden}
+.notif-panel.open{display:block;animation:fdrop .15s ease}
+.np-head{padding:14px 18px 11px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between}
+.np-title{font-size:13.5px;font-weight:700;color:var(--t1)}
+.np-badge{font-size:10.5px;font-weight:700;background:var(--re2);color:var(--re);padding:2px 8px;border-radius:20px}
+.np-item{display:flex;align-items:flex-start;gap:11px;padding:11px 18px;border-bottom:1px solid var(--s2);cursor:pointer;transition:.1s}
+.np-item:hover{background:var(--s2)}
+.np-item:last-child{border-bottom:none}
+.np-ico{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.np-ico i{font-size:15px}
+.np-body{flex:1}
+.np-body p{font-size:12.5px;font-weight:500;color:var(--t1);line-height:1.35}
+.np-body span{font-size:11px;color:var(--t3)}
+.np-unread{width:7px;height:7px;border-radius:50%;background:var(--pu);margin-top:5px;flex-shrink:0}
+
+/* ── CONTENT ── */
+.cnt{padding:18px 22px;display:flex;flex-direction:column;gap:14px}
+
+/* ── SUMMARY CAROUSEL ── */
+.car-wrap{border-radius:var(--r);overflow:hidden;background:var(--white);border:1px solid var(--bdr)}
+.car-track{display:flex;transition:transform .5s cubic-bezier(.4,0,.2,1)}
+.car-slide{min-width:100%;padding:16px 22px;display:flex;align-items:center;gap:16px;position:relative}
+.cs-ico{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.cs-ico i{font-size:20px}
+.cs-body{flex:1;padding-right:130px}
+.cs-tag{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px}
+.cs-title{font-size:15px;font-weight:700;color:var(--t1);letter-spacing:-0.3px;margin-bottom:3px;line-height:1.3}
+.cs-desc{font-size:12.5px;color:var(--t2);line-height:1.5}
+.cs-meta{display:flex;align-items:center;gap:9px;margin-top:8px}
+.cs-badge{font-size:11px;font-weight:600;padding:3px 11px;border-radius:20px}
+.cs-time{font-size:11px;color:var(--t3)}
+.cs-ctrl{position:absolute;bottom:16px;right:18px;display:flex;align-items:center;gap:6px}
+.cs-nav{width:24px;height:24px;border-radius:50%;background:var(--s2);border:1px solid var(--bdr);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:12px;color:var(--t2);transition:.12s}
+.cs-nav:hover{background:var(--bdr)}
+.cs-nav i{font-size:12px}
+.cs-dots{display:flex;gap:5px;align-items:center}
+.csd{width:6px;height:6px;border-radius:50%;background:var(--bdr);transition:all .3s;cursor:pointer}
+.csd.on{background:var(--pu);width:16px;border-radius:3px}
+
+/* ── KPI ROW — 4 equal columns ── */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;align-items:stretch}
+
+/* Today's Footfall — white card */
+.fc{background:var(--white);border:1px solid var(--bdr);border-radius:var(--r);padding:20px 22px;display:flex;flex-direction:column;min-height:148px;transition:transform .15s,box-shadow .15s;animation:fu .4s ease both}
+.fc:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,0,0,.07)}
+.fc-lbl{font-size:10.5px;font-weight:600;color:var(--t3);letter-spacing:1.2px;text-transform:uppercase}
+.fc-num{display:flex;align-items:baseline;margin:10px 0 10px}
+.fc-num .blk{font-size:44px;font-weight:800;letter-spacing:-1.5px;color:var(--t1);line-height:1}
+.fc-num .pur{font-size:44px;font-weight:800;letter-spacing:-1.5px;color:var(--pu);line-height:1}
+.fc-stores{font-size:12.5px;color:var(--t2);margin-bottom:4px}
+.fc-stores b{font-weight:700;color:var(--t1)}
+.fc-delta{font-size:12.5px;font-weight:600;color:var(--gr)}
+.fc-delta span{font-size:11.5px;color:var(--t3);font-weight:400}
+
+/* KPI white card — reference: icon+title top, big number bottom-left, sparkline bottom-right */
+.kpi{background:var(--white);border:1px solid var(--bdr);border-radius:var(--r);padding:18px 20px;display:flex;flex-direction:column;min-height:148px;transition:transform .15s,box-shadow .15s;cursor:default;animation:fu .4s ease both}
+.kpi:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,0,0,.07)}
+.kpi-top{display:flex;align-items:center;gap:9px}
+.kpi-ico{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.kpi-ico i{font-size:17px}
+.kpi-label{font-size:12.5px;font-weight:500;color:var(--t2);letter-spacing:-0.1px}
+.kpi-bottom{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-top:auto;padding-top:10px}
+.kpi-left{}
+.kpi-num{font-size:30px;font-weight:800;letter-spacing:-1px;color:var(--t1);line-height:1;margin-bottom:5px}
+.kpi-delta{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:600}
+.kpi-delta .pct{font-weight:700}
+.kpi-delta .from{font-size:10.5px;font-weight:400;color:var(--t3);margin-left:2px}
+.kpi-spark{width:80px;height:50px;flex-shrink:0}
+.kpi-spark svg{width:100%;height:100%;overflow:visible;display:block}
+
+/* ── CONV + FOOTFALL ── */
+.hero2{display:grid;grid-template-columns:280px 1fr;gap:14px;align-items:stretch}
+.conv-card{background:var(--pu);border-radius:var(--r);padding:22px 24px;position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;animation:fu .45s ease both}
+.conv-card::after{content:'';position:absolute;bottom:-50px;right:-50px;width:170px;height:170px;border-radius:50%;background:rgba(255,255,255,.07);pointer-events:none}
+.cc-title{font-size:13px;font-weight:600;color:rgba(255,255,255,.75);margin-bottom:14px;line-height:1.35;letter-spacing:-0.1px}
+.cc-n{font-size:52px;font-weight:800;letter-spacing:-2px;color:#fff;line-height:1;margin-bottom:4px}
+.cc-unit{font-size:18px;font-weight:400;color:rgba(255,255,255,.5);vertical-align:super;margin-left:3px}
+.cc-d{font-size:12.5px;color:#A5F3C0;font-weight:600;margin-bottom:14px}
+.cc-spk{width:100%;height:40px;overflow:visible}
+.cc-foot{display:flex;justify-content:space-between;font-size:10px;color:rgba(255,255,255,.3);margin-top:4px}
+.ff-dark{background:var(--dk);border-radius:var(--r);padding:22px 24px;position:relative;overflow:hidden;animation:fu .45s ease .05s both}
+.ff-dark::before{content:'';position:absolute;top:-70px;right:-70px;width:210px;height:210px;border-radius:50%;background:rgba(79,77,232,.15);pointer-events:none}
+.ff-inner{display:flex;align-items:center;justify-content:space-between;gap:24px;height:100%}
+.ff-left{display:flex;flex-direction:column;justify-content:center}
+.ff-ey{font-size:10px;font-weight:700;color:#555;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px}
+.ff-n{font-size:42px;font-weight:800;letter-spacing:-1.5px;color:#fff;line-height:1}
+.ff-u{font-size:13px;color:#555;margin-left:5px;font-weight:400}
+.ff-d{font-size:12.5px;color:#4ADE80;margin-top:4px;font-weight:600}
+.ff-d span{color:#444;font-weight:400}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+.chip{font-size:10px;font-weight:500;padding:4px 10px;border-radius:20px}
+.ff-bars-wrap{flex:1;display:flex;align-items:center;justify-content:center;padding-left:10px}
+.ff-bars{display:flex;align-items:flex-end;gap:7px;height:94px;width:100%}
+.fbc{display:flex;flex-direction:column;align-items:center;gap:5px;flex:1}
+.fbar{width:100%;border-radius:5px 5px 0 0;background:#252523;transform-origin:bottom;animation:gb .8s cubic-bezier(.4,0,.2,1) both}
+.fbar.hi{background:var(--pu)}
+.fbar:hover{background:#7C79F0;cursor:pointer}
+.fbl{font-size:9.5px;color:#484542}
+.fbl.hi{color:#9998FF}
+
+/* ── TASKS + QA + WN ── */
+.tqw{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;align-items:stretch}
+
+/* TASKS */
+.tasks-card{background:var(--white);border:1px solid var(--bdr);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column;animation:fu .45s ease both}
+.tasks-hdr{padding:16px 20px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--bdr);flex-shrink:0}
+.tasks-hdr-left{display:flex;align-items:center;gap:9px}
+.tasks-hdr-left i{font-size:18px;color:var(--pu)}
+.tasks-hdr-title{font-size:14px;font-weight:700;color:var(--t1);letter-spacing:-0.2px}
+.tasks-add{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;background:var(--pu);border:none;border-radius:8px;color:#fff;padding:6px 13px;cursor:pointer;transition:.12s}
+.tasks-add:hover{background:#3e3cd4}
+.tasks-add i{font-size:12px}
+.tasks-prog{padding:12px 20px 10px;border-bottom:1px solid var(--s2);display:flex;align-items:center;gap:11px;flex-shrink:0}
+.tp-track{flex:1;height:5px;background:var(--s2);border-radius:3px;overflow:hidden}
+.tp-fill{height:100%;background:var(--pu);border-radius:3px;animation:gw 1s ease .3s both;width:25%}
+.tp-lbl{font-size:11px;color:var(--t3);white-space:nowrap}
+.tp-lbl b{color:var(--pu);font-weight:700}
+.tasks-body{flex:1;padding:4px 0}
+.t-item{display:flex;align-items:stretch;position:relative;cursor:pointer;transition:background .12s}
+.t-item:hover{background:var(--s2)}
+.t-bar{width:3px;flex-shrink:0}
+.t-inner{display:flex;align-items:center;gap:10px;padding:11px 20px 11px 14px;flex:1;min-width:0}
+.t-ck{width:19px;height:19px;border-radius:50%;border:1.5px solid var(--bdr);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;transition:.15s}
+.t-ck i{font-size:11px}
+.t-ck.done{background:var(--gr);border-color:var(--gr);color:#fff}
+.t-info{flex:1;min-width:0}
+.t-title-row{display:flex;align-items:center;gap:7px;flex-wrap:nowrap}
+.t-name{font-size:13px;font-weight:500;color:var(--t1);line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.t-name.dk{text-decoration:line-through;color:var(--t3);font-weight:400}
+.t-pill{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px;white-space:nowrap;flex-shrink:0}
+.t-pill i{font-size:10px}
+.tp-urgent{background:#FEF2C0;color:#92400E}
+.tp-ok{background:var(--gr2);color:#0B5E3C}
+.tp-done{background:var(--s2);color:var(--t3)}
+.t-sub{font-size:11px;color:var(--t3);margin-top:2px}
+.t-up{font-size:10.5px;background:var(--pu2);border:none;border-radius:6px;color:var(--pu);padding:5px 10px;cursor:pointer;white-space:nowrap;font-weight:500;flex-shrink:0}
+.t-div{height:1px;background:var(--s2);margin:0 20px}
+
+/* QUICK ACTIONS */
+.qa-card{background:var(--white);border:1px solid var(--bdr);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column;animation:fu .45s ease .05s both}
+.qa-hdr{padding:16px 20px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--bdr);flex-shrink:0}
+.qa-title{font-size:14px;font-weight:700;color:var(--t1);letter-spacing:-0.2px}
+.qa-sub{font-size:11.5px;color:var(--t3)}
+.qa-grid{display:grid;grid-template-columns:repeat(3,1fr);padding:12px 14px 14px;flex:1;align-content:start}
+.qa-item{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:9px;padding:16px 8px;border-radius:12px;cursor:pointer;transition:all .15s;text-align:center}
+.qa-item:hover{background:var(--s2)}
+.qa-item:hover .qa-ico{transform:scale(1.08) translateY(-2px)}
+.qa-ico{width:52px;height:52px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:24px;transition:transform .15s;flex-shrink:0}
+.qa-ico i{font-size:24px}
+.qa-lbl{font-size:12px;font-weight:600;color:var(--t1);line-height:1.25}
+
+/* WHAT'S NEW */
+.wn-card{background:var(--white);border:1px solid var(--bdr);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column;animation:fu .45s ease .1s both}
+.wn-hdr{padding:16px 20px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--bdr);flex-shrink:0}
+.wn-hdr-title{font-size:14px;font-weight:700;color:var(--t1);letter-spacing:-0.2px}
+.wn-viewall{font-size:12px;color:var(--pu);cursor:pointer;font-weight:600}
+.wn-outer{overflow:hidden;flex:1;padding:14px 14px 0}
+.wn-track{display:flex;transition:transform .45s cubic-bezier(.4,0,.2,1);height:100%}
+.wn-slide{min-width:100%;height:100%}
+.wn-banner{border-radius:12px;padding:18px 20px;position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;height:100%;min-height:160px}
+.wn-banner::before{content:'';position:absolute;bottom:-40px;right:-40px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.07);pointer-events:none}
+.wn-b-tag{font-size:9.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:5px}
+.wn-b-title{font-size:14px;font-weight:700;color:#fff;letter-spacing:-0.2px;margin-bottom:4px;line-height:1.3}
+.wn-b-sub{font-size:11.5px;color:rgba(255,255,255,.55);line-height:1.5;margin-bottom:12px}
+.wn-b-stat{display:flex;align-items:baseline;gap:5px}
+.wn-b-num{font-size:32px;font-weight:900;letter-spacing:-1px;color:#fff;line-height:1}
+.wn-b-unit{font-size:12px;font-weight:400;color:rgba(255,255,255,.5)}
+.wn-ctrl{display:flex;align-items:center;justify-content:space-between;padding:10px 14px 14px;flex-shrink:0}
+.wn-dots{display:flex;gap:4px;align-items:center}
+.wnd{width:5px;height:5px;border-radius:50%;background:var(--bdr);cursor:pointer;transition:all .3s}
+.wnd.on{background:var(--pu);width:14px;border-radius:3px}
+.wn-navs{display:flex;gap:5px}
+.wn-nav{width:26px;height:26px;border-radius:50%;background:var(--s2);border:1px solid var(--bdr);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:11px;color:var(--t2);transition:.13s}
+.wn-nav:hover{background:var(--bdr)}
+.wn-nav i{font-size:11px}
+
+/* ── ACTIVITY + REPORTS ── */
+.ar-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.wcard{background:var(--white);border:1px solid var(--bdr);border-radius:var(--r);padding:18px 20px;animation:fu .45s ease both}
+.wch{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.wct{font-size:14px;font-weight:700;color:var(--t1);letter-spacing:-0.2px}
+.wca{font-size:11.5px;color:var(--pu);cursor:pointer;font-weight:500}
+.aitem{display:flex;align-items:center;gap:11px;padding:9px 0;border-bottom:1px solid var(--s2)}
+.aitem:last-child{border-bottom:none}
+.aico{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.aico i{font-size:16px}
+.abody{flex:1;min-width:0}
+.abody p{font-size:12.5px;font-weight:500;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.abody span{font-size:11px;color:var(--t3)}
+.atm{font-size:10.5px;color:var(--t3);white-space:nowrap}
+.dl-btn{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:500;color:var(--pu);background:var(--pu2);border:none;border-radius:7px;padding:5px 10px;cursor:pointer;transition:.12s;white-space:nowrap;flex-shrink:0}
+.dl-btn:hover{background:#DDDCFA}
+.dl-btn i{font-size:13px}
+
+@keyframes fu{from{opacity:0;transform:translateY(13px)}to{opacity:1;transform:translateY(0)}}
+@keyframes gb{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+@keyframes gw{from{width:0}}
+@keyframes fdrop{from{opacity:0;transform:translateY(-7px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav class="sb">
+  <div class="sb-logo">Oly<em>Retail</em></div>
+  <div class="sb-grp">Main</div>
+  <div class="ni on"><i class="ti ti-home"></i> Home</div>
+  <div class="ni"><i class="ti ti-users"></i> Team Management</div>
+  <div class="ni"><i class="ti ti-chart-bar"></i> Analytics</div>
+  <div class="ni"><i class="ti ti-live-view"></i> Live Feed <span class="bj">2</span></div>
+  <div class="ni"><i class="ti ti-file-analytics"></i> Reports</div>
+  <div class="sb-grp">Config</div>
+  <div class="ni"><i class="ti ti-settings"></i> Preferences</div>
+  <div class="sb-sp"></div>
+  <div class="sb-ft">
+    <div class="ava">AM</div>
+    <div><div class="avn">Admin Manager</div><div class="avr">admin@olyretail.com</div></div>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div class="main">
+  <header class="top">
+    <span class="top-title">Home</span>
+    <span class="top-sep">/</span>
+    <span class="top-crumb">Landmark Group</span>
+    <div class="tsp"></div>
+    <span class="top-date">Mon, Jun 1 2026</span>
+    <div class="tbtn"><i class="ti ti-building-store"></i> 8 Stores</div>
+    <div class="cam-wrap">
+      <div class="cam-btn" id="camBtn" onclick="toggleCam()">
+        <i class="ti ti-camera"></i>
+        <span id="camLabel">All Cameras</span>
+        <div class="cam-pips">
+          <div class="cam-pip" style="background:#15A066;"></div>
+          <div class="cam-pip" style="background:#1E3A6E;margin-left:-3px;"></div>
+          <div class="cam-pip" style="background:#D42B20;margin-left:-3px;"></div>
+        </div>
+        <span class="cam-cnt" id="camCnt">26 · 24 · 2</span>
+        <i class="ti ti-chevron-down cam-chev" id="camChev"></i>
+      </div>
+      <div class="cam-drop" id="camDrop">
+        <div class="cam-opt sel" onclick="selectCam(this,'All Cameras','26 · 24 · 2')"><div class="cam-opt-dot" style="background:#888;"></div>All Cameras<span class="cam-opt-cnt">52 total</span></div>
+        <div class="cam-div"></div>
+        <div class="cam-opt" onclick="selectCam(this,'Entrance Cameras','14 · 10 · 1')"><div class="cam-opt-dot" style="background:#15A066;"></div>Entrance Cameras<span class="cam-opt-cnt">25 total</span></div>
+        <div class="cam-opt" onclick="selectCam(this,'Cashbill Cameras','12 · 14 · 1')"><div class="cam-opt-dot" style="background:#4F4DE8;"></div>Cashbill Cameras<span class="cam-opt-cnt">27 total</span></div>
+      </div>
+    </div>
+    <div class="notif-wrap">
+      <div class="notif-btn" id="notifBtn" onclick="toggleNotif()">
+        <i class="ti ti-bell"></i><div class="notif-dot"></div>
+      </div>
+      <div class="notif-panel" id="notifPanel">
+        <div class="np-head"><span class="np-title">Notifications</span><span class="np-badge">2 new</span></div>
+        <div class="np-item"><div class="np-ico" style="background:#FDEBE9;color:#D42B20;"><i class="ti ti-camera-off"></i></div><div class="np-body"><p>Entrance camera offline</p><span>Marina Bay Sands · 2 min ago</span></div><div class="np-unread"></div></div>
+        <div class="np-item"><div class="np-ico" style="background:#FEF2C0;color:#D97500;"><i class="ti ti-alert-triangle"></i></div><div class="np-body"><p>High queue depth detected</p><span>VivoCity · 9 min ago</span></div><div class="np-unread"></div></div>
+        <div class="np-item"><div class="np-ico" style="background:#E0F5EB;color:#15A066;"><i class="ti ti-circle-check"></i></div><div class="np-body"><p>Queue cleared — peak resolved</p><span>Tampines Mall · 31 min ago</span></div></div>
+        <div class="np-item"><div class="np-ico" style="background:#FDEBE9;color:#D42B20;"><i class="ti ti-eye-off"></i></div><div class="np-body"><p>Unusual activity in Zone B</p><span>Orchard Central · 17 min ago</span></div></div>
+      </div>
+    </div>
+    <div class="ava" style="width:34px;height:34px;font-size:12px;cursor:pointer;">AM</div>
+  </header>
+
+  <div class="cnt">
+
+    <!-- SUMMARY CAROUSEL -->
+    <div class="car-wrap">
+      <div class="car-track" id="sumTrack">
+        <div class="car-slide">
+          <div class="cs-ico" style="background:#EEEDFD;color:#4F4DE8;"><i class="ti ti-walk"></i></div>
+          <div class="cs-body"><div class="cs-tag" style="color:#4F4DE8;">Footfall Highlight</div><div class="cs-title">Marina Bay Sands hit its highest footfall this month</div><div class="cs-desc">Recorded <strong>15,234 visitors</strong> today — surpassing last month's peak by 6.4%.</div><div class="cs-meta"><span class="cs-badge" style="background:#EEEDFD;color:#4F4DE8;">&#8593; 8.2% vs last week</span><span class="cs-time">Today · All Stores</span></div></div>
+          <div class="cs-ctrl"><button class="cs-nav" onclick="moveSum(-1)"><i class="ti ti-chevron-left"></i></button><div class="cs-dots" id="sumDots"><div class="csd on" onclick="goSum(0)"></div><div class="csd" onclick="goSum(1)"></div><div class="csd" onclick="goSum(2)"></div><div class="csd" onclick="goSum(3)"></div></div><button class="cs-nav" onclick="moveSum(1)"><i class="ti ti-chevron-right"></i></button></div>
+        </div>
+        <div class="car-slide">
+          <div class="cs-ico" style="background:#E0F5EB;color:#15A066;"><i class="ti ti-percentage"></i></div>
+          <div class="cs-body"><div class="cs-tag" style="color:#15A066;">Conversion Rate</div><div class="cs-title">Conversion tracking at 12.4% — up +1.8 pts from yesterday</div><div class="cs-desc">Marina Bay leads at <strong>16.2%</strong> vs 12.4% network average. VivoCity at 15.3% follows closely.</div><div class="cs-meta"><span class="cs-badge" style="background:#E0F5EB;color:#0B5E3C;">&#8593; +1.8 pts today</span><span class="cs-time">Network Average</span></div></div>
+          <div class="cs-ctrl"><button class="cs-nav" onclick="moveSum(-1)"><i class="ti ti-chevron-left"></i></button><div class="cs-dots"><div class="csd" onclick="goSum(0)"></div><div class="csd on" onclick="goSum(1)"></div><div class="csd" onclick="goSum(2)"></div><div class="csd" onclick="goSum(3)"></div></div><button class="cs-nav" onclick="moveSum(1)"><i class="ti ti-chevron-right"></i></button></div>
+        </div>
+        <div class="car-slide">
+          <div class="cs-ico" style="background:#FEF2C0;color:#D97500;"><i class="ti ti-clock"></i></div>
+          <div class="cs-body"><div class="cs-tag" style="color:#D97500;">Staffing Advisory</div><div class="cs-title">Peak hour was 1 PM — consider extra staffing tomorrow</div><div class="cs-desc">Traffic consistently peaks between <strong>12–3 PM</strong>. Recommend proactive staff deployment tomorrow.</div><div class="cs-meta"><span class="cs-badge" style="background:#FEF2C0;color:#92400E;">12 PM – 3 PM Window</span><span class="cs-time">All 8 Stores</span></div></div>
+          <div class="cs-ctrl"><button class="cs-nav" onclick="moveSum(-1)"><i class="ti ti-chevron-left"></i></button><div class="cs-dots"><div class="csd" onclick="goSum(0)"></div><div class="csd" onclick="goSum(1)"></div><div class="csd on" onclick="goSum(2)"></div><div class="csd" onclick="goSum(3)"></div></div><button class="cs-nav" onclick="moveSum(1)"><i class="ti ti-chevron-right"></i></button></div>
+        </div>
+        <div class="car-slide">
+          <div class="cs-ico" style="background:#FDEBE9;color:#D42B20;"><i class="ti ti-camera-off"></i></div>
+          <div class="cs-body"><div class="cs-tag" style="color:#D42B20;">Camera Alert</div><div class="cs-title">1 camera offline at Bugis Junction North Entry</div><div class="cs-desc">Entrance camera offline for 42 minutes. <strong>Zone C</strong> detection confidence reduced by 18%.</div><div class="cs-meta"><span class="cs-badge" style="background:#FDEBE9;color:#D42B20;">Action Required</span><span class="cs-time">Bugis Junction · 42 min ago</span></div></div>
+          <div class="cs-ctrl"><button class="cs-nav" onclick="moveSum(-1)"><i class="ti ti-chevron-left"></i></button><div class="cs-dots"><div class="csd" onclick="goSum(0)"></div><div class="csd" onclick="goSum(1)"></div><div class="csd" onclick="goSum(2)"></div><div class="csd on" onclick="goSum(3)"></div></div><button class="cs-nav" onclick="moveSum(1)"><i class="ti ti-chevron-right"></i></button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPI ROW -->
+    <div class="kpi-row">
+
+      <!-- Today's Footfall -->
+      <div class="fc">
+        <div class="fc-lbl">Today's Footfall</div>
+        <div class="fc-num"><span class="blk">15,</span><span class="pur">234</span></div>
+        <div class="fc-stores">Across <b>8 stores</b></div>
+        <div class="fc-delta">&#8593; +8.2% <span>vs last week</span></div>
+      </div>
+
+      <!-- Passerby Count -->
+      <div class="kpi" style="animation-delay:.05s;">
+        <div class="kpi-top">
+          <div class="kpi-ico" style="background:#E0F5EB;"><i class="ti ti-users" style="color:#15A066;"></i></div>
+          <span class="kpi-label">Passerby Count</span>
+        </div>
+        <div class="kpi-bottom">
+          <div class="kpi-left">
+            <div class="kpi-num">45,621</div>
+            <div class="kpi-delta" style="color:#15A066;">&#8593; <span class="pct">3.1%</span><span class="from">From last week</span></div>
+          </div>
+          <div class="kpi-spark">
+            <svg viewBox="0 0 80 50" preserveAspectRatio="none">
+              <defs><linearGradient id="gs1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#15A066" stop-opacity=".25"/><stop offset="100%" stop-color="#15A066" stop-opacity="0"/></linearGradient></defs>
+              <path d="M0 46 C10 40 22 32 34 24 S52 15 64 9 S74 4 80 2" fill="none" stroke="#15A066" stroke-width="2.2" stroke-linecap="round"/>
+              <path d="M0 46 C10 40 22 32 34 24 S52 15 64 9 S74 4 80 2 L80 50 L0 50Z" fill="url(#gs1)"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Avg Conversion -->
+      <div class="kpi" style="animation-delay:.1s;">
+        <div class="kpi-top">
+          <div class="kpi-ico" style="background:#FDEBE9;"><i class="ti ti-percentage" style="color:#D42B20;"></i></div>
+          <span class="kpi-label">Avg Conversion</span>
+        </div>
+        <div class="kpi-bottom">
+          <div class="kpi-left">
+            <div class="kpi-num">12.4%</div>
+            <div class="kpi-delta" style="color:#D42B20;">&#8595; <span class="pct">1.2%</span><span class="from">From last week</span></div>
+          </div>
+          <div class="kpi-spark">
+            <svg viewBox="0 0 80 50" preserveAspectRatio="none">
+              <defs><linearGradient id="gs2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#D42B20" stop-opacity=".22"/><stop offset="100%" stop-color="#D42B20" stop-opacity="0"/></linearGradient></defs>
+              <path d="M0 4 C10 10 22 18 34 26 S52 36 64 41 S74 46 80 48" fill="none" stroke="#D42B20" stroke-width="2.2" stroke-linecap="round"/>
+              <path d="M0 4 C10 10 22 18 34 26 S52 36 64 41 S74 46 80 48 L80 50 L0 50Z" fill="url(#gs2)"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top Store Rate -->
+      <div class="kpi" style="animation-delay:.15s;">
+        <div class="kpi-top">
+          <div class="kpi-ico" style="background:#EEEDFD;"><i class="ti ti-trophy" style="color:#4F4DE8;"></i></div>
+          <span class="kpi-label">Top Store Rate</span>
+        </div>
+        <div class="kpi-bottom">
+          <div class="kpi-left">
+            <div class="kpi-num">16.2%</div>
+            <div class="kpi-delta" style="color:#15A066;">&#8593; <span class="pct">5.7%</span><span class="from">From last week</span></div>
+          </div>
+          <div class="kpi-spark">
+            <svg viewBox="0 0 80 50" preserveAspectRatio="none">
+              <defs><linearGradient id="gs3" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#4F4DE8" stop-opacity=".22"/><stop offset="100%" stop-color="#4F4DE8" stop-opacity="0"/></linearGradient></defs>
+              <path d="M0 44 C10 36 22 26 34 18 S52 10 64 6 S74 3 80 1" fill="none" stroke="#4F4DE8" stroke-width="2.2" stroke-linecap="round"/>
+              <path d="M0 44 C10 36 22 26 34 18 S52 10 64 6 S74 3 80 1 L80 50 L0 50Z" fill="url(#gs3)"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- CONV + FOOTFALL CHART -->
+    <div class="hero2">
+      <div class="conv-card">
+        <div>
+          <div class="cc-title">Avg Conversion Rate (Weekly)</div>
+          <div class="cc-n">12.4<span class="cc-unit">%</span></div>
+          <div class="cc-d">&#8593; +1.8 pts from yesterday</div>
+        </div>
+        <div>
+          <svg class="cc-spk" viewBox="0 0 240 40" preserveAspectRatio="none">
+            <path d="M0 36 C28 30 46 24 72 18 S115 10 142 7 S190 9 215 4 S232 2 240 1" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <div class="cc-foot"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div>
+        </div>
+      </div>
+      <div class="ff-dark">
+        <div class="ff-inner">
+          <div class="ff-left">
+            <div class="ff-ey">Weekly Footfall — All Stores</div>
+            <div><span class="ff-n">87,430</span><span class="ff-u">this week</span></div>
+            <div class="ff-d">&#8593; +6.1% <span>vs last week</span></div>
+            <div class="chips">
+              <span class="chip" style="background:rgba(79,77,232,.3);color:#A5A3FF;">Marina Bay 18.2%</span>
+              <span class="chip" style="background:rgba(21,160,102,.3);color:#6EE7B7;">VivoCity 15.3%</span>
+              <span class="chip" style="background:rgba(217,117,0,.28);color:#FCD34D;">Orchard 14.1%</span>
+              <span class="chip" style="background:rgba(212,43,32,.25);color:#FCA5A5;">Bugis 12.7%</span>
+            </div>
+          </div>
+          <div class="ff-bars-wrap">
+            <div class="ff-bars">
+              <div class="fbc"><div class="fbar" style="height:46px;animation-delay:.05s;"></div><div class="fbl">Mon</div></div>
+              <div class="fbc"><div class="fbar" style="height:58px;animation-delay:.1s;"></div><div class="fbl">Tue</div></div>
+              <div class="fbc"><div class="fbar" style="height:40px;animation-delay:.15s;"></div><div class="fbl">Wed</div></div>
+              <div class="fbc"><div class="fbar hi" style="height:94px;animation-delay:.2s;"></div><div class="fbl hi">Thu</div></div>
+              <div class="fbc"><div class="fbar" style="height:52px;animation-delay:.25s;"></div><div class="fbl">Fri</div></div>
+              <div class="fbc"><div class="fbar" style="height:70px;animation-delay:.3s;"></div><div class="fbl">Sat</div></div>
+              <div class="fbc"><div class="fbar" style="height:50px;animation-delay:.35s;"></div><div class="fbl">Sun</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TASKS + QA + WN -->
+    <div class="tqw">
+      <div class="tasks-card">
+        <div class="tasks-hdr">
+          <div class="tasks-hdr-left"><i class="ti ti-checkbox"></i><span class="tasks-hdr-title">Checklist &amp; Tasks</span></div>
+          <button class="tasks-add"><i class="ti ti-plus"></i> Add</button>
+        </div>
+        <div class="tasks-prog">
+          <div class="tp-track"><div class="tp-fill"></div></div>
+          <span class="tp-lbl"><b>1</b> of 4 done</span>
+        </div>
+        <div class="tasks-body">
+          <div class="t-item"><div class="t-bar" style="background:var(--gr);"></div><div class="t-inner"><div class="t-ck done"><i class="ti ti-check"></i></div><div class="t-info"><div class="t-title-row"><span class="t-name dk">Mannequin display</span><span class="t-pill tp-done"><i class="ti ti-check"></i> Done</span></div><div class="t-sub">Marina Bay Sands</div></div></div></div>
+          <div class="t-div"></div>
+          <div class="t-item"><div class="t-bar" style="background:var(--am);"></div><div class="t-inner"><div class="t-ck"></div><div class="t-info"><div class="t-title-row"><span class="t-name">Window signage — June</span><span class="t-pill tp-urgent"><i class="ti ti-clock"></i> 2h left</span></div><div class="t-sub">Orchard Central</div></div><button class="t-up">&#8593; Upload</button></div></div>
+          <div class="t-div"></div>
+          <div class="t-item"><div class="t-bar" style="background:var(--pu);"></div><div class="t-inner"><div class="t-ck"></div><div class="t-info"><div class="t-title-row"><span class="t-name">Layout rotation — Zone A</span><span class="t-pill tp-ok"><i class="ti ti-clock"></i> Tomorrow</span></div><div class="t-sub">VivoCity</div></div><button class="t-up">&#8593; Upload</button></div></div>
+          <div class="t-div"></div>
+          <div class="t-item"><div class="t-bar" style="background:var(--pu);"></div><div class="t-inner"><div class="t-ck"></div><div class="t-info"><div class="t-title-row"><span class="t-name">Signage update — Entrance</span><span class="t-pill tp-ok"><i class="ti ti-clock"></i> Tomorrow</span></div><div class="t-sub">Bugis Junction</div></div><button class="t-up">&#8593; Upload</button></div></div>
+        </div>
+      </div>
+
+      <div class="qa-card">
+        <div class="qa-hdr"><div class="qa-title">Quick Actions</div><div class="qa-sub">Shortcuts</div></div>
+        <div class="qa-grid">
+          <div class="qa-item"><div class="qa-ico" style="background:#EEEDFD;"><i class="ti ti-user-plus" style="color:#4F4DE8;"></i></div><div class="qa-lbl">Add Member</div></div>
+          <div class="qa-item"><div class="qa-ico" style="background:#FDEBE9;"><i class="ti ti-alert-circle" style="color:#D42B20;"></i></div><div class="qa-lbl">Raise Concern</div></div>
+          <div class="qa-item"><div class="qa-ico" style="background:#E0F5EB;"><i class="ti ti-layout-grid" style="color:#15A066;"></i></div><div class="qa-lbl">New Page</div></div>
+          <div class="qa-item"><div class="qa-ico" style="background:#FEF2C0;"><i class="ti ti-camera" style="color:#D97500;"></i></div><div class="qa-lbl">Snapshots</div></div>
+          <div class="qa-item"><div class="qa-ico" style="background:#EEEDFD;"><i class="ti ti-file-plus" style="color:#4F4DE8;"></i></div><div class="qa-lbl">New Report</div></div>
+          <div class="qa-item"><div class="qa-ico" style="background:#E0F5EB;"><i class="ti ti-chart-bar" style="color:#15A066;"></i></div><div class="qa-lbl">Analytics</div></div>
+        </div>
+      </div>
+
+      <div class="wn-card">
+        <div class="wn-hdr"><div class="wn-hdr-title">What's New</div><div class="wn-viewall">View all &#8594;</div></div>
+        <div class="wn-outer">
+          <div class="wn-track" id="wnTrack">
+            <div class="wn-slide"><div class="wn-banner" style="background:#111112;"><div><div class="wn-b-tag">May 20 · New Feature</div><div class="wn-b-title">Multi-store comparison</div><div class="wn-b-sub">Side-by-side KPI view across up to 4 stores with conversion overlay.</div></div><div class="wn-b-stat"><span class="wn-b-num">4</span><span class="wn-b-unit">stores at once</span></div></div></div>
+            <div class="wn-slide"><div class="wn-banner" style="background:#4F4DE8;"><div><div class="wn-b-tag">May 17 · Analytics</div><div class="wn-b-title">Dwell time per zone</div><div class="wn-b-sub">Track average dwell per zone to find high-engagement areas in real time.</div></div><div class="wn-b-stat"><span class="wn-b-num">8.7</span><span class="wn-b-unit">min avg Zone B</span></div></div></div>
+            <div class="wn-slide"><div class="wn-banner" style="background:#15A066;"><div><div class="wn-b-tag">May 12 · Smart Alerts</div><div class="wn-b-title">Queue depth monitoring</div><div class="wn-b-sub">Instant alerts when queue depth exceeds threshold with reallocation tips.</div></div><div class="wn-b-stat"><span class="wn-b-num">40</span><span class="wn-b-unit">min threshold</span></div></div></div>
+            <div class="wn-slide"><div class="wn-banner" style="background:#D97500;"><div><div class="wn-b-tag">May 5 · Insights</div><div class="wn-b-title">Tenant impact tracking</div><div class="wn-b-sub">Measure footfall uplift from new anchor tenants with before/after view.</div></div><div class="wn-b-stat"><span class="wn-b-num">+22</span><span class="wn-b-unit">% uplift</span></div></div></div>
+          </div>
+        </div>
+        <div class="wn-ctrl">
+          <div class="wn-dots" id="wnDots"><div class="wnd on" onclick="goWn(0)"></div><div class="wnd" onclick="goWn(1)"></div><div class="wnd" onclick="goWn(2)"></div><div class="wnd" onclick="goWn(3)"></div></div>
+          <div class="wn-navs"><button class="wn-nav" onclick="moveWn(-1)"><i class="ti ti-chevron-left"></i></button><button class="wn-nav" onclick="moveWn(1)"><i class="ti ti-chevron-right"></i></button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACTIVITY + REPORTS -->
+    <div class="ar-grid">
+      <div class="wcard">
+        <div class="wch"><div class="wct">Recent Activity</div><div class="wca">View all &#8594;</div></div>
+        <div class="aitem"><div class="aico" style="background:#FDEBE9;color:#D42B20;"><i class="ti ti-camera-off"></i></div><div class="abody"><p>Entrance camera offline</p><span>Marina Bay Sands</span></div><div class="atm">2 min ago</div></div>
+        <div class="aitem"><div class="aico" style="background:#FEF2C0;color:#D97500;"><i class="ti ti-alert-triangle"></i></div><div class="abody"><p>High queue depth detected</p><span>VivoCity</span></div><div class="atm">9 min ago</div></div>
+        <div class="aitem"><div class="aico" style="background:#FDEBE9;color:#D42B20;"><i class="ti ti-eye-off"></i></div><div class="abody"><p>Unusual activity in Zone B</p><span>Orchard Central</span></div><div class="atm">17 min ago</div></div>
+        <div class="aitem"><div class="aico" style="background:#E0F5EB;color:#15A066;"><i class="ti ti-circle-check"></i></div><div class="abody"><p>Queue cleared — peak resolved</p><span>Tampines Mall</span></div><div class="atm">31 min ago</div></div>
+        <div class="aitem"><div class="aico" style="background:#FEF2C0;color:#D97500;"><i class="ti ti-trending-down"></i></div><div class="abody"><p>Low footfall — 32% below avg</p><span>Northpoint City</span></div><div class="atm">48 min ago</div></div>
+      </div>
+      <div class="wcard">
+        <div class="wch"><div class="wct">Recent Reports</div><div class="wca">View all &#8594;</div></div>
+        <div class="aitem"><div class="aico" style="background:#EEEDFD;color:#4F4DE8;"><i class="ti ti-file-analytics"></i></div><div class="abody"><p>Weekly Footfall Summary</p><span>All 8 stores · Jun 1, 2026</span></div><button class="dl-btn"><i class="ti ti-download"></i> Download</button></div>
+        <div class="aitem"><div class="aico" style="background:#E0F5EB;color:#15A066;"><i class="ti ti-chart-line"></i></div><div class="abody"><p>Conversion Trend Analysis</p><span>Marina Bay · May 30</span></div><button class="dl-btn"><i class="ti ti-download"></i> Download</button></div>
+        <div class="aitem"><div class="aico" style="background:#FEF2C0;color:#D97500;"><i class="ti ti-camera"></i></div><div class="abody"><p>Camera Coverage Audit</p><span>Bugis Junction · May 29</span></div><button class="dl-btn"><i class="ti ti-download"></i> Download</button></div>
+        <div class="aitem"><div class="aico" style="background:#FDEBE9;color:#D42B20;"><i class="ti ti-users"></i></div><div class="abody"><p>Queue &amp; Staff Utilisation</p><span>VivoCity · May 28</span></div><button class="dl-btn"><i class="ti ti-download"></i> Download</button></div>
+        <div class="aitem"><div class="aico" style="background:#F5F3EE;color:#64625E;"><i class="ti ti-building-store"></i></div><div class="abody"><p>Multi-store KPI Comparison</p><span>All stores · May 27</span></div><button class="dl-btn"><i class="ti ti-download"></i> Download</button></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+var sI=0;
+function moveSum(d){sI=(sI+d+4)%4;renderSum();}
+function goSum(i){sI=i;renderSum();}
+function renderSum(){
+  document.getElementById('sumTrack').style.transform='translateX(-'+(sI*100)+'%)';
+  document.querySelectorAll('#sumTrack .cs-dots .csd').forEach(function(d,i){d.classList.toggle('on',i===sI);});
+}
+setInterval(function(){moveSum(1);},5000);
+var wI=0;
+function moveWn(d){wI=(wI+d+4)%4;renderWn();}
+function goWn(i){wI=i;renderWn();}
+function renderWn(){
+  document.getElementById('wnTrack').style.transform='translateX(-'+(wI*100)+'%)';
+  document.querySelectorAll('#wnDots .wnd').forEach(function(d,i){d.classList.toggle('on',i===wI);});
+}
+setInterval(function(){moveWn(1);},6000);
+function toggleCam(){
+  var d=document.getElementById('camDrop'),c=document.getElementById('camChev');
+  d.classList.toggle('open');
+  c.style.transform=d.classList.contains('open')?'rotate(180deg)':'rotate(0)';
+}
+function selectCam(el,lbl,cnt){
+  document.getElementById('camLabel').textContent=lbl;
+  document.getElementById('camCnt').textContent=cnt;
+  document.querySelectorAll('.cam-opt').forEach(function(o){o.classList.remove('sel');});
+  el.classList.add('sel');
+  toggleCam();
+}
+function toggleNotif(){document.getElementById('notifPanel').classList.toggle('open');}
+document.addEventListener('click',function(e){
+  var cb=document.getElementById('camBtn'),cd=document.getElementById('camDrop');
+  if(cb&&cd&&!cb.contains(e.target)&&!cd.contains(e.target)){cd.classList.remove('open');document.getElementById('camChev').style.transform='rotate(0)';}
+  var nb=document.getElementById('notifBtn'),np=document.getElementById('notifPanel');
+  if(nb&&np&&!nb.contains(e.target)&&!np.contains(e.target)){np.classList.remove('open');}
+});
+</script>
+</body>
+</html>

@@ -101,7 +101,7 @@ function InsightsModal({ onClose }: { onClose: () => void }) {
   };
 
   const sectionLabel: CSSProperties = {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: 700,
     letterSpacing: '0.06em',
     textTransform: 'uppercase',
@@ -165,10 +165,10 @@ function InsightsModal({ onClose }: { onClose: () => void }) {
               <TrendingUp size={18} strokeWidth={2} />
             </div>
             <div>
-              <p style={{ fontSize: 17, fontWeight: 700, color: 'var(--color-text-1)', margin: 0, letterSpacing: '-0.02em' }}>
+              <p style={{ fontSize: 18, fontWeight: 700, color: 'var(--color-text-1)', margin: 0, letterSpacing: '-0.02em' }}>
                 Insights of the Day
               </p>
-              <p style={{ fontSize: 12.5, color: 'var(--color-text-3)', marginTop: 4, fontWeight: 500 }}>
+              <p style={{ fontSize: 13, color: 'var(--color-text-3)', marginTop: 4, fontWeight: 500 }}>
                 AI-powered analysis · Updated 3 min ago
               </p>
             </div>
@@ -527,12 +527,14 @@ export function TopBar() {
     <header className="flex-shrink-0" style={{ background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)', transition: 'background 200ms ease, border-color 200ms ease' }}>
 
       {/* ── Main top row ── */}
-      <div className="flex items-center justify-between" style={{ height: 'var(--topbar-height)', paddingLeft: 'var(--content-padding)', paddingRight: 'var(--content-padding)' }}>
-        {/* Left — Landmark logo */}
-        <img src="/landmark-logo.png" alt="Landmark Group" style={{ height: 22, width: 'auto', objectFit: 'contain', maxWidth: 130 }} />
+      <div
+        className="flex w-full min-w-0 items-center justify-between gap-3"
+        style={{ height: 'var(--topbar-height)', paddingLeft: 'var(--content-padding)', paddingRight: 'var(--content-padding)' }}
+      >
+        <div className="min-w-0 flex-1" aria-hidden />
 
-        {/* Right */}
-        <div className="flex items-center gap-3 relative" ref={rightSectionRef}>
+        {/* Right — store summary, alerts, home variant, theme, notifications, profile */}
+        <div className="topbar-utilities flex items-center flex-nowrap shrink-0 gap-3 relative" ref={rightSectionRef}>
 
           {/* Qualified Shopper — analytics only */}
           {showQualifiedShopper ? (
@@ -616,8 +618,65 @@ export function TopBar() {
             </div>
           ) : null}
 
-          {/* Divider */}
-          <div style={{ width: 1, height: 20, background: 'var(--color-border)', flexShrink: 0 }} />
+          {showStoreCameraStats ? (
+            <div className="topbar-summary">
+              <div className="topbar-summary__chip" aria-label="8 stores">
+                <Store size={14} strokeWidth={1.5} style={{ color: 'var(--color-text-3)' }} />
+                <strong>8</strong>
+                <span>Stores</span>
+              </div>
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => toggleDropdown('alerts')}
+                  className={`topbar-summary__chip topbar-summary__chip--alerts${activeDropdown === 'alerts' ? ' is-open' : ''}`}
+                  aria-expanded={activeDropdown === 'alerts'}
+                >
+                  <Bell size={14} strokeWidth={1.5} style={{ color: '#DC2626' }} />
+                  <span style={{ fontWeight: 600 }}>{MOCK_STORE_ALERTS.length} Alerts</span>
+                  <ChevronDown size={12} strokeWidth={2} style={{ color: 'var(--color-text-4)' }} />
+                </button>
+                {activeDropdown === 'alerts' && (
+                  <div className="absolute top-full right-0 mt-2 rounded-lg shadow-xl border z-50" style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)', width: 320 }}>
+                    <div className="px-4 py-3 border-b" style={{ borderColor: 'var(--color-border-subtle)' }}>
+                      <span className="text-sm font-semibold" style={{ color: 'var(--color-text-1)' }}>Store alerts</span>
+                    </div>
+                    {MOCK_STORE_ALERTS.map((a, i) => (
+                      <div key={a.id} className="px-4 py-3" style={{ borderTop: i > 0 ? '1px solid var(--color-border-subtle)' : 'none' }}>
+                        <p style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--color-text-1)', margin: 0 }}>{a.store}</p>
+                        <p style={{ fontSize: 11.5, color: 'var(--color-text-3)', margin: '4px 0 0', lineHeight: 1.4 }}>{a.message}</p>
+                        <span style={{ fontSize: 10.5, color: 'var(--color-text-4)', marginTop: 4, display: 'block' }}>{a.time}</span>
+                      </div>
+                    ))}
+                    <div className="px-4 py-3 text-center" style={{ borderTop: '1px solid var(--color-border-subtle)' }}>
+                      <button
+                        type="button"
+                        style={{
+                          fontSize: 12,
+                          fontWeight: 600,
+                          color: 'var(--color-primary)',
+                          background: 'none',
+                          border: 'none',
+                          cursor: 'pointer',
+                          lineHeight: 1.2,
+                        }}
+                        onClick={() => {
+                          setActiveDropdown(null);
+                          setStoreAlertsOpen(true);
+                        }}
+                      >
+                        View all alerts
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : null}
+
+          {(showStoreCameraStats || showQualifiedShopper) ? (
+            <div className="topbar-utilities__divider" aria-hidden />
+          ) : null}
 
           {isHomePage ? <HomeVariantToggle /> : null}
 
@@ -705,9 +764,12 @@ export function TopBar() {
 
       {/* ── Filter bar ── */}
       <div ref={filterBarRef} className="border-t" style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface-2)', transition: 'background 200ms ease' }}>
-        <div className="flex items-center" style={{ height: 64, paddingLeft: 'var(--content-padding)', paddingRight: 'var(--content-padding)' }}>
+        <div
+          className="flex w-full min-w-0 flex-nowrap items-center"
+          style={{ height: 64, paddingLeft: 'var(--content-padding)', paddingRight: 'var(--content-padding)' }}
+        >
           {/* Page title */}
-          <p style={{ fontSize: 20, fontWeight: 600, color: 'var(--color-text-1)', flex: 1 }}>
+          <p style={{ fontSize: 20, fontWeight: 600, color: 'var(--color-text-1)', flex: 1, minWidth: 0, margin: 0 }}>
             {pathname === '/dashboard' || pathname === '/dashboard/'
               ? 'Home'
               : pathname?.startsWith('/dashboard/analytics') ? 'Analytics'
@@ -718,7 +780,7 @@ export function TopBar() {
               : 'Dashboard'}
           </p>
 
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 flex-nowrap items-center gap-2">
 
             {isAnalytics && (
               <button
@@ -943,72 +1005,6 @@ export function TopBar() {
                 </div>
               )}
             </div>
-            )}
-
-            {showStoreCameraStats && (
-            <>
-            {/* Stores */}
-            <div className="flex items-center gap-2 rounded-md border" style={{ height: 34, paddingLeft: 14, paddingRight: 14, borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}>
-              <Store size={14} strokeWidth={1.5} style={{ color: 'var(--color-text-3)' }} />
-              <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text-1)' }}>8</span>
-              <span style={{ fontSize: 12, color: 'var(--color-text-3)' }}>Stores</span>
-            </div>
-
-            {/* Total Alerts — clickable CTA */}
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => toggleDropdown('alerts')}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 7,
-                  height: 34, paddingLeft: 12, paddingRight: 12,
-                  borderRadius: 6, border: `1px solid ${activeDropdown === 'alerts' ? 'var(--color-primary)' : 'var(--color-border)'}`,
-                  background: activeDropdown === 'alerts' ? 'var(--color-error-light)' : 'var(--color-surface)',
-                  flexShrink: 0, cursor: 'pointer',
-                }}
-              >
-                <Bell size={14} strokeWidth={1.5} style={{ color: '#DC2626' }} />
-                <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--color-text-2)', whiteSpace: 'nowrap' }}>
-                  {MOCK_STORE_ALERTS.length} Alerts
-                </span>
-                <ChevronDown size={12} strokeWidth={2} style={{ color: 'var(--color-text-4)' }} />
-              </button>
-              {activeDropdown === 'alerts' && (
-                <div className="absolute top-full right-0 mt-2 rounded-lg shadow-xl border z-50" style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)', width: 320 }}>
-                  <div className="px-4 py-3 border-b" style={{ borderColor: 'var(--color-border-subtle)' }}>
-                    <span className="text-sm font-semibold" style={{ color: 'var(--color-text-1)' }}>Store alerts</span>
-                  </div>
-                  {MOCK_STORE_ALERTS.map((a, i) => (
-                    <div key={a.id} className="px-4 py-3" style={{ borderTop: i > 0 ? '1px solid var(--color-border-subtle)' : 'none' }}>
-                      <p style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--color-text-1)', margin: 0 }}>{a.store}</p>
-                      <p style={{ fontSize: 11.5, color: 'var(--color-text-3)', margin: '4px 0 0', lineHeight: 1.4 }}>{a.message}</p>
-                      <span style={{ fontSize: 10.5, color: 'var(--color-text-4)', marginTop: 4, display: 'block' }}>{a.time}</span>
-                    </div>
-                  ))}
-                  <div className="px-4 py-3 text-center" style={{ borderTop: '1px solid var(--color-border-subtle)' }}>
-                    <button
-                      type="button"
-                      style={{
-                        fontSize: 12,
-                        fontWeight: 600,
-                        color: 'var(--color-primary)',
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer',
-                        lineHeight: 1.2,
-                      }}
-                      onClick={() => {
-                        setActiveDropdown(null);
-                        setStoreAlertsOpen(true);
-                      }}
-                    >
-                      View all alerts
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-            </>
             )}
 
             {/* Refresh */}

@@ -1,7 +1,7 @@
 /* ACRU-style fintech dashboard — distinct from Bento (v2) */
 
 .acru-home {
-  --acru-bg: #eef1f6;
+  --acru-bg: var(--color-page-bg);
   --acru-card: #ffffff;
   --acru-border: #e8ecf2;
   --acru-text: #1a1d26;
@@ -14,7 +14,7 @@
   --acru-purple: var(--acru-primary);
   --acru-purple-soft: var(--acru-primary-soft);
   --acru-radius: 18px;
-  --acru-gap: 12px;
+  --acru-gap: var(--home-section-gap);
 
   display: grid;
   grid-template-columns: minmax(0, 1fr) 268px;

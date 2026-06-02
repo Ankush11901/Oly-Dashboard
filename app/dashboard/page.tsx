@@ -15,6 +15,7 @@ import { dashboardCardStyle } from '@/lib/theme';
 import { KpiPanelGrouped } from '@/components/home/KpiCard';
 import { HomeBentoView } from '@/components/home/HomeBentoView';
 import { HomeRedesignView } from '@/components/home/HomeRedesignView';
+import { HomeHybridView } from '@/components/home/HomeHybridView';
 import {
   SIGNALS, INITIAL_TASKS, STATUS_CFG, QUICK_ACTIONS, PRESAVED_CONCERNS, signalIconStyle,
   RECURRENCE_OPTIONS, WEEKDAYS,
@@ -81,6 +82,7 @@ export default function DashboardPage() {
   const [concernOpen,      setConcernOpen]  = useState(false);
   const [concernSent,      setConcernSent]  = useState<string | null>(null);
   const [tasksHistoryOpen, setTasksHistoryOpen] = useState(false);
+  const [taskTrackerOpen,  setTaskTrackerOpen] = useState(false);
   const [taskPhotos,       setPhotos]    = useState<Record<number, string>>({});
   const [uploadingId,      setUploading] = useState<number | null>(null);
   const [activitySearch,   setSearch]   = useState('');
@@ -92,6 +94,15 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!isAddTaskOpen) setDueCalendarOpen(false);
   }, [isAddTaskOpen]);
+
+  useEffect(() => {
+    if (isAddTaskOpen) setTaskTrackerOpen(false);
+  }, [isAddTaskOpen]);
+
+  const openAddTask = () => {
+    setTaskTrackerOpen(false);
+    setAddOpen(true);
+  };
 
   const toggleTask = (id: number) =>
     setTasks(ts => ts.map(t => t.id === id ? { ...t, status: t.status === 'done' ? 'pending' : 'done' } : t));
@@ -138,23 +149,21 @@ export default function DashboardPage() {
 
   return (
     <>
-      <div
-        style={{
-          padding: homeVariant === 2 ? '18px 22px' : '28px 32px',
-          background: homeVariant === 2 ? '#eef1f6' : 'var(--color-page-bg)',
-          minHeight: '100%',
-        }}
-      >
+      <div className="dashboard-home">
 
         {/* ── Variant content ──────────────────────────────────────────────── */}
-        <div key={homeVariant} style={{ animationName: 'homeVariantIn', animationDuration: '220ms', animationTimingFunction: 'cubic-bezier(0,0,0.2,1)', animationFillMode: 'both' }}>
+        <div
+          key={homeVariant}
+          className="dashboard-home__view"
+          style={{ animationName: 'homeVariantIn', animationDuration: '220ms', animationTimingFunction: 'cubic-bezier(0,0,0.2,1)', animationFillMode: 'both' }}
+        >
 
           {/* ══════════════════════════════════════════════════════════════════
               VARIANT 1 — CLASSIC (original, fully preserved)
           ══════════════════════════════════════════════════════════════════ */}
           {homeVariant === 0 && (
             <>
-              <div className="card" style={{ ...cardStyle, marginBottom: 16, padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, background: 'linear-gradient(135deg, var(--color-primary-light) 0%, var(--color-surface) 55%)', border: '1px solid var(--color-accent-border)' }}>
+              <div className="card" style={{ ...cardStyle, marginBottom: 0, padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, background: 'linear-gradient(135deg, var(--color-primary-light) 0%, var(--color-surface) 55%)', border: '1px solid var(--color-accent-border)' }}>
                 <div style={{ minWidth: 0 }}>
                   <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-1)', margin: '0 0 4px' }}>Daily insights</p>
                   <p style={{ fontSize: 12.5, color: 'var(--color-text-2)', margin: 0, lineHeight: 1.45 }}>Marina Bay conversion is 5% below usual at 5 PM — review recommendations and weekly recap.</p>
@@ -162,17 +171,17 @@ export default function DashboardPage() {
                 <button type="button" onClick={() => setInsightsOpen(true)} style={{ flexShrink: 0, height: 36, padding: '0 16px', borderRadius: 8, border: 'none', background: 'var(--color-primary-emphasis)', color: 'white', fontSize: 12.5, fontWeight: 600, cursor: 'pointer', transition: 'background 150ms' }} onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'var(--color-primary-emphasis-hover)'} onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'var(--color-primary-emphasis)'}>View insights</button>
               </div>
 
-              <div style={{ marginBottom: 20 }}>
+              <div>
                 <KpiPanelGrouped refreshCount={refreshCount} />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 20, marginBottom: 20 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 20 }}>
                 <div style={cardStyle}>
                   <div style={{ padding: '18px 20px 14px', borderBottom: '1px solid var(--color-border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-1)' }}>Checklist &amp; Tasks</p>
                     <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                       <button type="button" onClick={() => setTasksHistoryOpen(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '6px 13px', borderRadius: 6, fontSize: 12, fontWeight: 600, background: 'var(--color-surface)', color: 'var(--color-primary)', border: '1px solid var(--color-accent-border)', cursor: 'pointer', transition: 'background 150ms ease, border-color 150ms ease' }} onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.background = 'var(--color-primary-light)'; el.style.borderColor = 'var(--color-primary)'; }} onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.background = 'var(--color-surface)'; el.style.borderColor = 'var(--color-accent-border)'; }}><ListChecks size={12} strokeWidth={2} /> All tasks</button>
-                      {isAdmin && <button onClick={() => setAddOpen(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '6px 13px', borderRadius: 6, fontSize: 12, fontWeight: 600, background: 'var(--color-primary-emphasis)', color: 'white', border: 'none', cursor: 'pointer', transition: 'background 150ms' }} onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'var(--color-primary-emphasis-hover)'} onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'var(--color-primary-emphasis)'}><Plus size={12} strokeWidth={2.5} /> Add Task</button>}
+                      {isAdmin && <button onClick={openAddTask} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '6px 13px', borderRadius: 6, fontSize: 12, fontWeight: 600, background: 'var(--color-primary-emphasis)', color: 'white', border: 'none', cursor: 'pointer', transition: 'background 150ms' }} onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'var(--color-primary-emphasis-hover)'} onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'var(--color-primary-emphasis)'}><Plus size={12} strokeWidth={2.5} /> Add Task</button>}
                     </div>
                   </div>
                   <div>
@@ -242,7 +251,7 @@ export default function DashboardPage() {
                 <div style={cardStyle}><WhatsNewCarousel /></div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 20 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
                 <div style={{ ...cardStyle, order: 2 }}>
                   <div style={{ padding: '14px 20px 0', borderBottom: '1px solid var(--color-border-subtle)', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12 }}>
                     <div style={{ display: 'flex' }}>
@@ -308,7 +317,7 @@ export default function DashboardPage() {
               setShowAll={setShowAll}
               defaultShow={DEFAULT_SHOW}
               isAdmin={isAdmin}
-              onAddTask={() => setAddOpen(true)}
+              onAddTask={openAddTask}
               onAllTasks={() => setTasksHistoryOpen(true)}
               onToggleTask={toggleTask}
               onUploadPhoto={taskId => { setUploading(taskId); photoRef.current?.click(); }}
@@ -326,10 +335,25 @@ export default function DashboardPage() {
               activitySearch={activitySearch}
               setActivitySearch={setSearch}
               filteredAlerts={filteredAlerts}
-              onAddTask={() => setAddOpen(true)}
+              onAddTask={openAddTask}
               onAllTasks={() => setTasksHistoryOpen(true)}
               onToggleTask={toggleTask}
               onUploadPhoto={taskId => { setUploading(taskId); photoRef.current?.click(); }}
+              onInsightsOpen={() => setInsightsOpen(true)}
+              onConcernOpen={() => setConcernOpen(true)}
+            />
+          )}
+
+          {homeVariant === 3 && (
+            <HomeHybridView
+              tasks={tasks}
+              isAdmin={isAdmin}
+              refreshCount={refreshCount}
+              activitySearch={activitySearch}
+              setActivitySearch={setSearch}
+              filteredAlerts={filteredAlerts}
+              onAddTask={openAddTask}
+              onOpenTaskPanel={() => setTaskTrackerOpen(true)}
               onInsightsOpen={() => setInsightsOpen(true)}
               onConcernOpen={() => setConcernOpen(true)}
             />
@@ -341,7 +365,7 @@ export default function DashboardPage() {
 
       {/* ── Add Task Modal ────────────────────────────────────────────────────── */}
       {isAddTaskOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center theme-overlay" onClick={() => setAddOpen(false)}>
+        <div className="fixed inset-0 z-[60] flex items-center justify-center theme-overlay" onClick={() => setAddOpen(false)}>
           <div className="modal-panel" style={{ borderRadius: 20, width: '100%', maxWidth: 500, padding: '28px', maxHeight: '90vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
             <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-text-1)', marginBottom: 20 }}>Add New Task</h3>
             <form onSubmit={addTask} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -349,12 +373,32 @@ export default function DashboardPage() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <div><label style={fieldLabel}>Store</label><CustomSelect value={newTask.store} onChange={v => setNewTask({ ...newTask, store: v })} options={STORES.map(s => ({ value: s, label: s }))} /></div>
                 <div>
-                  <label style={fieldLabel}>Due Date</label>
+                  <label style={fieldLabel}>Today</label>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 8, position: 'relative' }}>
-                    <div className="oly-date-range-field oly-date-range-field--active" style={{ minHeight: 38, padding: '6px 10px' }}>
-                      <span className="oly-date-range-field__label">Due</span>
-                      <span className="oly-date-range-field__value">{formatDueLabelFromISO(newTask.dueDateISO)}</span>
-                    </div>
+                    <button
+                      type="button"
+                      style={{
+                        width: '100%',
+                        minHeight: 38,
+                        border: '1.5px solid var(--color-border)',
+                        borderRadius: 8,
+                        padding: '9px 12px',
+                        fontSize: 13,
+                        fontWeight: 400,
+                        color: 'var(--color-text-1)',
+                        background: 'var(--color-surface)',
+                        textAlign: 'left',
+                        cursor: 'pointer',
+                        boxSizing: 'border-box',
+                      }}
+                      aria-label="Select date"
+                      onClick={() => {
+                        setDueCalendarMonth(isoToDate(newTask.dueDateISO || initialDueISO));
+                        setDueCalendarOpen(v => !v);
+                      }}
+                    >
+                      {formatDueLabelFromISO(newTask.dueDateISO)}
+                    </button>
                     <button
                       type="button"
                       className="oly-calendar__nav"
@@ -366,7 +410,7 @@ export default function DashboardPage() {
                         justifyContent: 'center',
                         cursor: 'pointer',
                       }}
-                      aria-label="Toggle due date calendar"
+                      aria-label="Toggle date calendar"
                       onClick={() => {
                         setDueCalendarMonth(isoToDate(newTask.dueDateISO || initialDueISO));
                         setDueCalendarOpen(v => !v);
@@ -451,6 +495,58 @@ export default function DashboardPage() {
               {tasks.map(task => { const s = STATUS_CFG[task.status]; return <div key={task.id} style={{ padding: '12px 24px', borderTop: '1px solid var(--color-border-subtle)', display: 'flex', gap: 10, alignItems: 'flex-start' }}><span style={{ color: s.color, display: 'flex', marginTop: 2 }}>{s.icon}</span><div><p style={{ fontSize: 13, fontWeight: 600, margin: 0 }}>{task.title}</p><p style={{ fontSize: 11.5, color: 'var(--color-text-3)', margin: '4px 0 0' }}>{task.store} · {formatTaskDueWindow(task)}{formatTaskRecurrence(task) ? ` · ${formatTaskRecurrence(task)}` : ''}</p></div></div>; })}
             </div>
           </div>
+        </div>
+      )}
+
+      {taskTrackerOpen && (
+        <div className="fixed inset-0 z-50 flex justify-end theme-overlay" onClick={() => setTaskTrackerOpen(false)}>
+          <aside
+            style={{
+              width: '100%',
+              maxWidth: 480,
+              background: 'var(--color-page-bg)',
+              borderLeft: '1px solid var(--color-border)',
+              boxShadow: 'var(--shadow-modal)',
+              display: 'flex',
+              flexDirection: 'column',
+              height: '100%',
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div style={{ padding: '18px 20px', borderBottom: '1px solid var(--color-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: 'var(--color-text-1)' }}>Task tracker</h3>
+                <p style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--color-text-3)' }}>{tasks.filter(t => t.status === 'done').length} of {tasks.length} completed</p>
+              </div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                {isAdmin && (
+                  <button type="button" onClick={openAddTask} style={{ height: 34, borderRadius: 8, border: 'none', background: 'var(--color-primary-emphasis)', color: 'var(--color-on-primary)', padding: '0 12px', fontSize: 12.5, fontWeight: 600, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                    <Plus size={13} strokeWidth={2.5} /> Add Task
+                  </button>
+                )}
+                <button type="button" onClick={() => setTaskTrackerOpen(false)} style={{ width: 34, height: 34, borderRadius: 8, border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: 'var(--color-text-3)', cursor: 'pointer' }}>
+                  ✕
+                </button>
+              </div>
+            </div>
+            <div style={{ overflowY: 'auto', padding: '10px 0' }}>
+              {tasks.map(task => {
+                const s = STATUS_CFG[task.status];
+                return (
+                  <div key={task.id} style={{ padding: '12px 20px', borderTop: '1px solid var(--color-border-subtle)', display: 'flex', alignItems: 'center', gap: 11 }}>
+                    <span style={{ color: s.color, display: 'flex', flexShrink: 0 }}>{s.icon}</span>
+                    <div style={{ minWidth: 0, flex: 1 }}>
+                      <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: 'var(--color-text-1)' }}>{task.title}</p>
+                      <p style={{ margin: '4px 0 0', fontSize: 11.5, color: 'var(--color-text-3)' }}>{task.store} · {formatTaskDueWindow(task)}{formatTaskRecurrence(task) ? ` · ${formatTaskRecurrence(task)}` : ''}</p>
+                    </div>
+                    <button type="button" onClick={() => toggleTask(task.id)} style={{ height: 28, borderRadius: 7, border: '1px solid var(--color-border)', background: 'var(--color-surface-2)', color: 'var(--color-text-2)', padding: '0 10px', fontSize: 11.5, fontWeight: 600, cursor: 'pointer' }}>
+                      {task.status === 'done' ? 'Reopen' : 'Done'}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </aside>
         </div>
       )}
 

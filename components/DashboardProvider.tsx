@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 const DEFAULT_ENABLED = new Set(['footfall_trend', 'top_stores', 'kpi_metrics', 'demographics_donut', 'conversion_donut']);
 
 export type NavStyle = 'sidebar' | 'topnav';
-export type HomeVariant = 0 | 1 | 2;
+export type HomeVariant = 0 | 1 | 2 | 3;
 
 interface DashboardContextType {
   enabledWidgets: Set<string>;
@@ -59,11 +59,8 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
       const storedNav = localStorage.getItem('oly-nav-style') as NavStyle | null;
       if (storedNav === 'sidebar' || storedNav === 'topnav') setNavStyleState(storedNav);
       const storedHome = localStorage.getItem('oly-home-variant');
-      if (storedHome === '0' || storedHome === '1' || storedHome === '2') {
+      if (storedHome === '0' || storedHome === '1' || storedHome === '2' || storedHome === '3') {
         setHomeVariantState(Number(storedHome) as HomeVariant);
-      } else if (storedHome === '3') {
-        setHomeVariantState(0);
-        localStorage.setItem('oly-home-variant', '0');
       }
     } catch (e) {
       console.error('Failed to load preferences from localStorage', e);

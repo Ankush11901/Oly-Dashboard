@@ -146,11 +146,13 @@ export function KpiCard({
   styleVariant = 0,
   sparkIndex = 0,
   grouped = false,
+  readableLabel = false,
 }: {
   card: KpiCardData;
   styleVariant?: 0 | 1 | 2 | 3;
   sparkIndex?: number;
   grouped?: boolean;
+  readableLabel?: boolean;
 }) {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
@@ -179,7 +181,7 @@ export function KpiCard({
             {Math.abs(card.change)}%
           </span>
         </div>
-        <p style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text-4)', lineHeight: 1 }}>{card.label}</p>
+        <p style={{ fontSize: 'var(--text-sm)', fontWeight: 500, color: 'var(--color-text-3)', lineHeight: 1.2 }}>{card.label}</p>
       </div>
     );
   }
@@ -363,17 +365,17 @@ export function KpiCard({
       boxShadow: grouped ? 'none' : 'var(--shadow-card)',
     }}>
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-        <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-1)', lineHeight: 1.3, marginBottom: 14 }}>{card.label}</p>
+        <p style={{ fontSize: readableLabel ? 'var(--text-md)' : 'var(--text-base)', fontWeight: 600, color: 'var(--color-text-1)', lineHeight: 1.35, marginBottom: 14 }}>{card.label}</p>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 8 }}>
           <AnimatedNumber value={card.actual} prefix={card.prefix} suffix={card.suffix} decimals={card.decimals} className="font-bold tabular-nums" style={{ fontSize: 32, color: 'var(--color-text-1)', lineHeight: 1, letterSpacing: '-0.03em' } as React.CSSProperties} />
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, color: trendTextColor }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 'var(--text-sm)', fontWeight: 600, color: trendTextColor }}>
             <span style={{ width: 22, height: 22, borderRadius: '50%', background: trendBg, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               {pos ? <ArrowUpRight size={12} strokeWidth={2.5} /> : <ArrowDownRight size={12} strokeWidth={2.5} />}
             </span>
             {Math.abs(card.change)}%
           </span>
         </div>
-        <p style={{ fontSize: 12, fontWeight: 400, color: 'var(--color-text-4)', lineHeight: 1.3 }}>compared to last week</p>
+        <p style={{ fontSize: 'var(--text-sm)', fontWeight: 500, color: 'var(--color-text-3)', lineHeight: 1.45 }}>compared to last week</p>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
         <KpiSparklineArea data={sparkData} color={sparkColor} gradId={`kpi-s2-${sparkIndex}`} />
@@ -396,6 +398,19 @@ export function KpiPanelGrouped({ refreshCount }: { refreshCount: number }) {
       {KPI_CARDS.map((card, i) => (
         <div key={`${card.label}-${refreshCount}`} style={{ borderRight: i < KPI_CARDS.length - 1 ? '1px solid var(--color-border)' : 'none' }}>
           <KpiCard card={card} styleVariant={2} sparkIndex={i} grouped />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/** Spaced KPI row for hybrid home — separate cards with readable labels. */
+export function KpiPanelSpaced({ refreshCount }: { refreshCount: number }) {
+  return (
+    <div className="hybrid-kpi-grid">
+      {KPI_CARDS.map((card, i) => (
+        <div key={`${card.label}-${refreshCount}`} className="hybrid-kpi-grid__cell">
+          <KpiCard card={card} styleVariant={2} sparkIndex={i} grouped readableLabel />
         </div>
       ))}
     </div>

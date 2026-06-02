@@ -16,18 +16,18 @@ const NAV_NODES: NavNode[] = [
   { type: 'flat', label: 'Analytics', href: '/dashboard/analytics', icon: <BarChart2 size={14} strokeWidth={1.5} /> },
   { type: 'flat', label: 'Live Feed', href: '/dashboard/live/vms', icon: <Video size={14} strokeWidth={1.5} /> },
   {
-    type: 'section', label: 'Team Management', icon: <Users size={14} strokeWidth={1.5} />,
-    items: [
-      { label: 'Team', href: '/dashboard/team' },
-      { label: 'Permissions', href: '/dashboard/team/permissions' },
-    ],
-  },
-  {
     type: 'section', label: 'Preferences', icon: <Settings size={14} strokeWidth={1.5} />,
     items: [
       { label: 'Profile & Security', href: '/dashboard/preferences/profile' },
       { label: 'Notification Settings', href: '/dashboard/preferences/notifications' },
       { label: 'Device Settings', href: '/dashboard/preferences/devices' },
+    ],
+  },
+  {
+    type: 'section', label: 'Team Management', icon: <Users size={14} strokeWidth={1.5} />,
+    items: [
+      { label: 'Team', href: '/dashboard/team' },
+      { label: 'Permissions', href: '/dashboard/team/permissions' },
     ],
   },
 ];

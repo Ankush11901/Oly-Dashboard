@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
+import { useTheme } from '@/components/ThemeProvider';
 import {
   Home, Users, BarChart2, Video, Settings, ChevronDown, FileText,
 } from 'lucide-react';
@@ -47,12 +48,6 @@ const NAV_NODES: NavNode[] = [
     icon: <FileText size={16} strokeWidth={1.5} />,
   },
   {
-    type: 'flat',
-    label: 'Team Management',
-    href: '/dashboard/team',
-    icon: <Users size={16} strokeWidth={1.5} />,
-  },
-  {
     type: 'section',
     label: 'Preferences',
     icon: <Settings size={16} strokeWidth={1.5} />,
@@ -62,6 +57,12 @@ const NAV_NODES: NavNode[] = [
       { label: 'My Tickets',            href: '/dashboard/preferences/tickets' },
     ],
   },
+  {
+    type: 'flat',
+    label: 'Team Management',
+    href: '/dashboard/team',
+    icon: <Users size={16} strokeWidth={1.5} />,
+  },
 ];
 
 // ── Shared styles ─────────────────────────────────────────────────────────────
@@ -69,7 +70,7 @@ const TOP_ITEM: React.CSSProperties = {
   height: 40,
   paddingLeft: 12,
   paddingRight: 10,
-  fontSize: 13.5,
+  fontSize: 14,
   fontWeight: 500,
   borderRadius: 8,
   display: 'flex',
@@ -87,7 +88,7 @@ const SUB_ITEM: React.CSSProperties = {
   height: 32,
   paddingLeft: 38,
   paddingRight: 10,
-  fontSize: 12.5,
+  fontSize: 13,
   fontWeight: 400,
   borderRadius: 8,
   display: 'flex',
@@ -98,6 +99,7 @@ const SUB_ITEM: React.CSSProperties = {
 
 export function SideNav() {
   const pathname = usePathname();
+  const { theme } = useTheme();
   const [openSections, setOpenSections] = useState<Set<string>>(new Set([]));
 
   const toggleSection = (label: string) => {
@@ -121,10 +123,10 @@ export function SideNav() {
         style={{ height: 64, borderBottom: '1px solid var(--color-border)' }}
       >
         <img
-          src="/oly-logo.svg"
+          src={theme === 'dark' ? '/olyretail-logo-dark.svg' : '/olyretail-logo.svg'}
           alt="OlyRetail"
-          className="nav-logo"
-          style={{ height: 26, width: 'auto', objectFit: 'contain', maxWidth: 140 }}
+          className="nav-logo nav-logo--brand"
+          style={{ height: 34, width: 'auto', objectFit: 'contain', maxWidth: 152 }}
         />
       </div>
 
@@ -188,7 +190,7 @@ export function SideNav() {
                     paddingLeft: 12,
                     height: '100%',
                     textDecoration: 'none',
-                    fontSize: 13.5,
+                    fontSize: 14,
                     fontWeight: anyChildActive ? 600 : 500,
                     color: 'inherit',
                     minWidth: 0,

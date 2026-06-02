@@ -1,6 +1,8 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { TrendingUp, BarChart2, Clock, X, ChevronRight } from 'lucide-react';
+import './whatsnew-carousel.css';
 
 const PURPLE = 'var(--color-primary)';
 
@@ -180,84 +182,72 @@ const SLIDES = [
 
 const INTERVAL = 7000;
 
-// ── "View All" modal ───────────────────────────────────────────────────────────
+// ── "View All" modal (portaled — escapes overflow:hidden on parent cards) ─────
 function ViewAllModal({ onClose }: { onClose: () => void }) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   useEffect(() => {
     const esc = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     document.addEventListener('keydown', esc);
-    return () => document.removeEventListener('keydown', esc);
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', esc);
+      document.body.style.overflow = '';
+    };
   }, [onClose]);
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <div
-      style={{
-        position: 'fixed', inset: 0, zIndex: 9999,
-        background: 'rgba(15,23,42,0.55)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: 24,
-      }}
+      className="whatsnew-modal__backdrop theme-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="whatsnew-modal-title"
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div style={{
-        background: 'var(--color-surface)', borderRadius: 16, width: '100%', maxWidth: 760,
-        boxShadow: '0 24px 60px rgba(0,0,0,0.18)',
-        overflow: 'hidden',
-        maxHeight: '90vh', display: 'flex', flexDirection: 'column',
-      }}>
-        {/* Modal header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 24px 16px', borderBottom: '1px solid var(--color-border-subtle)' }}>
+      <div className="whatsnew-modal modal-panel" onClick={e => e.stopPropagation()}>
+        <header className="whatsnew-modal__head">
           <div>
-            <p style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-text-1)' }}>What&apos;s New</p>
-            <p style={{ fontSize: 12, color: 'var(--color-text-3)', marginTop: 2 }}>Latest platform features &amp; updates</p>
+            <h2 id="whatsnew-modal-title">What&apos;s New</h2>
+            <p>Latest platform features &amp; updates</p>
           </div>
           <button
+            type="button"
+            className="whatsnew-modal__close modal-close-btn"
             onClick={onClose}
-            style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid var(--color-border)', background: 'var(--color-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--color-text-3)', transition: 'background 120ms' }}
-            onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'var(--color-surface-2)'}
-            onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'var(--color-surface)'}
+            aria-label="Close"
           >
             <X size={15} strokeWidth={1.5} />
           </button>
-        </div>
+        </header>
 
-        {/* 2×2 grid of feature cards */}
-        <div style={{ overflowY: 'auto', padding: 20 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+        <div className="whatsnew-modal__body">
+          <div className="whatsnew-modal__grid">
             {SLIDES.map(s => (
-              <div key={s.id} style={{
-                border: '1px solid var(--color-border-subtle)',
-                borderRadius: 10,
-                overflow: 'hidden',
-                background: 'var(--color-surface)',
-                boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
-                transition: 'box-shadow 150ms',
-              }}
-                onMouseEnter={e => (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)'}
-                onMouseLeave={e => (e.currentTarget as HTMLElement).style.boxShadow = '0 1px 4px rgba(0,0,0,0.04)'}
-              >
-                {/* Preview */}
-                <div style={{ height: 110, background: 'var(--color-surface-2)', borderBottom: '1px solid var(--color-border-subtle)', overflow: 'hidden' }}>
-                  {s.previewCompact}
-                </div>
-                {/* Info */}
-                <div style={{ padding: '12px 14px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 5 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <div style={{ width: 20, height: 20, borderRadius: 5, background: 'var(--color-primary-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: PURPLE }}>
-                        {s.icon}
-                      </div>
-                      <p style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--color-text-1)' }}>{s.title}</p>
+              <article key={s.id} className="whatsnew-modal__card">
+                <div className="whatsnew-modal__card-preview">{s.previewCompact}</div>
+                <div className="whatsnew-modal__card-info">
+                  <div className="whatsnew-modal__card-head">
+                    <div className="whatsnew-modal__card-title-row">
+                      <span className="whatsnew-modal__card-icon">{s.icon}</span>
+                      <p className="whatsnew-modal__card-title">{s.title}</p>
                     </div>
-                    <span style={{ fontSize: 10, color: 'var(--color-text-4)' }}>{s.date}</span>
+                    <span className="whatsnew-modal__card-date">{s.date}</span>
                   </div>
-                  <p style={{ fontSize: 11, color: 'var(--color-text-3)', lineHeight: 1.55, paddingLeft: 26 }}>{s.desc}</p>
+                  <p className="whatsnew-modal__card-desc">{s.desc}</p>
                 </div>
-              </div>
+              </article>
             ))}
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
@@ -286,31 +276,32 @@ export function WhatsNewCarousel() {
   const slide = SLIDES[current];
 
   return (
-    <>
-      {/* Header row — inside the card, matches Store Insights */}
-      <div style={{ padding: '14px 20px 12px', borderBottom: '1px solid var(--color-border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-1)' }}>What&apos;s New</p>
-        <button
-          onClick={() => setModalOpen(true)}
-          style={{ fontSize: 12, fontWeight: 600, color: PURPLE, background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 3 }}
-          onMouseEnter={e => (e.currentTarget as HTMLElement).style.opacity = '0.75'}
-          onMouseLeave={e => (e.currentTarget as HTMLElement).style.opacity = '1'}
-        >
-          View all <ChevronRight size={12} strokeWidth={2} />
-        </button>
-      </div>
+    <div className="whatsnew-carousel">
+      <header className="hybrid-card__head whatsnew-carousel__head">
+        <h3 className="whatsnew-carousel__title">What&apos;s New</h3>
+        <div className="hybrid-card__head-actions">
+          <button
+            type="button"
+            className="hybrid-link-btn whatsnew-carousel__view-all"
+            onClick={() => setModalOpen(true)}
+          >
+            View all <ChevronRight size={12} strokeWidth={2} />
+          </button>
+        </div>
+      </header>
 
-      {/* Carousel body */}
-      <div onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
-        {/* Preview — fixed height, all slides stacked, opacity fade */}
-        <div style={{ position: 'relative', height: 148, overflow: 'hidden', background: 'var(--color-surface-2)', borderBottom: '1px solid var(--color-border-subtle)' }}>
+      <div
+        className="whatsnew-carousel__body"
+        onMouseEnter={() => setPaused(true)}
+        onMouseLeave={() => setPaused(false)}
+      >
+        <div className="whatsnew-carousel__preview">
           {SLIDES.map((s, i) => (
             <div
               key={s.id}
+              className="whatsnew-carousel__preview-slide"
               style={{
-                position: 'absolute', inset: 0,
                 opacity: i === current ? 1 : 0,
-                transition: 'opacity 300ms ease',
                 pointerEvents: i === current ? 'auto' : 'none',
               }}
             >
@@ -319,54 +310,32 @@ export function WhatsNewCarousel() {
           ))}
         </div>
 
-        {/* Info strip */}
-        <div style={{ padding: '10px 14px 12px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <div style={{ width: 20, height: 20, borderRadius: 5, background: 'var(--color-primary-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: PURPLE, flexShrink: 0 }}>
-                {slide.icon}
-              </div>
-              <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text-1)' }}>{slide.title}</p>
+        <div className="whatsnew-carousel__info">
+          <div className="whatsnew-carousel__info-head">
+            <div className="whatsnew-carousel__info-title-row">
+              <span className="whatsnew-carousel__info-icon">{slide.icon}</span>
+              <p className="whatsnew-carousel__info-title">{slide.title}</p>
             </div>
-            <span style={{ fontSize: 10, color: 'var(--color-text-4)', flexShrink: 0, marginLeft: 8 }}>{slide.date}</span>
+            <span className="whatsnew-carousel__date">{slide.date}</span>
           </div>
-          <p style={{ fontSize: 10.5, color: 'var(--color-text-3)', lineHeight: 1.5, marginBottom: 10, paddingLeft: 26 }}>
-            {slide.desc}
-          </p>
+          <p className="whatsnew-carousel__desc">{slide.desc}</p>
 
-          {/* Dots + Next — same row */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            {/* Dots */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <div className="whatsnew-carousel__footer">
+            <div className="whatsnew-carousel__dots">
               {SLIDES.map((s, i) => (
                 <button
                   key={s.id}
+                  type="button"
+                  aria-label={`Go to slide ${i + 1}`}
+                  className={`whatsnew-carousel__dot${i === current ? ' is-active' : ''}`}
                   onClick={() => navigate(i)}
-                  style={{
-                    padding: 0, border: 'none', cursor: 'pointer',
-                    width: i === current ? 18 : 6, height: 6,
-                    borderRadius: 3,
-                    background: PURPLE,
-                    opacity: i === current ? 1 : 0.25,
-                    transition: 'all 300ms ease',
-                    flexShrink: 0,
-                  } as React.CSSProperties}
                 />
               ))}
             </div>
-
-            {/* Next button */}
             <button
+              type="button"
+              className="whatsnew-carousel__next"
               onClick={() => navigate((current + 1) % SLIDES.length)}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 3,
-                padding: 0, border: 'none', background: 'transparent',
-                cursor: 'pointer', color: 'var(--color-text-4)',
-                fontSize: 11, fontWeight: 500,
-                transition: 'color 150ms',
-              }}
-              onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = PURPLE}
-              onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = 'var(--color-text-4)'}
             >
               Next <ChevronRight size={11} strokeWidth={2} />
             </button>
@@ -374,8 +343,7 @@ export function WhatsNewCarousel() {
         </div>
       </div>
 
-      {/* Modal */}
       {modalOpen && <ViewAllModal onClose={() => setModalOpen(false)} />}
-    </>
+    </div>
   );
 }

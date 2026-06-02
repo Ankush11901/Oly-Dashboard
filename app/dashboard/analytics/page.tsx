@@ -2820,9 +2820,11 @@ function CreatePageModal({ onClose, onCreate }: { onClose: () => void; onCreate:
 }
 
 // ── Main page ─────────────────────────────────────────────────────────────────
+const OVERVIEW_TAB_ID = 'tab_overview';
+
 const DEFAULT_TABS: AnalyticsTab[] = [
   {
-    id: 'tab_overview',
+    id: OVERVIEW_TAB_ID,
     label: 'Overview',
     widgets: [
       // Footfall & Traffic
@@ -2913,10 +2915,11 @@ function AnalyticsPageContent() {
   };
 
   const deleteTab = (id: string) => {
+    if (id === OVERVIEW_TAB_ID) return;
     setTabs(prev => {
       const remaining = prev.filter(t => t.id !== id);
       if (activeTab === id) {
-        setActiveTab(remaining.length > 0 ? remaining[remaining.length - 1].id : null);
+        setActiveTab(remaining.length > 0 ? remaining[remaining.length - 1].id : OVERVIEW_TAB_ID);
       }
       return remaining;
     });
@@ -2975,34 +2978,78 @@ function AnalyticsPageContent() {
         <div
           style={{ display: 'flex', alignItems: 'stretch', padding: '0 24px', borderBottom: '1px solid var(--color-border)', background: 'var(--color-surface)', flexShrink: 0, height: 52 }}
         >
-          {/* Page tabs */}
-          {tabs.map(tab => (
-            <div key={tab.id} className="relative group flex items-center">
-              <button
-                onClick={() => setActiveTab(tab.id)}
-                style={{
-                  display: 'flex', alignItems: 'center',
-                  padding: '0 14px',
-                  fontSize: 13, fontWeight: activeTab === tab.id ? 600 : 500,
-                  color: activeTab === tab.id ? 'var(--color-primary)' : 'var(--color-text-3)',
-                  borderBottom: activeTab === tab.id ? '2px solid var(--color-primary)' : '2px solid transparent',
-                  borderTop: 'none', borderLeft: 'none', borderRight: 'none',
-                  marginBottom: -1,
-                  background: 'transparent', cursor: 'pointer',
-                  transition: 'color 150ms',
-                }}
-              >
-                {tab.label}
-              </button>
-              <button
-                onClick={() => deleteTab(tab.id)}
-                className="opacity-0 group-hover:opacity-100 ml-0.5 p-0.5 rounded transition-opacity"
-                style={{ color: 'var(--color-text-4)' }}
-              >
-                <X size={12} strokeWidth={2.5} />
-              </button>
-            </div>
-          ))}
+          {/* Page tabs — label + close grouped per tab for even spacing */}
+          <div style={{ display: 'flex', alignItems: 'stretch', gap: 2, flexShrink: 0 }}>
+            {tabs.map(tab => {
+              const isActive = activeTab === tab.id;
+              const canClose = tab.id !== OVERVIEW_TAB_ID;
+              return (
+                <div
+                  key={tab.id}
+                  className="group"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 4,
+                    flexShrink: 0,
+                    height: '100%',
+                    padding: canClose ? '0 6px 0 12px' : '0 12px',
+                    marginBottom: -1,
+                    borderBottom: isActive ? '2px solid var(--color-primary)' : '2px solid transparent',
+                    color: isActive ? 'var(--color-primary)' : 'var(--color-text-3)',
+                    transition: 'color 150ms, border-color 150ms',
+                  }}
+                >
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab(tab.id)}
+                    style={{
+                      border: 'none',
+                      background: 'transparent',
+                      padding: 0,
+                      fontSize: 14,
+                      fontWeight: isActive ? 600 : 500,
+                      color: 'inherit',
+                      cursor: 'pointer',
+                      whiteSpace: 'nowrap',
+                      lineHeight: 1.2,
+                    }}
+                  >
+                    {tab.label}
+                  </button>
+                  {canClose && (
+                    <button
+                      type="button"
+                      onClick={e => {
+                        e.stopPropagation();
+                        deleteTab(tab.id);
+                      }}
+                      aria-label={`Close ${tab.label}`}
+                      className={isActive ? 'opacity-80 hover:opacity-100' : 'opacity-0 group-hover:opacity-80 hover:!opacity-100'}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: 18,
+                        height: 18,
+                        flexShrink: 0,
+                        border: 'none',
+                        borderRadius: 4,
+                        background: 'transparent',
+                        color: 'var(--color-text-4)',
+                        cursor: 'pointer',
+                        transition: 'opacity 150ms, background 150ms',
+                      }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--color-surface-2)'; }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
+                    >
+                      <X size={11} strokeWidth={2.5} />
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
 
           {/* New Page button */}
           <button
@@ -3149,7 +3196,7 @@ function AnalyticsPageContent() {
       )}
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto px-6 pb-6" style={{ background: 'var(--color-page-bg)' }}>
+      <div className="analytics-content flex-1 overflow-y-auto px-6 pb-6" style={{ background: 'var(--color-page-bg)' }}>
         {tabs.length === 0 ? (
           /* ── Empty state: no pages ── */
           <div className="flex flex-col items-center justify-center h-full" style={{ minHeight: 400 }}>

@@ -233,7 +233,7 @@ export function HomeBentoView({
 
   return (
     <>
-      <div className="home-bento" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      <div className="home-bento" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--home-section-gap)' }}>
 
         <div className="bento-stagger bento-hero-row" style={{ display: 'grid', gridTemplateColumns: '1.06fr 0.86fr 0.9fr', gap: 18, alignItems: 'stretch' }}>
 
