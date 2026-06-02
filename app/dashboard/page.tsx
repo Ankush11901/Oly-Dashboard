@@ -16,8 +16,10 @@ import { KpiPanelGrouped } from '@/components/home/KpiCard';
 import { HomeBentoView } from '@/components/home/HomeBentoView';
 import { HomeRedesignView } from '@/components/home/HomeRedesignView';
 import { HomeHybridView } from '@/components/home/HomeHybridView';
+import { TaskTrackerPanel } from '@/components/home/TaskTrackerPanel';
+import '@/components/home/home-hybrid.css';
 import {
-  SIGNALS, INITIAL_TASKS, STATUS_CFG, QUICK_ACTIONS, PRESAVED_CONCERNS, signalIconStyle,
+  SIGNALS, INITIAL_TASKS, INITIAL_TASK_PHOTOS, STATUS_CFG, QUICK_ACTIONS, PRESAVED_CONCERNS, signalIconStyle,
   RECURRENCE_OPTIONS, WEEKDAYS,
   formatTaskRecurrence, formatTaskDueWindow,
   type Recurrence, type DurationUnit,
@@ -83,7 +85,8 @@ export default function DashboardPage() {
   const [concernSent,      setConcernSent]  = useState<string | null>(null);
   const [tasksHistoryOpen, setTasksHistoryOpen] = useState(false);
   const [taskTrackerOpen,  setTaskTrackerOpen] = useState(false);
-  const [taskPhotos,       setPhotos]    = useState<Record<number, string>>({});
+  const [selectedTaskId,   setSelectedTaskId] = useState<number | null>(null);
+  const [taskPhotos,       setPhotos]    = useState<Record<number, string>>(INITIAL_TASK_PHOTOS);
   const [uploadingId,      setUploading] = useState<number | null>(null);
   const [activitySearch,   setSearch]   = useState('');
   const [activityTab,      setActTab]   = useState<'activity' | 'reports'>('activity');
@@ -103,6 +106,23 @@ export default function DashboardPage() {
     setTaskTrackerOpen(false);
     setAddOpen(true);
   };
+
+  const openTaskList = () => {
+    setTaskTrackerOpen(true);
+    setSelectedTaskId(null);
+  };
+
+  const openTaskDetail = (id: number) => {
+    setTaskTrackerOpen(true);
+    setSelectedTaskId(id);
+  };
+
+  const closeTaskPanel = () => {
+    setTaskTrackerOpen(false);
+    setSelectedTaskId(null);
+  };
+
+  const backToTaskList = () => setSelectedTaskId(null);
 
   const toggleTask = (id: number) =>
     setTasks(ts => ts.map(t => t.id === id ? { ...t, status: t.status === 'done' ? 'pending' : 'done' } : t));
@@ -129,14 +149,25 @@ export default function DashboardPage() {
     const dueBy = withinVal && withinVal > 0
       ? `Within ${withinVal} ${newTask.completeWithinUnit === 'hours' ? (withinVal === 1 ? 'hour' : 'hours') : (withinVal === 1 ? 'minute' : 'minutes')}`
       : undefined;
+    const nowLabel = new Date().toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+    });
     setTasks(ts => [{
       title: newTask.title, store: newTask.store, due: dueBy ?? dueLabel,
       requiresPhoto: newTask.requiresPhoto, id: Date.now(), status: 'pending' as TaskStatus,
       automated: false, assignedTo: newTask.assignedTo || undefined, dueBy,
+      createdAt: nowLabel,
+      priority: 'medium',
+      description: newTask.title.trim(),
       recurrence: newTask.recurrence,
       recurrenceWeekdays: needsWeekdayPicker(newTask.recurrence) ? newTask.recurrenceWeekdays : undefined,
       recurrenceMonthDays: newTask.recurrence === 'monthly' ? newTask.recurrenceMonthDays : undefined,
       completeWithinValue: withinVal, completeWithinUnit: withinVal ? newTask.completeWithinUnit : undefined,
+      activity: [{ type: 'status', author: 'System', text: 'Task created', at: nowLabel }],
     }, ...ts]);
     setNewTask(EMPTY_NEW_TASK);
     setAddOpen(false);
@@ -167,7 +198,8 @@ export default function DashboardPage() {
               setActivitySearch={setSearch}
               filteredAlerts={filteredAlerts}
               onAddTask={openAddTask}
-              onOpenTaskPanel={() => setTaskTrackerOpen(true)}
+              onOpenTaskPanel={openTaskList}
+              onOpenTaskDetail={openTaskDetail}
               onInsightsOpen={() => setInsightsOpen(true)}
               onConcernOpen={() => setConcernOpen(true)}
             />
@@ -492,63 +524,51 @@ export default function DashboardPage() {
           <div className="modal-panel" style={{ borderRadius: 20, width: '100%', maxWidth: 520, maxHeight: '80vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }} onClick={e => e.stopPropagation()}>
             <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--color-border-subtle)' }}><h3 style={{ fontSize: 16, fontWeight: 700, margin: 0 }}>All tasks</h3><p style={{ fontSize: 12, color: 'var(--color-text-4)', margin: '4px 0 0' }}>Created, completed, and scheduled</p></div>
             <div style={{ overflowY: 'auto', padding: '8px 0' }}>
-              {tasks.map(task => { const s = STATUS_CFG[task.status]; return <div key={task.id} style={{ padding: '12px 24px', borderTop: '1px solid var(--color-border-subtle)', display: 'flex', gap: 10, alignItems: 'flex-start' }}><span style={{ color: s.color, display: 'flex', marginTop: 2 }}>{s.icon}</span><div><p style={{ fontSize: 13, fontWeight: 600, margin: 0 }}>{task.title}</p><p style={{ fontSize: 11.5, color: 'var(--color-text-3)', margin: '4px 0 0' }}>{task.store} · {formatTaskDueWindow(task)}{formatTaskRecurrence(task) ? ` · ${formatTaskRecurrence(task)}` : ''}</p></div></div>; })}
+              {tasks.map(task => {
+                const s = STATUS_CFG[task.status];
+                return (
+                  <div
+                    key={task.id}
+                    className="task-tracker__row"
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => {
+                      setTasksHistoryOpen(false);
+                      openTaskDetail(task.id);
+                    }}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        setTasksHistoryOpen(false);
+                        openTaskDetail(task.id);
+                      }
+                    }}
+                  >
+                    <span style={{ color: s.color, display: 'flex', marginTop: 2, flexShrink: 0 }}>{s.icon}</span>
+                    <div className="task-tracker__row-main">
+                      <p>{task.title}</p>
+                      <span>{task.store} · {formatTaskDueWindow(task)}{formatTaskRecurrence(task) ? ` · ${formatTaskRecurrence(task)}` : ''}</span>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
       )}
 
-      {taskTrackerOpen && (
-        <div className="fixed inset-0 z-50 flex justify-end theme-overlay" onClick={() => setTaskTrackerOpen(false)}>
-          <aside
-            style={{
-              width: '100%',
-              maxWidth: 480,
-              background: 'var(--color-page-bg)',
-              borderLeft: '1px solid var(--color-border)',
-              boxShadow: 'var(--shadow-modal)',
-              display: 'flex',
-              flexDirection: 'column',
-              height: '100%',
-            }}
-            onClick={e => e.stopPropagation()}
-          >
-            <div style={{ padding: '18px 20px', borderBottom: '1px solid var(--color-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
-              <div>
-                <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: 'var(--color-text-1)' }}>Task tracker</h3>
-                <p style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--color-text-3)' }}>{tasks.filter(t => t.status === 'done').length} of {tasks.length} completed</p>
-              </div>
-              <div style={{ display: 'flex', gap: 8 }}>
-                {isAdmin && (
-                  <button type="button" onClick={openAddTask} style={{ height: 34, borderRadius: 8, border: 'none', background: 'var(--color-primary-emphasis)', color: 'var(--color-on-primary)', padding: '0 12px', fontSize: 12.5, fontWeight: 600, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                    <Plus size={13} strokeWidth={2.5} /> Add Task
-                  </button>
-                )}
-                <button type="button" onClick={() => setTaskTrackerOpen(false)} style={{ width: 34, height: 34, borderRadius: 8, border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: 'var(--color-text-3)', cursor: 'pointer' }}>
-                  ✕
-                </button>
-              </div>
-            </div>
-            <div style={{ overflowY: 'auto', padding: '10px 0' }}>
-              {tasks.map(task => {
-                const s = STATUS_CFG[task.status];
-                return (
-                  <div key={task.id} style={{ padding: '12px 20px', borderTop: '1px solid var(--color-border-subtle)', display: 'flex', alignItems: 'center', gap: 11 }}>
-                    <span style={{ color: s.color, display: 'flex', flexShrink: 0 }}>{s.icon}</span>
-                    <div style={{ minWidth: 0, flex: 1 }}>
-                      <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: 'var(--color-text-1)' }}>{task.title}</p>
-                      <p style={{ margin: '4px 0 0', fontSize: 11.5, color: 'var(--color-text-3)' }}>{task.store} · {formatTaskDueWindow(task)}{formatTaskRecurrence(task) ? ` · ${formatTaskRecurrence(task)}` : ''}</p>
-                    </div>
-                    <button type="button" onClick={() => toggleTask(task.id)} style={{ height: 28, borderRadius: 7, border: '1px solid var(--color-border)', background: 'var(--color-surface-2)', color: 'var(--color-text-2)', padding: '0 10px', fontSize: 11.5, fontWeight: 600, cursor: 'pointer' }}>
-                      {task.status === 'done' ? 'Reopen' : 'Done'}
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
-          </aside>
-        </div>
-      )}
+      <TaskTrackerPanel
+        open={taskTrackerOpen}
+        tasks={tasks}
+        taskPhotos={taskPhotos}
+        selectedTaskId={selectedTaskId}
+        isAdmin={isAdmin}
+        onClose={closeTaskPanel}
+        onBackToList={backToTaskList}
+        onSelectTask={id => setSelectedTaskId(id)}
+        onAddTask={openAddTask}
+        onToggleTask={toggleTask}
+      />
 
       <input ref={photoRef} type="file" accept="image/*" className="hidden" onChange={e => {
         const file = e.target.files?.[0];

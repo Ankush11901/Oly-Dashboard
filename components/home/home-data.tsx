@@ -54,6 +54,22 @@ export const RECURRENCE_OPTIONS: { value: Recurrence; label: string }[] = [
   { value: 'custom', label: 'Custom days' },
 ];
 
+export interface TaskComment {
+  author: string;
+  text: string;
+  at: string;
+}
+
+export type TaskPriority = 'low' | 'medium' | 'high';
+export type TaskActivityType = 'comment' | 'status' | 'update';
+
+export interface TaskActivity {
+  type: TaskActivityType;
+  author: string;
+  text: string;
+  at: string;
+}
+
 export interface Task {
   id: number;
   title: string;
@@ -64,11 +80,66 @@ export interface Task {
   requiresPhoto: boolean;
   automated: boolean;
   assignedTo?: string;
+  description?: string;
+  createdAt?: string;
+  completedAt?: string;
+  completionNotes?: string;
+  notes?: string;
+  priority?: TaskPriority;
+  requiredActions?: string[];
+  comments?: TaskComment[];
+  activity?: TaskActivity[];
+  /** Display-only overdue duration for overdue tasks */
+  overdueBy?: string;
   recurrence?: Recurrence;
   recurrenceWeekdays?: string[];
   recurrenceMonthDays?: number[];
   completeWithinValue?: number;
   completeWithinUnit?: DurationUnit;
+}
+
+export const PRIORITY_CFG: Record<TaskPriority, { label: string; color: string; bg: string }> = {
+  low: { label: 'Low', color: 'var(--color-text-3)', bg: 'var(--color-surface-3)' },
+  medium: { label: 'Medium', color: 'var(--color-info)', bg: 'var(--color-info-light)' },
+  high: { label: 'High', color: 'var(--color-error)', bg: 'var(--color-error-light)' },
+};
+
+export function getTaskPriority(task: Task): TaskPriority {
+  if (task.priority) return task.priority;
+  if (task.status === 'overdue') return 'high';
+  if (task.automated) return 'low';
+  return 'medium';
+}
+
+export function getTaskOverdueSummary(task: Task): string {
+  if (task.status !== 'overdue') return '';
+  if (task.overdueBy) return `${task.overdueBy} overdue`;
+  return 'Past due';
+}
+
+export function getTaskActivityFeed(task: Task): TaskActivity[] {
+  const fromActivity = task.activity ?? [];
+  const commentItems: TaskActivity[] = (task.comments ?? []).map(c => ({
+    type: 'comment',
+    author: c.author,
+    text: c.text,
+    at: c.at,
+  }));
+  const keys = new Set(fromActivity.map(a => `${a.type}:${a.at}:${a.text}`));
+  const merged = [
+    ...fromActivity,
+    ...commentItems.filter(c => !keys.has(`${c.type}:${c.at}:${c.text}`)),
+  ];
+  return merged;
+}
+
+export function getTaskRequiredActions(task: Task): string[] {
+  if (task.requiredActions?.length) return task.requiredActions;
+  const actions: string[] = [];
+  if (task.requiresPhoto) actions.push('Upload photo proof before marking complete');
+  if (task.automated) actions.push('Follow automated checklist sequence');
+  if (task.notes && task.status !== 'done') actions.push('Review store instructions in notes');
+  return actions;
 }
 
 export function formatTaskRecurrence(task: Task): string | null {
@@ -105,13 +176,130 @@ export function formatTaskDueWindow(task: Task): string {
 }
 
 export const INITIAL_TASKS: Task[] = [
-  { id: 1, title: 'Mannequin display', store: 'Marina Bay Sands', due: 'Today', status: 'done', requiresPhoto: true, automated: true },
-  { id: 2, title: 'Window signage — June', store: 'Orchard Central', due: 'Today', status: 'pending', requiresPhoto: true, automated: false },
-  { id: 3, title: 'Layout rotation — Zone A', store: 'VivoCity', due: 'Tomorrow', status: 'pending', requiresPhoto: true, automated: true },
-  { id: 4, title: 'Restock fitting room', store: 'Bugis Junction', due: 'Today', status: 'overdue', requiresPhoto: false, automated: false },
-  { id: 5, title: 'Fixture re-arrangement', store: 'Tampines Mall', due: 'Jun 2', status: 'pending', requiresPhoto: true, automated: false },
-  { id: 6, title: 'Verify camera angles', store: 'All Stores', due: 'Weekly', status: 'done', requiresPhoto: false, automated: true },
+  {
+    id: 1,
+    title: 'Mannequin display',
+    store: 'Marina Bay Sands',
+    due: 'Today',
+    status: 'done',
+    requiresPhoto: true,
+    automated: true,
+    assignedTo: 'Sarah Tan',
+    priority: 'medium',
+    createdAt: 'May 28, 2026 · 9:00 AM',
+    description: 'Refresh front-window mannequins with June campaign looks. Match VM guide spacing, lighting, and accessory pairing.',
+    completedAt: 'Jun 1, 2026 · 4:32 PM',
+    completionNotes: 'Display updated per VM guide. Before/after photos attached for audit trail.',
+    requiredActions: ['Update mannequin styling per VM guide', 'Capture before/after photos', 'Confirm lighting alignment'],
+    activity: [
+      { type: 'status', author: 'System', text: 'Task created from automated checklist', at: 'May 28 · 9:00 AM' },
+      { type: 'update', author: 'Sarah Tan', text: 'Started front-window refresh', at: 'Jun 1 · 1:45 PM' },
+      { type: 'status', author: 'System', text: 'Marked complete', at: 'Jun 1 · 4:32 PM' },
+      { type: 'comment', author: 'Sarah Tan', text: 'Left mannequin pair updated; right pair scheduled for tomorrow AM.', at: 'Jun 1 · 2:10 PM' },
+    ],
+  },
+  {
+    id: 2,
+    title: 'Window signage — June',
+    store: 'Orchard Central',
+    due: 'Today',
+    status: 'pending',
+    requiresPhoto: true,
+    automated: false,
+    assignedTo: 'Priya S.',
+    priority: 'high',
+    createdAt: 'May 30, 2026 · 2:15 PM',
+    description: 'Install approved June window vinyl and ensure pricing strips align with campaign POS.',
+    notes: 'Use only creative assets from the shared June folder. Photo proof required before close.',
+    requiredActions: ['Install approved June vinyl', 'Align pricing strips with POS', 'Upload photo proof'],
+    activity: [
+      { type: 'status', author: 'System', text: 'Task assigned to Priya S.', at: 'May 30 · 2:15 PM' },
+      { type: 'comment', author: 'Ops lead', text: 'Vinyl shipment confirmed at store — ready for install.', at: 'Today · 9:15 AM' },
+    ],
+  },
+  {
+    id: 3,
+    title: 'Layout rotation — Zone A',
+    store: 'VivoCity',
+    due: 'Tomorrow',
+    status: 'pending',
+    requiresPhoto: true,
+    automated: true,
+    assignedTo: 'John Lim',
+    priority: 'medium',
+    createdAt: 'Jun 1, 2026 · 7:30 AM',
+    description: 'Rotate Zone A fixtures per automated planogram. Clear aisle width to 1.2m minimum.',
+    notes: 'Automated checklist generated from planogram v3.2 — follow bay order north to south.',
+    requiredActions: ['Rotate fixtures per planogram v3.2', 'Maintain 1.2m aisle clearance', 'Submit layout photo proof'],
+    activity: [
+      { type: 'status', author: 'System', text: 'Generated from planogram automation', at: 'Jun 1 · 7:30 AM' },
+    ],
+  },
+  {
+    id: 4,
+    title: 'Restock fitting room',
+    store: 'Bugis Junction',
+    due: 'Today',
+    status: 'overdue',
+    requiresPhoto: false,
+    automated: false,
+    assignedTo: 'Ali Hassan',
+    priority: 'high',
+    createdAt: 'May 31, 2026 · 10:00 AM',
+    description: 'Restock fitting room consumables and size-run gaps flagged in yesterday’s audit.',
+    overdueBy: '6 hours',
+    notes: 'High priority — affects fitting room NPS. No photo required; confirm counts in notes.',
+    requiredActions: ['Restock consumables', 'Fill size-run gaps from audit', 'Log counts in completion notes'],
+    activity: [
+      { type: 'status', author: 'System', text: 'Task created', at: 'May 31 · 10:00 AM' },
+      { type: 'status', author: 'System', text: 'Marked overdue — past due window', at: 'Today · 8:00 AM' },
+      { type: 'comment', author: 'Ali Hassan', text: 'Waiting on delivery from back-of-house — ETA 2 PM.', at: 'Today · 11:40 AM' },
+    ],
+  },
+  {
+    id: 5,
+    title: 'Fixture re-arrangement',
+    store: 'Tampines Mall',
+    due: 'Jun 2',
+    status: 'pending',
+    requiresPhoto: true,
+    automated: false,
+    assignedTo: 'Wei Chen',
+    priority: 'medium',
+    createdAt: 'Jun 1, 2026 · 11:20 AM',
+    description: 'Move seasonal fixture bank to entrance zone B per floor plan update.',
+    notes: 'Photo proof of final layout required. Coordinate with security for after-hours access if needed.',
+    requiredActions: ['Move fixture bank to zone B', 'Coordinate after-hours access if needed', 'Upload final layout photos'],
+    activity: [
+      { type: 'status', author: 'System', text: 'Task scheduled', at: 'Jun 1 · 11:20 AM' },
+    ],
+  },
+  {
+    id: 6,
+    title: 'Verify camera angles',
+    store: 'All Stores',
+    due: 'Weekly',
+    status: 'done',
+    requiresPhoto: false,
+    automated: true,
+    assignedTo: 'Sarah Tan',
+    priority: 'low',
+    createdAt: 'May 27, 2026 · 8:00 AM',
+    description: 'Confirm entrance and zone cameras are unobstructed and within calibration tolerance.',
+    completedAt: 'May 30, 2026 · 11:05 AM',
+    completionNotes: 'All stores passed angle check. Minor adjustment logged for Northpoint entrance cam.',
+    requiredActions: ['Check entrance camera angles', 'Verify zone coverage', 'Log exceptions in notes'],
+    activity: [
+      { type: 'status', author: 'System', text: 'Weekly automated task created', at: 'May 27 · 8:00 AM' },
+      { type: 'status', author: 'System', text: 'Marked complete', at: 'May 30 · 11:05 AM' },
+    ],
+  },
 ];
+
+/** Demo photo proof for completed tasks (user uploads override via taskPhotos state). */
+export const INITIAL_TASK_PHOTOS: Record<number, string> = {
+  1: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&h=300&fit=crop&q=80',
+};
 
 export const STATUS_CFG: Record<TaskStatus, { icon: React.ReactNode; label: string; color: string; bg: string }> = {
   done: { icon: <CheckCircle2 size={14} strokeWidth={2} />, label: 'Done', color: 'var(--color-success)', bg: 'var(--color-success-light)' },

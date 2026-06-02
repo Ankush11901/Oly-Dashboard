@@ -89,6 +89,7 @@ export interface HomeHybridViewProps {
   filteredAlerts: RecentAlert[];
   onAddTask: () => void;
   onOpenTaskPanel: () => void;
+  onOpenTaskDetail: (taskId: number) => void;
   onInsightsOpen: () => void;
   onConcernOpen: () => void;
 }
@@ -102,6 +103,7 @@ export function HomeHybridView({
   filteredAlerts,
   onAddTask,
   onOpenTaskPanel,
+  onOpenTaskDetail,
   onInsightsOpen,
   onConcernOpen,
 }: HomeHybridViewProps) {
@@ -109,7 +111,6 @@ export function HomeHybridView({
   const [quickActionIds, setQuickActionIds] = useState<string[]>(DEFAULT_HYBRID_QUICK_ACTION_IDS);
   const [qaModalOpen, setQaModalOpen] = useState(false);
   const [reportsModalOpen, setReportsModalOpen] = useState(false);
-
   useEffect(() => {
     setQuickActionIds(loadQuickActionIds());
   }, []);
@@ -175,7 +176,23 @@ export function HomeHybridView({
                     const st = STATUS_CFG[task.status];
                     const recurrence = formatTaskRecurrence(task);
                     return (
-                      <li key={task.id} className="hybrid-progress__task">
+                      <li
+                        key={task.id}
+                        className="hybrid-progress__task"
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => {
+                          haptic('selection');
+                          onOpenTaskDetail(task.id);
+                        }}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            haptic('selection');
+                            onOpenTaskDetail(task.id);
+                          }
+                        }}
+                      >
                         <span className="hybrid-progress__task-icon" style={{ color: st.color }} aria-hidden>
                           {st.icon}
                         </span>
@@ -327,6 +344,7 @@ export function HomeHybridView({
         open={reportsModalOpen}
         onClose={() => setReportsModalOpen(false)}
       />
+
     </div>
   );
 }
