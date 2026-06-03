@@ -176,7 +176,7 @@
 .hybrid-strip__dots span.is-active {
   width: 16px;
   border-radius: 4px;
-  background: var(--color-text-2);
+  background: var(--color-primary);
 }
 
 /* ── KPIs ─────────────────────────────────────────────────────────────────── */
